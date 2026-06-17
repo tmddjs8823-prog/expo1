@@ -1,0 +1,83 @@
+<div class="flex flex-col gap-4 p-6">
+  <h1 class="text-2xl font-bold">참가업체 관리</h1>
+
+  <!-- 생성 폼 -->
+  <form (ngSubmit)="createExhibitor()" class="bg-white p-6 rounded shadow flex flex-col gap-4">
+    <div class="flex gap-4">
+      <label class="flex flex-col gap-1 flex-1">
+        업체명
+        <input [ngModel]="exhibitorForm().companyName"
+          (ngModelChange)="exhibitorForm.update(f => ({...f, companyName: $event}))"
+          name="companyName" class="w-full p-2 border rounded" />
+      </label>
+      <label class="flex flex-col gap-1 flex-1">
+        업체명 (EN)
+        <input [ngModel]="exhibitorForm().companyNameEn"
+          (ngModelChange)="exhibitorForm.update(f => ({...f, companyNameEn: $event}))"
+          name="companyNameEn" class="w-full p-2 border rounded" />
+      </label>
+    </div>
+
+    <div class="flex gap-4">
+      <label class="flex flex-col gap-1 flex-1">
+        부스번호
+        <input [ngModel]="exhibitorForm().boothNumber"
+          (ngModelChange)="exhibitorForm.update(f => ({...f, boothNumber: $event}))"
+          name="boothNumber" class="w-full p-2 border rounded" />
+      </label>
+      <label class="flex flex-col gap-1 flex-1">
+        전시회
+        <select [ngModel]="exhibitorForm().exhibitionId"
+          (ngModelChange)="exhibitorForm.update(f => ({...f, exhibitionId: $event}))"
+          name="exhibitionId" class="w-full p-2 border rounded">
+          <option [ngValue]="0" disabled>전시회 선택</option>
+          @for (ex of exhibitions(); track ex.id) {
+            <option [ngValue]="ex.id">{{ ex.title }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">생성</button>
+      <button type="button" (click)="resetForm()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">초기화</button>
+    </div>
+  </form>
+
+  <!-- 검색 -->
+  <div class="flex items-center gap-2">
+    <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
+      name="search" placeholder="업체명, 부스번호, 이메일로 검색" class="flex-1 p-2 border rounded" />
+  </div>
+
+  <!-- 참가업체 목록 -->
+  <table class="w-full bg-white rounded shadow">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="p-3 text-left">업체명</th>
+        <th class="p-3 text-left">부스번호</th>
+        <th class="p-3 text-left">전시회</th>
+        <th class="p-3 text-left">이메일</th>
+        <th class="p-3 text-left">관리</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (ex of filteredExhibitors(); track ex.id) {
+        <tr class="border-t hover:bg-gray-50 cursor-pointer" (click)="router.navigate(['/exhibitor', ex.id])">
+          <td class="p-3">{{ ex.companyName }}</td>
+          <td class="p-3">{{ ex.boothNumber }}</td>
+          <td class="p-3">{{ ex.exhibition?.title ?? '-' }}</td>
+          <td class="p-3">{{ ex.contactEmail }}</td>
+          <td class="p-3">
+            <button (click)="$event.stopPropagation(); deleteExhibitor(ex.id)"
+              class="text-red-600 hover:underline">삭제</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="p-6 text-center text-gray-400">등록된 참가업체가 없습니다.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

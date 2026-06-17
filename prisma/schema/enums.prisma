@@ -1,0 +1,20 @@
+// ============================================================
+// 공통 Enum 정의
+// ============================================================
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum ExhibitionStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum InquiryStatus {
+  PENDING
+  ANSWERED
+  CLOSED
+}

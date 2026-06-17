@@ -1,0 +1,37 @@
+<div class="flex flex-col gap-4 p-6">
+  <div class="flex items-center gap-4">
+    <button (click)="goBack()" class="text-gray-500 hover:text-gray-700">← 목록</button>
+    <h1 class="text-2xl font-bold">갤러리 상세</h1>
+  </div>
+
+  <form class="bg-white p-6 rounded shadow flex flex-col gap-4" (ngSubmit)="updateGallery()">
+    <label class="flex flex-col gap-1">
+      제목
+      <input [ngModel]="title()" (ngModelChange)="title.set($event)"
+        name="title" class="w-full p-2 border rounded" />
+    </label>
+
+    <label class="flex flex-col gap-1">
+      설명
+      <textarea [ngModel]="description()" (ngModelChange)="description.set($event)"
+        name="description" rows="4" class="w-full p-2 border rounded"></textarea>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      이미지
+      @if (imageUrl()) {
+        <img [src]="imageUrl()" alt="미리보기" class="w-48 h-48 object-cover rounded border" />
+      }
+      <input type="file" accept="image/*" (change)="onFileSelected($event)" class="p-2 border rounded" />
+    </label>
+
+    <div class="flex gap-2">
+      <button type="submit" [disabled]="uploading()"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
+        {{ uploading() ? '업로드 중...' : '수정' }}
+      </button>
+      <button type="button" (click)="deleteGallery()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">삭제</button>
+      <button type="button" (click)="goBack()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">취소</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,12 @@
+// ============================================================
+// Prisma 기본 설정
+// generator와 datasource는 반드시 하나의 파일에만 존재해야 함
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}

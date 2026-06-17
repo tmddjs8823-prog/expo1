@@ -1,0 +1,93 @@
+<div class="flex flex-col gap-4 p-6">
+  <h1 class="text-2xl font-bold">프로그램 관리</h1>
+
+  <!-- ── 생성/수정 폼 ── -->
+  <form class="bg-white p-6 rounded shadow flex flex-col gap-4"
+    (ngSubmit)="selectedProgramId() ? updatePrograms() : createProgram()">
+
+    <input [ngModel]="programForm().title"
+      (ngModelChange)="programForm.update(f => ({...f, title: $event}))"
+      name="title" placeholder="프로그램 제목" class="w-full p-2 border rounded" />
+
+    <input [ngModel]="programForm().speaker"
+      (ngModelChange)="programForm.update(f => ({...f, speaker: $event}))"
+      name="speaker" placeholder="발표자" class="w-full p-2 border rounded" />
+
+    <textarea [ngModel]="programForm().description"
+      (ngModelChange)="programForm.update(f => ({...f, description: $event}))"
+      name="description" placeholder="설명" rows="3" class="w-full p-2 border rounded"></textarea>
+
+    <div class="flex gap-4">
+      <label class="flex flex-col gap-1 flex-1">
+        시작 시간
+        <input type="datetime-local" [ngModel]="programForm().startTime"
+          (ngModelChange)="updateDateTime('startTime', $event)"
+          name="startTime" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
+      </label>
+      <label class="flex flex-col gap-1 flex-1">
+        종료 시간
+        <input type="datetime-local" [ngModel]="programForm().endTime"
+          (ngModelChange)="updateDateTime('endTime', $event)"
+          name="endTime" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
+      </label>
+    </div>
+
+    <input [ngModel]="programForm().location"
+      (ngModelChange)="programForm.update(f => ({...f, location: $event}))"
+      name="location" placeholder="장소" class="w-full p-2 border rounded" />
+
+    <div class="flex gap-2">
+      <button type="submit"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        {{ selectedProgramId() ? '수정' : '생성' }}
+      </button>
+      @if (selectedProgramId()) {
+        <button type="button" (click)="resetForm()"
+          class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
+          취소
+        </button>
+      }
+    </div>
+  </form>
+
+  <!-- 검색 -->
+  <div class="flex items-center gap-2">
+    <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
+      name="search" placeholder="제목, 발표자, 장소로 검색" class="flex-1 p-2 border rounded" />
+  </div>
+
+  <!-- ── 프로그램 목록 ── -->
+  <table class="w-full bg-white rounded shadow">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="p-3 text-left">제목</th>
+        <th class="p-3 text-left">발표자</th>
+        <th class="p-3 text-left">시작시간</th>
+        <th class="p-3 text-left">종료시간</th>
+        <th class="p-3 text-left">장소</th>
+        <th class="p-3 text-left">관리</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (prog of filteredPrograms(); track prog.id) {
+        <tr class="border-t hover:bg-gray-50 cursor-pointer" (click)="router.navigate(['/program', prog.id])">
+          <td class="p-3">{{ prog.title }}</td>
+          <td class="p-3">{{ prog.speaker }}</td>
+          <td class="p-3">{{ prog.startTime | date:'yyyy-MM-dd HH:mm' }}</td>
+          <td class="p-3">{{ prog.endTime | date:'yyyy-MM-dd HH:mm' }}</td>
+          <td class="p-3">{{ prog.location }}</td>
+          <td class="p-3 flex gap-2">
+            <button (click)="selectPrograms(prog.id)"
+              class="text-blue-600 hover:underline">수정</button>
+            <button (click)="deletePrograms(prog.id)"
+              class="text-red-600 hover:underline">삭제</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="p-6 text-center text-gray-400">등록된 프로그램이 없습니다.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

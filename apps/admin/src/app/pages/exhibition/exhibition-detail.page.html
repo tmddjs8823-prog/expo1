@@ -1,0 +1,77 @@
+<div class="flex flex-col gap-4 p-6">
+  <div class="flex items-center gap-4">
+    <button (click)="goBack()" class="text-gray-500 hover:text-gray-700">← 목록</button>
+    <h1 class="text-2xl font-bold">전시회 상세</h1>
+  </div>
+
+  <form class="bg-white p-6 rounded shadow flex flex-col gap-4" (ngSubmit)="updateExhibition()">
+    <div class="flex gap-4">
+      <label class="flex flex-col gap-1 flex-1">
+        제목
+        <input [ngModel]="exhibitionForm().title"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, title: $event}))"
+          name="title" class="w-full p-2 border rounded" />
+      </label>
+      <label class="flex flex-col gap-1 flex-1">
+        제목 (EN)
+        <input [ngModel]="exhibitionForm().titleEn"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, titleEn: $event}))"
+          name="titleEn" class="w-full p-2 border rounded" />
+      </label>
+    </div>
+
+    <label class="flex flex-col gap-1">
+      설명
+      <textarea [ngModel]="exhibitionForm().description"
+        (ngModelChange)="exhibitionForm.update(f => ({...f, description: $event}))"
+        name="description" rows="4" class="w-full p-2 border rounded"></textarea>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      설명 (EN)
+      <textarea [ngModel]="exhibitionForm().descriptionEn"
+        (ngModelChange)="exhibitionForm.update(f => ({...f, descriptionEn: $event}))"
+        name="descriptionEn" rows="4" class="w-full p-2 border rounded"></textarea>
+    </label>
+
+    <div class="flex gap-4">
+      <label class="flex flex-col gap-1 flex-1">
+        시작일
+        <input type="datetime-local" [ngModel]="exhibitionForm().startDate"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, startDate: $event}))"
+          name="startDate" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
+      </label>
+      <label class="flex flex-col gap-1 flex-1">
+        종료일
+        <input type="datetime-local" [ngModel]="exhibitionForm().endDate"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, endDate: $event}))"
+          name="endDate" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
+      </label>
+    </div>
+
+    <div class="flex gap-4">
+      <label class="flex flex-col gap-1 flex-1">
+        장소
+        <input [ngModel]="exhibitionForm().venue"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, venue: $event}))"
+          name="venue" class="w-full p-2 border rounded" />
+      </label>
+      <label class="flex flex-col gap-1 flex-1">
+        상태
+        <select [ngModel]="exhibitionForm().status"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, status: $event}))"
+          name="status" class="w-full p-2 border rounded">
+          <option value="DRAFT">초안</option>
+          <option value="PUBLISHED">공개</option>
+          <option value="CLOSED">종료</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">수정</button>
+      <button type="button" (click)="deleteExhibition()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">삭제</button>
+      <button type="button" (click)="goBack()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">취소</button>
+    </div>
+  </form>
+</div>

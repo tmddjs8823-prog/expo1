@@ -1,0 +1,84 @@
+<div class="flex flex-col gap-4 p-6">
+  <h1 class="text-2xl font-bold">갤러리 관리</h1>
+
+  <!-- 생성/수정 폼 -->
+  <form (submit)="$event.preventDefault()"
+    class="bg-white p-6 rounded shadow flex flex-col gap-4">
+
+    <input type="text" [ngModel]="title()" (ngModelChange)="title.set($event)"
+      name="title" placeholder="제목" class="w-full p-2 border rounded">
+
+    <textarea [ngModel]="description()" (ngModelChange)="description.set($event)"
+      name="description" placeholder="설명" rows="3" class="w-full p-2 border rounded"></textarea>
+
+    <!-- 이미지 업로드 -->
+    <div class="flex flex-col gap-2">
+      <label for="imageFile" class="text-sm font-medium text-gray-700">이미지</label>
+      <input id="imageFile" type="file" accept="image/*" (change)="onFileSelected($event)"
+        class="w-full p-2 border rounded">
+      @if (imageUrl()) {
+        <img [src]="imageUrl()" alt="미리보기" class="w-32 h-32 object-cover rounded">
+      }
+    </div>
+
+    <div class="flex gap-2">
+      <button type="button" (click)="isEditing() ? updateGallery() : createGallery()" [disabled]="uploading()"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
+        @if (uploading()) {
+          업로드 중...
+        } @else {
+          {{ isEditing() ? '수정' : '생성' }}
+        }
+      </button>
+
+      @if (isEditing()) {
+        <button type="button" (click)="resetForm()"
+          class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
+          취소
+        </button>
+      }
+    </div>
+  </form>
+
+  <!-- 검색 -->
+  <div class="flex items-center gap-2">
+    <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
+      name="search" placeholder="제목, 설명으로 검색" class="flex-1 p-2 border rounded" />
+  </div>
+
+  <!-- 갤러리 목록 -->
+  <table class="w-full bg-white rounded shadow">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="p-3 text-left">미리보기</th>
+        <th class="p-3 text-left">제목</th>
+        <th class="p-3 text-left">공개여부</th>
+        <th class="p-3 text-left">작성일</th>
+        <th class="p-3 text-left">관리</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (gallery of filteredGalleries(); track gallery.id) {
+        <tr class="border-t hover:bg-gray-50 cursor-pointer" (click)="router.navigate(['/gallery', gallery.id])">
+          <td class="p-3">
+            <img [src]="gallery.imageUrl" [alt]="gallery.title"
+              class="w-16 h-16 object-cover rounded">
+          </td>
+          <td class="p-3">{{ gallery.title }}</td>
+          <td class="p-3">{{ gallery.published ? '공개' : '비공개' }}</td>
+          <td class="p-3">{{ gallery.createdAt | date:'yyyy-MM-dd' }}</td>
+          <td class="p-3 flex gap-2">
+            <button (click)="editGallery(gallery)"
+              class="text-blue-600 hover:underline">수정</button>
+            <button (click)="deleteGallery(gallery.id)"
+              class="text-red-600 hover:underline">삭제</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="p-6 text-center text-gray-400">등록된 갤러리가 없습니다.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

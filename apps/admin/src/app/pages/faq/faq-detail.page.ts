@@ -1,0 +1,68 @@
+import { Component, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Faq, FaqCategory } from './faq.page';
+
+@Component({
+  selector: 'app-faq-detail',
+  imports: [FormsModule],
+  templateUrl: './faq-detail.page.html',
+})
+export class FaqDetailPage {
+  private http = inject(HttpClient);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
+  faqId = Number(this.route.snapshot.paramMap.get('id'));
+  question = signal('');
+  answer = signal('');
+  selectedCategoryId = signal<number | null>(null);
+  categories = signal<FaqCategory[]>([]);
+
+  constructor() {
+    this.loadFaq();
+    this.loadCategories();
+  }
+
+  loadFaq() {
+    this.http.get<Faq>(`/api/faq/${this.faqId}`).subscribe({
+      next: (res) => {
+        this.question.set(res.question);
+        this.answer.set(res.answer);
+        this.selectedCategoryId.set(res.categoryId);
+      },
+      error: (err) => console.error('FAQ 조회 실패:', err),
+    });
+  }
+
+  loadCategories() {
+    this.http.get<FaqCategory[]>('/api/faq/category').subscribe({
+      next: (res) => this.categories.set(res),
+      error: (err) => console.error('카테고리 조회 실패:', err),
+    });
+  }
+
+  updateFaq() {
+    this.http.patch(`/api/faq/${this.faqId}`, {
+      question: this.question(),
+      answer: this.answer(),
+      categoryId: this.selectedCategoryId(),
+    }).subscribe({
+      next: () => this.router.navigate(['/faq']),
+      error: (err) => console.error('FAQ 수정 실패:', err),
+    });
+  }
+
+  deleteFaq() {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    this.http.delete(`/api/faq/${this.faqId}`).subscribe({
+      next: () => this.router.navigate(['/faq']),
+      error: (err) => console.error('FAQ 삭제 실패:', err),
+    });
+  }
+
+  goBack() {
+    this.router.navigate(['/faq']);
+  }
+}

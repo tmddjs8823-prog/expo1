@@ -1,0 +1,20 @@
+// ============================================================
+// 프로그램 모델
+// ============================================================
+
+model Program {
+  id          Int      @id @default(autoincrement())
+  title       String
+  titleEn     String?
+  description String?
+  descriptionEn String?
+  speaker     String?
+  speakerEn   String?
+  startTime   DateTime
+  endTime     DateTime
+  location    String?
+  published   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

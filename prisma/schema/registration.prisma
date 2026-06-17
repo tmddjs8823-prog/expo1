@@ -1,0 +1,16 @@
+// ============================================================
+// 사전등록 모델
+// ============================================================
+
+model PreRegistration {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String
+  phone       String?
+  company     String?
+  jobTitle    String?
+  agreeTerms  Boolean  @default(false)
+  agreeMarketing Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

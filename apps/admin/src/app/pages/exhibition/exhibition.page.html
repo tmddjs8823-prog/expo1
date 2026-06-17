@@ -1,0 +1,112 @@
+<div class="flex flex-col gap-4 p-6">
+  <h1 class="text-2xl font-bold">전시회 관리</h1>
+
+  <!-- 생성 폼 -->
+  <form (ngSubmit)="createExhibition()" class="bg-white p-6 rounded shadow flex flex-col gap-4">
+    <div class="flex gap-4">
+      <label class="flex flex-col gap-1 flex-1">
+        제목
+        <input [ngModel]="exhibitionForm().title"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, title: $event}))"
+          name="title" class="w-full p-2 border rounded" />
+      </label>
+      <label class="flex flex-col gap-1 flex-1">
+        제목 (EN)
+        <input [ngModel]="exhibitionForm().titleEn"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, titleEn: $event}))"
+          name="titleEn" class="w-full p-2 border rounded" />
+      </label>
+    </div>
+
+    <label class="flex flex-col gap-1">
+      설명
+      <textarea [ngModel]="exhibitionForm().description"
+        (ngModelChange)="exhibitionForm.update(f => ({...f, description: $event}))"
+        name="description" rows="3" class="w-full p-2 border rounded"></textarea>
+    </label>
+
+    <div class="flex gap-4">
+      <label class="flex flex-col gap-1 flex-1">
+        시작일
+        <input type="datetime-local" [ngModel]="exhibitionForm().startDate"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, startDate: $event}))"
+          name="startDate" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
+      </label>
+      <label class="flex flex-col gap-1 flex-1">
+        종료일
+        <input type="datetime-local" [ngModel]="exhibitionForm().endDate"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, endDate: $event}))"
+          name="endDate" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
+      </label>
+    </div>
+
+    <div class="flex gap-4">
+      <label class="flex flex-col gap-1 flex-1">
+        장소
+        <input [ngModel]="exhibitionForm().venue"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, venue: $event}))"
+          name="venue" class="w-full p-2 border rounded" />
+      </label>
+      <label class="flex flex-col gap-1 flex-1">
+        상태
+        <select [ngModel]="exhibitionForm().status"
+          (ngModelChange)="exhibitionForm.update(f => ({...f, status: $event}))"
+          name="status" class="w-full p-2 border rounded">
+          <option value="DRAFT">초안</option>
+          <option value="PUBLISHED">공개</option>
+          <option value="CLOSED">종료</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">생성</button>
+      <button type="button" (click)="resetForm()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">초기화</button>
+    </div>
+  </form>
+
+  <!-- 검색 -->
+  <div class="flex items-center gap-2">
+    <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
+      name="search" placeholder="제목, 장소, 상태로 검색" class="flex-1 p-2 border rounded" />
+  </div>
+
+  <!-- 전시회 목록 -->
+  <table class="w-full bg-white rounded shadow">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="p-3 text-left">제목</th>
+        <th class="p-3 text-left">장소</th>
+        <th class="p-3 text-left">시작일</th>
+        <th class="p-3 text-left">종료일</th>
+        <th class="p-3 text-left">상태</th>
+        <th class="p-3 text-left">관리</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (ex of filteredExhibitions(); track ex.id) {
+        <tr class="border-t hover:bg-gray-50 cursor-pointer" (click)="router.navigate(['/exhibition', ex.id])">
+          <td class="p-3">{{ ex.title }}</td>
+          <td class="p-3">{{ ex.venue }}</td>
+          <td class="p-3">{{ ex.startDate | date:'yyyy-MM-dd' }}</td>
+          <td class="p-3">{{ ex.endDate | date:'yyyy-MM-dd' }}</td>
+          <td class="p-3">
+            @switch (ex.status) {
+              @case ('DRAFT') { <span class="text-gray-500">초안</span> }
+              @case ('PUBLISHED') { <span class="text-green-600">공개</span> }
+              @case ('CLOSED') { <span class="text-red-500">종료</span> }
+            }
+          </td>
+          <td class="p-3">
+            <button (click)="$event.stopPropagation(); deleteExhibition(ex.id)"
+              class="text-red-600 hover:underline">삭제</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="p-6 text-center text-gray-400">등록된 전시회가 없습니다.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
