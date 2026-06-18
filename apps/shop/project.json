@@ -54,7 +54,8 @@
         },
         "development": {
           "buildTarget": "shop:build:development",
-          "proxyConfig": "apps/shop/proxy.conf.json"
+          "proxyConfig": "apps/shop/proxy.conf.json",
+          "port": 4300
         }
       },
       "defaultConfiguration": "development"

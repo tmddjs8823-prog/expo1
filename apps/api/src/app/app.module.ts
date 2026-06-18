@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -11,9 +12,11 @@ import { GalleryModule } from './gallery/gallery.module';
 import { InquiryModule } from './inquiry/inquiry.module';
 import { PreregistrationModule } from './preregistration/preregistration.module';
 import { ExhibitorModule } from './exhibitor/exhibitor.module';
+import { BannerModule } from './banner/banner.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,
     NoticeModule,
@@ -24,6 +27,7 @@ import { ExhibitorModule } from './exhibitor/exhibitor.module';
     InquiryModule,
     PreregistrationModule,
     ExhibitorModule,
+    BannerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { SupabaseService } from '../../services/supabase.service';
 import { Router } from '@angular/router';
+import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { ToastService } from '../../shared/toast/toast.service';
 
 export interface Gallery {
   id: number;
@@ -20,13 +22,15 @@ export interface Gallery {
 
 @Component({
   selector: 'app-gallery',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, PaginationComponent],
   templateUrl: './gallery.page.html'
 })
 export class GalleryPage {
   private http = inject(HttpClient);
   private supabase = inject(SupabaseService);
   router = inject(Router);
+
+  private toast = inject(ToastService);
 
   // 시그널 초기상태
   galleries = signal<Gallery[]>([]);
@@ -46,6 +50,20 @@ export class GalleryPage {
   isEditing = signal(false);
   uploading = signal(false);
   selectedFile = signal<File | null>(null);
+  published = signal(true);
+
+  // 페이지네이션
+  currentPage = signal(1);
+  pageSize = 3;
+  totalPages = computed(() => Math.ceil(this.filteredGalleries().length / this.pageSize));
+  pagedGalleries = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredGalleries().slice(start, start + this.pageSize);
+  });
+
+  onPageChange(page: number) {
+    this.currentPage.set(page);
+  }
 
   constructor() {
     this.loadGalleries();
@@ -58,6 +76,7 @@ export class GalleryPage {
     this.selectedGalleryId.set(null);
     this.isEditing.set(false);
     this.selectedFile.set(null);
+    this.published.set(true);
   }
 
   // 파일 선택
@@ -90,7 +109,7 @@ export class GalleryPage {
   loadGalleries() {
     this.http.get<Gallery[]>('/api/gallery').subscribe({
       next: (res) => this.galleries.set(res),
-      error: (err) => console.error('갤러리 목록 조회 실패:', err),
+      error: (err) => { console.error('갤러리 목록 조회 실패:', err); this.toast.error('갤러리 목록 조회 실패'); },
     });
   }
 
@@ -102,12 +121,14 @@ export class GalleryPage {
       title: this.title(),
       description: this.description(),
       imageUrl: url,
+      published: this.published(),
     }).subscribe({
       next: () => {
+        this.toast.success('갤러리이(가) 생성되었습니다.');
         this.loadGalleries();
         this.resetForm();
       },
-      error: (err) => console.error('갤러리 생성 실패:', err),
+      error: (err) => { console.error('갤러리 생성 실패:', err); this.toast.error('갤러리 생성 실패'); },
     });
   }
 
@@ -116,6 +137,7 @@ export class GalleryPage {
     this.title.set(gallery.title);
     this.description.set(gallery.description ?? '');
     this.imageUrl.set(gallery.imageUrl);
+    this.published.set(gallery.published);
     this.isEditing.set(true);
   }
 
@@ -126,22 +148,26 @@ export class GalleryPage {
       title: this.title(),
       description: this.description(),
       imageUrl: url || this.imageUrl(),
+      published: this.published(),
     }).subscribe({
       next: () => {
+        this.toast.success('갤러리이(가) 수정되었습니다.');
         this.loadGalleries();
         this.resetForm();
       },
-      error: (err) => console.error('갤러리 수정 실패:', err),
+      error: (err) => { console.error('갤러리 수정 실패:', err); this.toast.error('갤러리 수정 실패'); },
     });
   }
 
   deleteGallery(id: number) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/gallery/${id}`).subscribe({
       next: () => {
+        this.toast.warning('삭제되었습니다.');
         this.loadGalleries();
         this.resetForm();
       },
-      error: (err) => console.error('갤러리 삭제 실패:', err),
+      error: (err) => { console.error('갤러리 삭제 실패:', err); this.toast.error('갤러리 삭제 실패'); },
     });
   }
 }

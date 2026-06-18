@@ -1,0 +1,70 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-10">
+
+  <!-- 헤더 -->
+  <div class="text-center flex flex-col gap-2">
+    <h1 class="text-3xl font-bold text-slate-900">전시안내</h1>
+    <p class="text-slate-500">광주 밀리언쇼의 전시 일정을 확인하세요.</p>
+  </div>
+
+  <!-- 전시회 카드 목록 -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    @for (ex of pagedExhibitions(); track ex.id) {
+      <a [routerLink]="['/exhibition', ex.id]"
+         class="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-slate-100">
+
+        <!-- 이미지 -->
+        <div class="relative h-52 overflow-hidden bg-slate-100">
+          @if (ex.imageUrl) {
+            <img [src]="ex.imageUrl" [alt]="ex.title"
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          } @else {
+            <div class="w-full h-full flex items-center justify-center">
+              <svg class="w-16 h-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5" />
+              </svg>
+            </div>
+          }
+          <!-- 상태 뱃지 -->
+          <span class="absolute top-3 right-3 text-xs font-medium px-2.5 py-1 rounded-full"
+                [class]="getStatusColor(ex.status)">
+            {{ getStatusLabel(ex.status) }}
+          </span>
+        </div>
+
+        <!-- 정보 -->
+        <div class="p-5 flex flex-col gap-2">
+          <h3 class="text-lg font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
+            {{ ex.title }}
+          </h3>
+          <div class="flex flex-col gap-1 text-sm text-slate-400">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {{ ex.startDate | date:'yyyy.MM.dd' }} ~ {{ ex.endDate | date:'yyyy.MM.dd' }}
+            </div>
+            @if (ex.venue) {
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                {{ ex.venue }}
+              </div>
+            }
+          </div>
+        </div>
+      </a>
+    } @empty {
+      <div class="col-span-full py-16 text-center text-slate-400">
+        등록된 전시회가 없습니다.
+      </div>
+    }
+  </div>
+
+  <!-- 페이지네이션 -->
+  <app-pagination
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    (pageChange)="onPageChange($event)" />
+</div>

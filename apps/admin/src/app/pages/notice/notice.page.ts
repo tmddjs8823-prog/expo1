@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { ToastService } from '../../shared/toast/toast.service';
 
 export interface Notice {
   id : number ;
@@ -20,12 +22,14 @@ export interface Notice {
 
 @Component({
   selector: 'app-notice',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, PaginationComponent],
   templateUrl: './notice.page.html',
 })
 export class NoticePage{private http = 
   inject(HttpClient);
   router = inject(Router);
+
+  private toast = inject(ToastService);
 
 notices = signal<Notice[]>([]);
 searchKeyword = signal('');
@@ -37,10 +41,24 @@ filteredNotices = computed(() => {
     n.content.toLowerCase().includes(keyword)
   );
 });
-selectedNoticeId = signal<number | null>(null); // 현재 선택된 공지사항 ID
-title = signal (''); // 폼 입력
-content = signal(''); // 폼 입력
-isEditing = signal(false); // 생성 수정 모드 구분
+selectedNoticeId = signal<number | null>(null);
+title = signal ('');
+content = signal('');
+isEditing = signal(false);
+published = signal(true);
+
+// 페이지네이션
+currentPage = signal(1);
+pageSize = 3;
+totalPages = computed(() => Math.ceil(this.filteredNotices().length / this.pageSize));
+pagedNotices = computed(() => {
+  const start = (this.currentPage() - 1) * this.pageSize;
+  return this.filteredNotices().slice(start, start + this.pageSize);
+});
+
+onPageChange(page: number) {
+  this.currentPage.set(page);
+}
 
 
 
@@ -58,6 +76,7 @@ resetForm(){
   this.content.set('');
   this.isEditing.set(false);
   this.selectedNoticeId.set(null);
+  this.published.set(true);
 }
 
 loadNotice(){
@@ -66,9 +85,7 @@ loadNotice(){
       next: (res)=> {
         this.notices.set(res); 
       },
-      error: (err)=> {
-        console.error('Error fetching notices:', err);
-      }
+      error: (err) => { console.error('Error fetching notices:', err); this.toast.error('Error fetching notices'); }
     });
 }
 
@@ -77,15 +94,15 @@ loadNotice(){
 createNotice() {
   this.http.post('/api/notice',{
     title : this.title(),
-    content : this.content()
+    content : this.content(),
+    published: this.published(),
   }).subscribe({
     next :()=>{ 
+      this.toast.success('공지사항이 생성되었습니다.');
       this.loadNotice();
       this.resetForm();
     },
-    error: (err) => {
-      console.error('Error creating notice:', err);
-    }
+    error: (err) => { console.error('Error creating notice:', err); this.toast.error('Error creating notice'); }
     })
 }
 
@@ -95,6 +112,7 @@ editNotice(notice : Notice) {
   this.selectedNoticeId.set(notice.id);
   this.title.set(notice.title);
   this.content.set(notice.content);
+  this.published.set(notice.published);
   this.isEditing.set(true);
 }
 
@@ -103,29 +121,29 @@ editNotice(notice : Notice) {
 updateNotice() {
   this.http.patch(`/api/notice/${this.selectedNoticeId()}`,{
     title : this.title(),
-    content : this.content()
+    content : this.content(),
+    published: this.published(),
   })
     .subscribe({
       next: () => {
+        this.toast.success('공지사항이 수정되었습니다.');
         this.loadNotice();
         this.resetForm();
       },
-      error: (err) => {
-        console.error('Error updating notice:', err);
-      }
+      error: (err) => { console.error('Error updating notice:', err); this.toast.error('Error updating notice'); }
     })
   }
 
 deleteNotice(id : number) {
+  if (!confirm('정말 삭제하시겠습니까?')) return;
   this.http.delete(`/api/notice/${id}`)
     .subscribe({
       next: ()=> {
+        this.toast.warning('삭제되었습니다.');
         this.loadNotice();
         this.resetForm();
       },
-      error: (err)=> {
-        console.error('Error deleting notice:', err);
-      }
+      error: (err) => { console.error('Error deleting notice:', err); this.toast.error('Error deleting notice'); }
     })
 }
 }

@@ -8,6 +8,8 @@ export class CreateExhibitionDto {
   startDate: string;
   endDate: string;
   venue?: string;
+  imageUrl?: string;
+  linkUrl?: string;
   status?: ExhibitionStatus;
   published?: boolean;
 }
@@ -20,6 +22,8 @@ export class UpdateExhibitionDto {
   startDate?: string;
   endDate?: string;
   venue?: string;
+  imageUrl?: string;
+  linkUrl?: string;
   status?: ExhibitionStatus;
   published?: boolean;
 }

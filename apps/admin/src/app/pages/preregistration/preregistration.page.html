@@ -7,39 +7,44 @@
       name="search" placeholder="이름, 이메일, 회사, 전화번호로 검색" class="flex-1 p-2 border rounded" />
   </div>
 
-  <table class="w-full bg-white rounded shadow">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="p-3 text-left">번호</th>
-        <th class="p-3 text-left">이름</th>
-        <th class="p-3 text-left">이메일</th>
-        <th class="p-3 text-left">전화번호</th>
-        <th class="p-3 text-left">회사</th>
-        <th class="p-3 text-left">직책</th>
-        <th class="p-3 text-left">등록일</th>
-        <th class="p-3 text-left">관리</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (reg of filteredPreRegistrations(); track reg.id) {
-        <tr class="border-t hover:bg-gray-50">
-          <td class="p-3">{{ reg.id }}</td>
-          <td class="p-3">{{ reg.name }}</td>
-          <td class="p-3">{{ reg.email }}</td>
-          <td class="p-3">{{ reg.phone }}</td>
-          <td class="p-3">{{ reg.company }}</td>
-          <td class="p-3">{{ reg.jobTitle }}</td>
-          <td class="p-3">{{ reg.createdAt | date:'yyyy-MM-dd' }}</td>
-          <td class="p-3">
-            <button (click)="deletePreRegistration(reg.id)"
-              class="text-red-600 hover:underline">삭제</button>
-          </td>
-        </tr>
-      } @empty {
+  <div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
+    <table class="w-full min-w-[800px] table-fixed">
+      <thead class="bg-gray-50">
         <tr>
-          <td colspan="8" class="p-6 text-center text-gray-400">등록된 사전등록이 없습니다.</td>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">이름</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">이메일</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">전화번호</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">회사</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">직책</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">등록일</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">관리</th>
         </tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @for (reg of pagedPreRegistrations(); track reg.id) {
+          <tr class="border-t hover:bg-slate-50 transition-colors cursor-pointer text-slate-700 text-sm" (click)="router.navigate(['/preregistration', reg.id])">
+            <td class="p-3">{{ reg.name }}</td>
+            <td class="p-3 truncate" [title]="reg.email">{{ reg.email }}</td>
+            <td class="p-3 truncate" [title]="reg.phone">{{ reg.phone }}</td>
+            <td class="p-3 truncate" [title]="reg.company">{{ reg.company }}</td>
+            <td class="p-3">{{ reg.jobTitle }}</td>
+            <td class="p-3">{{ reg.createdAt | date:'yy-MM-dd' }}</td>
+            <td class="p-3">
+              <button (click)="$event.stopPropagation(); deletePreRegistration(reg.id)"
+                class="text-red-600 hover:underline">삭제</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="p-6 text-center text-slate-400">등록된 사전등록이 없습니다.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-pagination
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    (pageChange)="onPageChange($event)" />
 </div>

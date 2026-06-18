@@ -32,7 +32,7 @@ export class ProgramService {
     }
     async update(id : number, dto : UpdateProgramDto) {
         await this.findOne(id);
-        const data: any = { ...dto };
+        const data: Record<string, unknown> = { ...dto };
         if (dto.startTime) data.startTime = new Date(dto.startTime);
         if (dto.endTime) data.endTime = new Date(dto.endTime);
         return this.prisma.program.update({

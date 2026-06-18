@@ -1,12 +1,56 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { DatePipe } from '@angular/common';
+
+interface Program {
+  id: number;
+  title: string;
+  description?: string;
+  speaker?: string;
+  startTime: string;
+  endTime: string;
+  location?: string;
+  published: boolean;
+  sortOrder: number;
+}
 
 @Component({
   selector: 'app-program',
-  template: `
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 class="text-3xl font-bold text-slate-900">프로그램</h1>
-      <p class="mt-2 text-slate-500">준비 중입니다.</p>
-    </div>
-  `,
+  imports: [DatePipe],
+  templateUrl: './program.page.html'
 })
-export class ProgramPage {}
+export class ProgramPage {
+  private http = inject(HttpClient);
+  programs = signal<Program[]>([]);
+  selectedDate = signal<string | null>(null);
+
+  // 공개된 프로그램만 필터
+  publishedPrograms = computed(() =>
+    this.programs().filter(p => p.published)
+  );
+
+  // 날짜별 그룹핑
+  groupedByDate = computed(() => {
+    const groups = new Map<string, Program[]>();
+    for (const p of this.publishedPrograms()) {
+      const dateKey = new Date(p.startTime).toLocaleDateString('ko-KR', {
+        year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
+      });
+      const existing = groups.get(dateKey) ?? [];
+      existing.push(p);
+      groups.set(dateKey, existing);
+    }
+    // 시간순 정렬
+    for (const [, list] of groups) {
+      list.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    }
+    return Array.from(groups.entries());
+  });
+
+  constructor() {
+    this.http.get<Program[]>('/api/program').subscribe({
+      next: (res) => this.programs.set(res),
+      error: (err) => console.error('프로그램 조회 실패:', err),
+    });
+  }
+}

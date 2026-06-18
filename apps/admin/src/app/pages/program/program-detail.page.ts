@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Programs } from './program.page';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-program-detail',
@@ -13,6 +14,8 @@ export class ProgramDetailPage {
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+
+  private toast = inject(ToastService);
 
   programId = Number(this.route.snapshot.paramMap.get('id'));
   programForm = signal<Programs>({
@@ -30,54 +33,70 @@ export class ProgramDetailPage {
     sortOrder: 0,
   });
 
+  // 시간 선택용 시그널
+  startDate = signal('');
+  startHour = signal('09');
+  startMinute = signal('00');
+  endDate = signal('');
+  endHour = signal('10');
+  endMinute = signal('00');
+
+  // 24시간 드롭다운 옵션
+  hours24 = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  minutes = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
+
   constructor() {
     this.loadProgram();
+  }
+
+  // 날짜 + 시/분 → ISO 문자열 조합
+  assembleDateTime(date: string, hour: string, minute: string): string {
+    if (!date) return '';
+    return new Date(`${date}T${hour}:${minute}:00`).toISOString();
   }
 
   loadProgram() {
     this.http.get<Programs>(`/api/program/${this.programId}`).subscribe({
       next: (res) => {
-        this.programForm.set({
-          ...res,
-          startTime: res.startTime.slice(0, 16),
-          endTime: res.endTime.slice(0, 16),
-        });
+        this.programForm.set({ ...res });
+
+        // 로컬 시간 기준으로 분해
+        const s = new Date(res.startTime);
+        this.startDate.set(this.toLocalDateStr(s));
+        this.startHour.set(String(s.getHours()).padStart(2, '0'));
+        this.startMinute.set(String(Math.round(s.getMinutes() / 5) * 5).padStart(2, '0'));
+
+        const e = new Date(res.endTime);
+        this.endDate.set(this.toLocalDateStr(e));
+        this.endHour.set(String(e.getHours()).padStart(2, '0'));
+        this.endMinute.set(String(Math.round(e.getMinutes() / 5) * 5).padStart(2, '0'));
       },
-      error: (err) => console.error('프로그램 조회 실패:', err),
+      error: (err) => { console.error('프로그램 조회 실패:', err); this.toast.error('프로그램 조회 실패'); },
     });
   }
 
-  // 날짜 입력 검증 (20xx년만 허용)
-  updateDateTime(field: 'startTime' | 'endTime', value: string) {
-    const year = value.split('-')[0];
-    if (year && (year.length > 4 || !year.startsWith('2'))) return;
-    this.programForm.update(f => ({ ...f, [field]: value }));
-  }
-
-  // 시간 유효성 검증
-  validateTime(): boolean {
-    const form = this.programForm();
-    if (!form.title || !form.startTime || !form.endTime) {
-      alert('제목, 시작시간, 종료시간은 필수입니다.');
-      return false;
-    }
-    if (new Date(form.endTime) <= new Date(form.startTime)) {
-      alert('종료시간은 시작시간보다 이후여야 합니다.');
-      return false;
-    }
-    const startYear = new Date(form.startTime).getFullYear();
-    const endYear = new Date(form.endTime).getFullYear();
-    if (startYear < 2000 || startYear > 2099 || endYear < 2000 || endYear > 2099) {
-      alert('올바른 시간을 입력해주세요.');
-      return false;
-    }
-    return true;
+  // Date → yyyy-MM-dd (로컬 시간 기준)
+  toLocalDateStr(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
   updateProgram() {
-    if (!this.validateTime()) return;
     const data = this.programForm();
-    
+    const startIso = this.assembleDateTime(this.startDate(), this.startHour(), this.startMinute());
+    const endIso = this.assembleDateTime(this.endDate(), this.endHour(), this.endMinute());
+
+    if (!data.title || !startIso || !endIso) {
+      this.toast.error('제목, 시작시간, 종료시간은 필수입니다.');
+      return;
+    }
+    if (new Date(endIso) <= new Date(startIso)) {
+      this.toast.error('종료시간은 시작시간보다 이후여야 합니다.');
+      return;
+    }
+
     const payload = {
       title: data.title,
       titleEn: data.titleEn,
@@ -85,24 +104,24 @@ export class ProgramDetailPage {
       descriptionEn: data.descriptionEn,
       speaker: data.speaker,
       speakerEn: data.speakerEn,
-      startTime: new Date(data.startTime).toISOString(),
-      endTime: new Date(data.endTime).toISOString(),
+      startTime: startIso,
+      endTime: endIso,
       location: data.location,
       published: data.published,
       sortOrder: data.sortOrder,
     };
 
     this.http.patch(`/api/program/${this.programId}`, payload).subscribe({
-      next: () => this.router.navigate(['/program']),
-      error: (err) => console.error('프로그램 수정 실패:', err),
+      next: () => { this.toast.success('수정되었습니다.'); this.router.navigate(['/program']); },
+      error: (err) => { console.error('프로그램 수정 실패:', err); this.toast.error('프로그램 수정 실패'); },
     });
   }
 
   deleteProgram() {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/program/${this.programId}`).subscribe({
-      next: () => this.router.navigate(['/program']),
-      error: (err) => console.error('프로그램 삭제 실패:', err),
+      next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/program']); },
+      error: (err) => { console.error('프로그램 삭제 실패:', err); this.toast.error('프로그램 삭제 실패'); },
     });
   }
 

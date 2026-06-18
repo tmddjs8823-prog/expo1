@@ -1,0 +1,181 @@
+<!-- ① 히어로 배너 슬라이더 -->
+<section class="relative w-full h-[400px] sm:h-[500px] bg-slate-900 overflow-hidden">
+  @if (banners().length > 0) {
+    @for (banner of banners(); track banner.id; let i = $index) {
+      <div class="absolute inset-0 transition-opacity duration-700"
+           [class.opacity-100]="i === currentBannerIndex()"
+           [class.opacity-0]="i !== currentBannerIndex()"
+           [class.pointer-events-auto]="i === currentBannerIndex()"
+           [class.pointer-events-none]="i !== currentBannerIndex()">
+        @if (banner.linkUrl) {
+          <div (click)="onBannerClick(banner.linkUrl)" (keyup.enter)="onBannerClick(banner.linkUrl)"
+               tabindex="0" role="link" class="absolute inset-0 cursor-pointer">
+            <img [src]="banner.imageUrl" [alt]="banner.title"
+                 class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+            <div class="absolute bottom-12 left-0 right-0">
+              <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-2">
+                <h2 class="text-3xl sm:text-4xl font-bold text-white">{{ banner.title }}</h2>
+                @if (banner.subtitle) {
+                  <p class="text-lg text-white/80">{{ banner.subtitle }}</p>
+                }
+              </div>
+            </div>
+          </div>
+        } @else {
+          <img [src]="banner.imageUrl" [alt]="banner.title"
+               class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-12 left-0 right-0">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-2">
+              <h2 class="text-3xl sm:text-4xl font-bold text-white">{{ banner.title }}</h2>
+              @if (banner.subtitle) {
+                <p class="text-lg text-white/80">{{ banner.subtitle }}</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- 좌우 화살표 -->
+    @if (banners().length > 1) {
+      <button (click)="prevBanner()"
+        class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white backdrop-blur-sm transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button (click)="nextBanner()"
+        class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white backdrop-blur-sm transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      <!-- 인디케이터 -->
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        @for (banner of banners(); track banner.id; let i = $index) {
+          <button (click)="goToBanner(i)"
+            class="w-2.5 h-2.5 rounded-full transition-colors"
+            [class.bg-white]="i === currentBannerIndex()"
+            [class.bg-white/40]="i !== currentBannerIndex()">
+          </button>
+        }
+      </div>
+    }
+  } @else {
+    <!-- 배너 없을 때 기본 -->
+    <div class="flex items-center justify-center h-full">
+      <div class="text-center flex flex-col gap-2">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white">광주 밀리언쇼</h2>
+        <p class="text-lg text-white/70">행사 준비 중입니다</p>
+      </div>
+    </div>
+  }
+</section>
+
+<!-- ② 전시회 개요 -->
+<section class="bg-white py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col gap-4 items-center">
+    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">전시회 안내</h2>
+    <p class="text-slate-500 max-w-2xl">
+      광주 밀리언쇼는 다양한 분야의 전시회와 프로그램을 제공합니다.<br />
+      새로운 트렌드를 발견하고 비즈니스 기회를 만나보세요.
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="p-6 bg-slate-50 rounded-xl">
+        <div class="text-3xl font-bold text-primary-600">{{ exhibitions().length }}+</div>
+        <div class="text-sm text-slate-500">진행 전시회</div>
+      </div>
+      <div class="p-6 bg-slate-50 rounded-xl">
+        <div class="text-3xl font-bold text-primary-600">{{ galleries().length }}+</div>
+        <div class="text-sm text-slate-500">갤러리 사진</div>
+      </div>
+      <div class="p-6 bg-slate-50 rounded-xl">
+        <a routerLink="/preregistration" class="block">
+          <div class="text-3xl font-bold text-primary-600">참여하기</div>
+          <div class="text-sm text-slate-500">사전등록 →</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ③ 진행 중인 전시회 -->
+@if (exhibitions().length > 0) {
+  <section class="bg-slate-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-slate-900">진행 중인 전시회</h2>
+        <a routerLink="/exhibition" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+          전체보기 →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (ex of exhibitions(); track ex.id) {
+          <div (click)="ex.linkUrl ? onBannerClick(ex.linkUrl) : router.navigate(['/exhibition', ex.id])"
+               (keyup.enter)="ex.linkUrl ? onBannerClick(ex.linkUrl) : router.navigate(['/exhibition', ex.id])"
+               tabindex="0" role="link"
+             class="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+            @if (ex.imageUrl) {
+              <div class="h-48 overflow-hidden">
+                <img [src]="ex.imageUrl" [alt]="ex.title"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              </div>
+            } @else {
+              <div class="h-48 bg-slate-200 flex items-center justify-center">
+                <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5" />
+                </svg>
+              </div>
+            }
+            <div class="p-4 flex flex-col gap-1">
+              <h3 class="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">{{ ex.title }}</h3>
+              @if (ex.startDate) {
+                <p class="text-xs text-slate-400">{{ ex.startDate | date:'yyyy-MM-dd' }}</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- ⑤ 갤러리 미리보기 -->
+@if (galleries().length > 0) {
+  <section class="bg-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-slate-900">갤러리</h2>
+        <a routerLink="/gallery" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+          전체보기 →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        @for (g of galleries(); track g.id) {
+          <div class="aspect-square overflow-hidden rounded-lg">
+            <img [src]="g.imageUrl" [alt]="g.title"
+                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- CTA -->
+<section class="bg-slate-900 py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col gap-3 items-center">
+    <h2 class="text-2xl sm:text-3xl font-bold text-white">사전등록하고 광주 밀리언쇼를 만나보세요</h2>
+    <p class="text-slate-400">무료 사전등록으로 다양한 전시와 프로그램을 경험해보세요.</p>
+    <a routerLink="/preregistration"
+      class="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+      사전등록 하기
+    </a>
+  </div>
+</section>

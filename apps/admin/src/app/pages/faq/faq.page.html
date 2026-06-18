@@ -73,37 +73,44 @@
   </div>
 
   <!-- ── FAQ 목록 ── -->
-  <table class="w-full bg-white rounded shadow">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="p-3 text-left">카테고리</th>
-        <th class="p-3 text-left">질문</th>
-        <th class="p-3 text-left">답변</th>
-        <th class="p-3 text-left">작성일</th>
-        <th class="p-3 text-left">관리</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (faq of filteredFaqs(); track faq.id) {
-        <tr class="border-t hover:bg-gray-50 cursor-pointer" (click)="router.navigate(['/faq', faq.id])">
-        <td class="p-3">{{ faq.category?.name ?? '-' }}</td>
-        <td class="p-3">{{ faq.question }}</td>  
-        <td class="p-3">{{ faq.answer }}</td>
-        <td class="p-3">{{ faq.createdAt | date:'yyyy-MM-dd' }}</td>
-        <td class="p-3 flex gap-2">
-            <button (click)="editFaq(faq)"
-              class="text-blue-600 hover:underline">수정</button>
-            <button (click)="deleteFaq(faq.id)"
-              class="text-red-600 hover:underline">삭제</button>
-          </td>
-        </tr>
-      } @empty {
+  <div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
+    <table class="w-full min-w-[700px] table-fixed">
+      <thead class="bg-gray-50">
         <tr>
-          <td colspan="5" class="p-6 text-center text-gray-400">등록된 FAQ가 없습니다.</td>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">카테고리</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">질문</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">상태</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">작성일</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">관리</th>
         </tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @for (faq of pagedFaqs(); track faq.id) {
+          <tr class="border-t hover:bg-slate-50 transition-colors cursor-pointer text-slate-700 text-sm" (click)="router.navigate(['/faq', faq.id])">
+            <td class="p-3 truncate" [title]="faq.category?.name ?? '-'">{{ faq.category?.name ?? '-' }}</td>
+            <td class="p-3 truncate" [title]="faq.question">{{ faq.question }}</td>  
+            <td class="p-3">
+              <span [class]="faq.published ? 'text-green-600' : 'text-slate-400'">{{ faq.published ? '공개' : '비공개' }}</span>
+            </td>
+            <td class="p-3">{{ faq.createdAt | date:'yy-MM-dd' }}</td>
+            <td class="p-3">
+              <button (click)="$event.stopPropagation(); deleteFaq(faq.id)"
+                class="text-red-600 hover:underline">삭제</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="p-6 text-center text-slate-400">등록된 FAQ가 없습니다.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-pagination
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    (pageChange)="onPageChange($event)" />
 </div>
 
 

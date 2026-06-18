@@ -11,10 +11,10 @@
           name="companyName" class="w-full p-2 border rounded" />
       </label>
       <label class="flex flex-col gap-1 flex-1">
-        업체명 (EN)
-        <input [ngModel]="exhibitorForm().companyNameEn"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, companyNameEn: $event}))"
-          name="companyNameEn" class="w-full p-2 border rounded" />
+        이메일
+        <input [ngModel]="exhibitorForm().contactEmail"
+          (ngModelChange)="exhibitorForm.update(f => ({...f, contactEmail: $event}))"
+          name="contactEmail" type="email" class="w-full p-2 border rounded" />
       </label>
     </div>
 
@@ -51,33 +51,40 @@
   </div>
 
   <!-- 참가업체 목록 -->
-  <table class="w-full bg-white rounded shadow">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="p-3 text-left">업체명</th>
-        <th class="p-3 text-left">부스번호</th>
-        <th class="p-3 text-left">전시회</th>
-        <th class="p-3 text-left">이메일</th>
-        <th class="p-3 text-left">관리</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (ex of filteredExhibitors(); track ex.id) {
-        <tr class="border-t hover:bg-gray-50 cursor-pointer" (click)="router.navigate(['/exhibitor', ex.id])">
-          <td class="p-3">{{ ex.companyName }}</td>
-          <td class="p-3">{{ ex.boothNumber }}</td>
-          <td class="p-3">{{ ex.exhibition?.title ?? '-' }}</td>
-          <td class="p-3">{{ ex.contactEmail }}</td>
-          <td class="p-3">
-            <button (click)="$event.stopPropagation(); deleteExhibitor(ex.id)"
-              class="text-red-600 hover:underline">삭제</button>
-          </td>
-        </tr>
-      } @empty {
+  <div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
+    <table class="w-full min-w-[700px] table-fixed">
+      <thead class="bg-gray-50">
         <tr>
-          <td colspan="5" class="p-6 text-center text-gray-400">등록된 참가업체가 없습니다.</td>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">업체명</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">부스번호</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">전시회</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">이메일</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">관리</th>
         </tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @for (ex of pagedExhibitors(); track ex.id) {
+          <tr class="border-t hover:bg-slate-50 transition-colors cursor-pointer text-slate-700 text-sm" (click)="router.navigate(['/exhibitor', ex.id])">
+            <td class="p-3 truncate" [title]="ex.companyName">{{ ex.companyName }}</td>
+            <td class="p-3 truncate" [title]="ex.boothNumber">{{ ex.boothNumber }}</td>
+            <td class="p-3 truncate" [title]="ex.exhibition?.title ?? '-'">{{ ex.exhibition?.title ?? '-' }}</td>
+            <td class="p-3 truncate" [title]="ex.contactEmail">{{ ex.contactEmail }}</td>
+            <td class="p-3">
+              <button (click)="$event.stopPropagation(); deleteExhibitor(ex.id)"
+                class="text-red-600 hover:underline">삭제</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="p-6 text-center text-slate-400">등록된 참가업체가 없습니다.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-pagination
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    (pageChange)="onPageChange($event)" />
 </div>

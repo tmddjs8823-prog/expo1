@@ -2,6 +2,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
+import { PaginationComponent } from '../../shared/pagination/pagination.component';
 
 export interface FaqCategory {
   id: number;
@@ -19,11 +20,11 @@ export interface Faq {
 }
 
 @Component({
-  selector: 'app-support',
-  imports: [FormsModule, DatePipe],
-  templateUrl: './support.page.html'
+  selector: 'app-faq',
+  imports: [FormsModule, DatePipe, PaginationComponent],
+  templateUrl: './faq.page.html'
 })
-export class SupportPage {
+export class FaqPage {
   private http = inject(HttpClient);
 
   faqs = signal<Faq[]>([]);
@@ -49,6 +50,15 @@ export class SupportPage {
     return list;
   });
 
+  // 페이지네이션
+  currentPage = signal(1);
+  pageSize = 3;
+  totalPages = computed(() => Math.ceil(this.filteredFaqs().length / this.pageSize));
+  pagedFaqs = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredFaqs().slice(start, start + this.pageSize);
+  });
+
   constructor() {
     this.loadFaqs();
     this.loadCategories();
@@ -70,6 +80,12 @@ export class SupportPage {
 
   selectCategory(id: number | null) {
     this.selectedCategoryId.set(id);
+    this.currentPage.set(1); // 카테고리 변경 시 1페이지로
+  }
+
+  onPageChange(page: number) {
+    this.currentPage.set(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   toggleExpand(id: number) {

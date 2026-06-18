@@ -85,9 +85,24 @@ export const appRoutes: Route[] = [
           import('./pages/inquiry/inquiry.page').then(m => m.InquiryPage),
       },
       {
+        path: 'inquiry/:id',
+        loadComponent: () =>
+          import('./pages/inquiry/inquiry-detail.page').then(m => m.InquiryDetailPage),
+      },
+      {
         path: 'preregistration',
         loadComponent: () =>
           import('./pages/preregistration/preregistration.page').then(m => m.PreregistrationPage),
+      },
+      {
+        path: 'preregistration/:id',
+        loadComponent: () =>
+          import('./pages/preregistration/preregistration-detail.page').then(m => m.PreregistrationDetailPage),
+      },
+      {
+        path: 'banner',
+        loadComponent: () =>
+          import('./pages/banner/banner.page').then(m => m.BannerPage),
       },
       {
         path: 'exhibitor/:id',

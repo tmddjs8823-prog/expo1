@@ -35,18 +35,44 @@
     </label>
 
     <div class="flex gap-4">
-      <label class="flex flex-col gap-1 flex-1">
-        시작일
-        <input type="datetime-local" [ngModel]="exhibitionForm().startDate"
-          (ngModelChange)="exhibitionForm.update(f => ({...f, startDate: $event}))"
-          name="startDate" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
-      </label>
-      <label class="flex flex-col gap-1 flex-1">
-        종료일
-        <input type="datetime-local" [ngModel]="exhibitionForm().endDate"
-          (ngModelChange)="exhibitionForm.update(f => ({...f, endDate: $event}))"
-          name="endDate" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
-      </label>
+      <div class="flex flex-col gap-1 flex-1">
+        <span class="text-sm font-medium">시작일</span>
+        <div class="flex gap-2">
+          <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)"
+            name="startDate" (keydown)="$event.preventDefault()" class="flex-1 p-2 border rounded cursor-pointer" />
+          <select [ngModel]="startHour()" (ngModelChange)="startHour.set($event)"
+            name="startHour" class="w-20 p-2 border rounded">
+            @for (h of hours24; track h) {
+              <option [value]="h">{{ h }}시</option>
+            }
+          </select>
+          <select [ngModel]="startMinute()" (ngModelChange)="startMinute.set($event)"
+            name="startMinute" class="w-20 p-2 border rounded">
+            @for (m of minuteOptions; track m) {
+              <option [value]="m">{{ m }}분</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1 flex-1">
+        <span class="text-sm font-medium">종료일</span>
+        <div class="flex gap-2">
+          <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)"
+            name="endDate" (keydown)="$event.preventDefault()" class="flex-1 p-2 border rounded cursor-pointer" />
+          <select [ngModel]="endHour()" (ngModelChange)="endHour.set($event)"
+            name="endHour" class="w-20 p-2 border rounded">
+            @for (h of hours24; track h) {
+              <option [value]="h">{{ h }}시</option>
+            }
+          </select>
+          <select [ngModel]="endMinute()" (ngModelChange)="endMinute.set($event)"
+            name="endMinute" class="w-20 p-2 border rounded">
+            @for (m of minuteOptions; track m) {
+              <option [value]="m">{{ m }}분</option>
+            }
+          </select>
+        </div>
+      </div>
     </div>
 
     <div class="flex gap-4">
@@ -68,8 +94,33 @@
       </label>
     </div>
 
+    <label class="flex flex-col gap-1">
+      클릭 시 이동 링크
+      <input [ngModel]="exhibitionForm().linkUrl"
+        (ngModelChange)="exhibitionForm.update(f => ({...f, linkUrl: $event}))"
+        name="linkUrl" placeholder="https://example.com (선택)" class="w-full p-2 border rounded" />
+    </label>
+
+    <!-- 이미지 -->
+    <div class="flex flex-col gap-2">
+      <span class="text-sm font-medium text-gray-700">전시회 이미지</span>
+      @if (exhibitionForm().imageUrl) {
+        <img [src]="exhibitionForm().imageUrl" alt="미리보기"
+             class="w-full max-h-48 object-cover rounded border" />
+      }
+      <input #exDetailFileInput type="file" accept="image/*" (change)="onFileSelected($event)"
+             class="hidden" />
+      <button type="button" (click)="exDetailFileInput.click()"
+        class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200 text-sm text-gray-700 w-fit">
+        파일 선택
+      </button>
+    </div>
+
     <div class="flex gap-2">
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">수정</button>
+      <button type="submit" [disabled]="uploading()"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
+        {{ uploading() ? '업로드 중...' : '수정' }}
+      </button>
       <button type="button" (click)="deleteExhibition()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">삭제</button>
       <button type="button" (click)="goBack()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">취소</button>
     </div>

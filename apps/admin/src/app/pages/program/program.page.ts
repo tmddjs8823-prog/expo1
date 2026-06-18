@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { Component, inject, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { ToastService } from '../../shared/toast/toast.service';
 
 export interface Programs {
   id: number
@@ -23,12 +25,14 @@ export interface Programs {
 
 @Component({
   selector: 'app-program',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, PaginationComponent],
   templateUrl: './program.page.html'
 })
 export class ProgramPage {
   private http = inject(HttpClient);
   router = inject(Router);
+
+  private toast = inject(ToastService);
 
   //시그널 초기상태 정리
   programs = signal<Programs[]>([]);
@@ -43,6 +47,19 @@ export class ProgramPage {
     );
   });
   selectedProgramId = signal<number | null>(null);
+
+  // 페이지네이션
+  currentPage = signal(1);
+  pageSize = 3;
+  totalPages = computed(() => Math.ceil(this.filteredPrograms().length / this.pageSize));
+  pagedPrograms = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredPrograms().slice(start, start + this.pageSize);
+  });
+
+  onPageChange(page: number) {
+    this.currentPage.set(page);
+  }
 
   // 선택된 공지사항의 전체 데이터
   selectedPrograms = signal<Programs | null>(null);
@@ -62,16 +79,27 @@ export class ProgramPage {
     sortOrder: 0,
   });
 
+  // 시간 선택용 시그널
+  startDate = signal('');
+  startHour = signal('09');
+  startMinute = signal('00');
+  endDate = signal('');
+  endHour = signal('10');
+  endMinute = signal('00');
+
+  // 24시간 드롭다운 옵션
+  hours24 = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  minutes = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
+
   // constructor
   constructor() {
     this.loadprograms();
   }
 
-  // 날짜 입력 검증 (20xx년만 허용)
-  updateDateTime(field: 'startTime' | 'endTime', value: string) {
-    const year = value.split('-')[0];
-    if (year && (year.length > 4 || !year.startsWith('2'))) return;
-    this.programForm.update(f => ({ ...f, [field]: value }));
+  // 날짜 + 시/분 → ISO 문자열 조합
+  assembleDateTime(date: string, hour: string, minute: string): string {
+    if (!date) return '';
+    return new Date(`${date}T${hour}:${minute}:00`).toISOString();
   }
 
   //폼 초기화
@@ -91,6 +119,12 @@ export class ProgramPage {
           published: false,
           sortOrder: 0,
         });
+    this.startDate.set('');
+    this.startHour.set('09');
+    this.startMinute.set('00');
+    this.endDate.set('');
+    this.endHour.set('10');
+    this.endMinute.set('00');
   }
   
 
@@ -98,7 +132,7 @@ export class ProgramPage {
   loadprograms() {
     this.http.get<Programs[]>('/api/program').subscribe({
       next: (res) => this.programs.set(res),
-      error: (err) => console.error('프로그램 목록 조회 실패:', err),
+      error: (err) => { console.error('프로그램 목록 조회 실패:', err); this.toast.error('프로그램 목록 조회 실패'); },
     }); 
   }
 
@@ -107,28 +141,40 @@ export class ProgramPage {
     const program = this.programs().find(p => p.id === id);
     if (!program) return;
     this.selectedProgramId.set(id);
-    this.programForm.set({
-      ...program,
-      startTime: program.startTime.slice(0, 16),
-      endTime: program.endTime.slice(0, 16),
-    });
+    this.programForm.set({ ...program });
+
+    // 시간 시그널에 분해 (로컬 시간 기준)
+    const s = new Date(program.startTime);
+    this.startDate.set(this.toLocalDateStr(s));
+    this.startHour.set(String(s.getHours()).padStart(2, '0'));
+    this.startMinute.set(String(Math.round(s.getMinutes() / 5) * 5).padStart(2, '0'));
+
+    const e = new Date(program.endTime);
+    this.endDate.set(this.toLocalDateStr(e));
+    this.endHour.set(String(e.getHours()).padStart(2, '0'));
+    this.endMinute.set(String(Math.round(e.getMinutes() / 5) * 5).padStart(2, '0'));
   }
-  
+
+  // Date → yyyy-MM-dd (로컬 시간 기준)
+  toLocalDateStr(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   //생성
   createProgram() {
     const data = this.programForm();
-    if (!data.title || !data.startTime || !data.endTime) {
-      alert('올바른 시간을 입력해주세요.');
+    const startIso = this.assembleDateTime(this.startDate(), this.startHour(), this.startMinute());
+    const endIso = this.assembleDateTime(this.endDate(), this.endHour(), this.endMinute());
+
+    if (!data.title || !startIso || !endIso) {
+      this.toast.error('제목, 시작일, 종료일을 입력해주세요.');
       return;
     }
-    const startYear = new Date(data.startTime).getFullYear();
-    const endYear = new Date(data.endTime).getFullYear();
-    if (startYear < 2000 || startYear > 2099 || endYear < 2000 || endYear > 2099) {
-      alert('올바른 시간을 입력해주세요.');
-      return;
-    }
-    if (new Date(data.endTime) <= new Date(data.startTime)) {
-      alert('종료시간은 시작시간보다 이후여야 합니다.');
+    if (new Date(endIso) <= new Date(startIso)) {
+      this.toast.error('종료시간은 시작시간보다 이후여야 합니다.');
       return;
     }
     
@@ -139,8 +185,8 @@ export class ProgramPage {
       descriptionEn: data.descriptionEn,
       speaker: data.speaker,
       speakerEn: data.speakerEn,
-      startTime: new Date(data.startTime).toISOString(),
-      endTime: new Date(data.endTime).toISOString(),
+      startTime: startIso,
+      endTime: endIso,
       location: data.location,
       published: data.published,
       sortOrder: data.sortOrder,
@@ -150,7 +196,7 @@ export class ProgramPage {
       next: () => { 
         this.loadprograms(); 
         this.resetForm(); },
-      error: (err) => console.error('프로그램 생성 실패:', err),
+      error: (err) => { console.error('프로그램 생성 실패:', err); this.toast.error('프로그램 생성 실패'); },
     });
   }
 
@@ -160,6 +206,9 @@ export class ProgramPage {
     if (!id) return;
     
     const data = this.programForm();
+    const startIso = this.assembleDateTime(this.startDate(), this.startHour(), this.startMinute());
+    const endIso = this.assembleDateTime(this.endDate(), this.endHour(), this.endMinute());
+
     const payload = {
       title: data.title,
       titleEn: data.titleEn,
@@ -167,8 +216,8 @@ export class ProgramPage {
       descriptionEn: data.descriptionEn,
       speaker: data.speaker,
       speakerEn: data.speakerEn,
-      startTime: new Date(data.startTime).toISOString(),
-      endTime: new Date(data.endTime).toISOString(),
+      startTime: startIso,
+      endTime: endIso,
       location: data.location,
       published: data.published,
       sortOrder: data.sortOrder,
@@ -176,21 +225,24 @@ export class ProgramPage {
 
     this.http.patch(`/api/program/${id}`, payload).subscribe({
       next: () => {
+        this.toast.success('프로그램이(가) 수정되었습니다.');
         this.loadprograms();
         this.resetForm();
       },
-      error: (err) => console.error('프로그램 수정 실패:', err),
+      error: (err) => { console.error('프로그램 수정 실패:', err); this.toast.error('프로그램 수정 실패'); },
     });
   }
 
   // 삭제
   deletePrograms(id: number) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/program/${id}`).subscribe({
       next: () => {
+        this.toast.warning('삭제되었습니다.');
         this.loadprograms();
         this.resetForm();
       },
-      error: (err) => console.error('프로그램 삭제 실패:', err),
+      error: (err) => { console.error('프로그램 삭제 실패:', err); this.toast.error('프로그램 삭제 실패'); },
     });
   }
 

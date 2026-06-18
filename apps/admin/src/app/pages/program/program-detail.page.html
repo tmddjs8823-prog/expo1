@@ -48,18 +48,44 @@
     </label>
 
     <div class="flex gap-4">
-      <label class="flex flex-col gap-1 flex-1">
-        시작 시간
-        <input type="datetime-local" [ngModel]="programForm().startTime"
-          (ngModelChange)="updateDateTime('startTime', $event)"
-          name="startTime" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
-      </label>
-      <label class="flex flex-col gap-1 flex-1">
-        종료 시간
-        <input type="datetime-local" [ngModel]="programForm().endTime"
-          (ngModelChange)="updateDateTime('endTime', $event)"
-          name="endTime" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
-      </label>
+      <div class="flex flex-col gap-1 flex-1">
+        <span class="text-sm font-medium">시작 시간</span>
+        <div class="flex gap-2">
+          <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)"
+            name="startDate" (keydown)="$event.preventDefault()" class="flex-1 p-2 border rounded cursor-pointer" />
+          <select [ngModel]="startHour()" (ngModelChange)="startHour.set($event)"
+            name="startHour" class="w-20 p-2 border rounded">
+            @for (h of hours24; track h) {
+              <option [value]="h">{{ h }}시</option>
+            }
+          </select>
+          <select [ngModel]="startMinute()" (ngModelChange)="startMinute.set($event)"
+            name="startMinute" class="w-20 p-2 border rounded">
+            @for (m of minutes; track m) {
+              <option [value]="m">{{ m }}분</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1 flex-1">
+        <span class="text-sm font-medium">종료 시간</span>
+        <div class="flex gap-2">
+          <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)"
+            name="endDate" (keydown)="$event.preventDefault()" class="flex-1 p-2 border rounded cursor-pointer" />
+          <select [ngModel]="endHour()" (ngModelChange)="endHour.set($event)"
+            name="endHour" class="w-20 p-2 border rounded">
+            @for (h of hours24; track h) {
+              <option [value]="h">{{ h }}시</option>
+            }
+          </select>
+          <select [ngModel]="endMinute()" (ngModelChange)="endMinute.set($event)"
+            name="endMinute" class="w-20 p-2 border rounded">
+            @for (m of minutes; track m) {
+              <option [value]="m">{{ m }}분</option>
+            }
+          </select>
+        </div>
+      </div>
     </div>
 
     <label class="flex flex-col gap-1">
@@ -67,6 +93,13 @@
       <input [ngModel]="programForm().location"
         (ngModelChange)="programForm.update(f => ({...f, location: $event}))"
         name="location" class="w-full p-2 border rounded" />
+    </label>
+
+    <label class="flex items-center gap-2 text-sm select-none cursor-pointer">
+      <input type="checkbox" [ngModel]="programForm().published"
+        (ngModelChange)="programForm.update(f => ({...f, published: $event}))"
+        name="published" class="w-4 h-4" />
+      공개
     </label>
 
     <div class="flex gap-2">

@@ -11,6 +11,8 @@ model Exhibition {
   startDate   DateTime
   endDate     DateTime
   venue       String?
+  imageUrl    String?
+  linkUrl     String?
   status      ExhibitionStatus @default(DRAFT)
   published   Boolean          @default(false)
   exhibitors  Exhibitor[]

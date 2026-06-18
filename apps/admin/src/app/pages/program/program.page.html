@@ -18,23 +18,56 @@
       name="description" placeholder="설명" rows="3" class="w-full p-2 border rounded"></textarea>
 
     <div class="flex gap-4">
-      <label class="flex flex-col gap-1 flex-1">
-        시작 시간
-        <input type="datetime-local" [ngModel]="programForm().startTime"
-          (ngModelChange)="updateDateTime('startTime', $event)"
-          name="startTime" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
-      </label>
-      <label class="flex flex-col gap-1 flex-1">
-        종료 시간
-        <input type="datetime-local" [ngModel]="programForm().endTime"
-          (ngModelChange)="updateDateTime('endTime', $event)"
-          name="endTime" min="2000-01-01T00:00" max="2099-12-31T23:59" class="p-2 border rounded" />
-      </label>
+      <div class="flex flex-col gap-1 flex-1">
+        <span class="text-sm font-medium">시작 시간</span>
+        <div class="flex gap-2">
+          <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)"
+            name="startDate" (keydown)="$event.preventDefault()" class="flex-1 p-2 border rounded cursor-pointer" />
+          <select [ngModel]="startHour()" (ngModelChange)="startHour.set($event)"
+            name="startHour" class="w-20 p-2 border rounded">
+            @for (h of hours24; track h) {
+              <option [value]="h">{{ h }}시</option>
+            }
+          </select>
+          <select [ngModel]="startMinute()" (ngModelChange)="startMinute.set($event)"
+            name="startMinute" class="w-20 p-2 border rounded">
+            @for (m of minutes; track m) {
+              <option [value]="m">{{ m }}분</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1 flex-1">
+        <span class="text-sm font-medium">종료 시간</span>
+        <div class="flex gap-2">
+          <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)"
+            name="endDate" (keydown)="$event.preventDefault()" class="flex-1 p-2 border rounded cursor-pointer" />
+          <select [ngModel]="endHour()" (ngModelChange)="endHour.set($event)"
+            name="endHour" class="w-20 p-2 border rounded">
+            @for (h of hours24; track h) {
+              <option [value]="h">{{ h }}시</option>
+            }
+          </select>
+          <select [ngModel]="endMinute()" (ngModelChange)="endMinute.set($event)"
+            name="endMinute" class="w-20 p-2 border rounded">
+            @for (m of minutes; track m) {
+              <option [value]="m">{{ m }}분</option>
+            }
+          </select>
+        </div>
+      </div>
     </div>
 
     <input [ngModel]="programForm().location"
       (ngModelChange)="programForm.update(f => ({...f, location: $event}))"
       name="location" placeholder="장소" class="w-full p-2 border rounded" />
+
+    <label class="flex items-center gap-2 text-sm">
+      <input type="checkbox" [ngModel]="programForm().published"
+        (ngModelChange)="programForm.update(f => ({...f, published: $event}))"
+        name="published" class="w-4 h-4" />
+      공개
+    </label>
 
     <div class="flex gap-2">
       <button type="submit"
@@ -57,37 +90,42 @@
   </div>
 
   <!-- ── 프로그램 목록 ── -->
-  <table class="w-full bg-white rounded shadow">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="p-3 text-left">제목</th>
-        <th class="p-3 text-left">발표자</th>
-        <th class="p-3 text-left">시작시간</th>
-        <th class="p-3 text-left">종료시간</th>
-        <th class="p-3 text-left">장소</th>
-        <th class="p-3 text-left">관리</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (prog of filteredPrograms(); track prog.id) {
-        <tr class="border-t hover:bg-gray-50 cursor-pointer" (click)="router.navigate(['/program', prog.id])">
-          <td class="p-3">{{ prog.title }}</td>
-          <td class="p-3">{{ prog.speaker }}</td>
-          <td class="p-3">{{ prog.startTime | date:'yyyy-MM-dd HH:mm' }}</td>
-          <td class="p-3">{{ prog.endTime | date:'yyyy-MM-dd HH:mm' }}</td>
-          <td class="p-3">{{ prog.location }}</td>
-          <td class="p-3 flex gap-2">
-            <button (click)="selectPrograms(prog.id)"
-              class="text-blue-600 hover:underline">수정</button>
-            <button (click)="deletePrograms(prog.id)"
-              class="text-red-600 hover:underline">삭제</button>
-          </td>
-        </tr>
-      } @empty {
+  <div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
+    <table class="w-full min-w-[800px] table-fixed">
+      <thead class="bg-gray-50">
         <tr>
-          <td colspan="6" class="p-6 text-center text-gray-400">등록된 프로그램이 없습니다.</td>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">제목</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">발표자</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">시작시간</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">종료시간</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">장소</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">관리</th>
         </tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @for (prog of pagedPrograms(); track prog.id) {
+          <tr class="border-t hover:bg-slate-50 transition-colors cursor-pointer text-slate-700 text-sm" (click)="router.navigate(['/program', prog.id])">
+            <td class="p-3 truncate" [title]="prog.title">{{ prog.title }}</td>
+            <td class="p-3 truncate" [title]="prog.speaker ?? ''">{{ prog.speaker }}</td>
+            <td class="p-3">{{ prog.startTime | date:'yy-MM-dd HH:mm' }}</td>
+            <td class="p-3">{{ prog.endTime | date:'yy-MM-dd HH:mm' }}</td>
+            <td class="p-3 truncate" [title]="prog.location">{{ prog.location }}</td>
+            <td class="p-3">
+              <button (click)="$event.stopPropagation(); deletePrograms(prog.id)"
+                class="text-red-600 hover:underline">삭제</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="p-6 text-center text-slate-400">등록된 프로그램이 없습니다.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-pagination
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    (pageChange)="onPageChange($event)" />
 </div>

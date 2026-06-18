@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Exhibitor } from './exhibitor.page';
 import { Exhibition } from '../exhibition/exhibition.page';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component ({    
     selector: 'app-exhibitor-detail',
@@ -15,6 +16,7 @@ export class ExhibitorDetailPage {
     private http = inject(HttpClient);
     private route = inject(ActivatedRoute);
     private router = inject(Router);
+    private toast = inject(ToastService);
 
      exhibitorId = Number(this.route.snapshot.paramMap.get('id'));  // ← exhibitorid 추출
 
@@ -82,8 +84,8 @@ updateExhibitor() {
     };
 
     this.http.patch(`/api/exhibitor/${this.exhibitorId}`, payload).subscribe({
-      next: () => this.router.navigate(['/exhibitor']),
-      error: (err) => console.error('참가업체 수정 실패:', err),
+      next: () => { this.toast.success('참가업체가 수정되었습니다.'); this.router.navigate(['/exhibitor']); },
+      error: (err) => { console.error('참가업체 수정 실패:', err); this.toast.error('참가업체 수정에 실패했습니다.'); },
     });
   }
 
@@ -93,8 +95,8 @@ updateExhibitor() {
 deleteExhibitor() {
     if (confirm('정말 삭제하시겠습니까?')) {
       this.http.delete(`/api/exhibitor/${this.exhibitorId}`).subscribe({
-        next: () => this.router.navigate(['/exhibitor']),
-        error: (err) => console.error('참가업체 삭제 실패:', err),
+        next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/exhibitor']); },
+        error: (err) => { console.error('참가업체 삭제 실패:', err); this.toast.error('참가업체 삭제에 실패했습니다.'); },
       });
     }
   }

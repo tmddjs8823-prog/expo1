@@ -12,13 +12,22 @@ export class ExhibitorService {
     
     //전시회 부스 생성
     async create(dto: CreateExhibitorDto){
-        return this.prisma.exhibitor.create({data: dto});
+        console.log('참가업체 생성 요청 DTO:', JSON.stringify(dto));
+        return this.prisma.exhibitor.create({
+            data: {
+                ...dto,
+                exhibitionId: Number(dto.exhibitionId),
+            },
+        });
     }
 
 
     //전체 목록 조회
     async findAll() {
-        return this.prisma.exhibitor.findMany();
+        return this.prisma.exhibitor.findMany({
+            include: { exhibition: true },
+            orderBy: { createdAt: 'desc' },
+        });
     }
 
     //단건 조회

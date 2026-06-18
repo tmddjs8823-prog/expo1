@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { Gallery } from './gallery.page';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-gallery-detail',
@@ -14,6 +15,8 @@ export class GalleryDetailPage {
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+
+  private toast = inject(ToastService);
   private supabase = inject(SupabaseService);
 
   galleryId = Number(this.route.snapshot.paramMap.get('id'));
@@ -22,6 +25,7 @@ export class GalleryDetailPage {
   imageUrl = signal('');
   selectedFile = signal<File | null>(null);
   uploading = signal(false);
+  published = signal(false);
 
   constructor() {
     this.loadGallery();
@@ -33,8 +37,9 @@ export class GalleryDetailPage {
         this.title.set(res.title);
         this.description.set(res.description ?? '');
         this.imageUrl.set(res.imageUrl);
+        this.published.set(res.published);
       },
-      error: (err) => console.error('갤러리 조회 실패:', err),
+      error: (err) => { console.error('갤러리 조회 실패:', err); this.toast.error('갤러리 조회 실패'); },
     });
   }
 
@@ -68,17 +73,18 @@ export class GalleryDetailPage {
       title: this.title(),
       description: this.description(),
       imageUrl: url || this.imageUrl(),
+      published: this.published(),
     }).subscribe({
-      next: () => this.router.navigate(['/gallery']),
-      error: (err) => console.error('갤러리 수정 실패:', err),
+      next: () => { this.toast.success('수정되었습니다.'); this.router.navigate(['/gallery']); },
+      error: (err) => { console.error('갤러리 수정 실패:', err); this.toast.error('갤러리 수정 실패'); },
     });
   }
 
   deleteGallery() {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/gallery/${this.galleryId}`).subscribe({
-      next: () => this.router.navigate(['/gallery']),
-      error: (err) => console.error('갤러리 삭제 실패:', err),
+      next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/gallery']); },
+      error: (err) => { console.error('갤러리 삭제 실패:', err); this.toast.error('갤러리 삭제 실패'); },
     });
   }
 

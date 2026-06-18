@@ -43,11 +43,25 @@ export const appRoutes: Route[] = [
       import('./pages/inquiry/inquiry.page').then(m => m.InquiryPage),
   },
 
-  // ── 고객지원 (FAQ / 공지사항) ──
+  // ── 공지사항 (목록) ──
   {
-    path: 'support',
+    path: 'notice',
     loadComponent: () =>
-      import('./pages/support/support.page').then(m => m.SupportPage),
+      import('./pages/notice/notice.page').then(m => m.NoticePage),
+  },
+
+  // ── 공지사항 상세 ──
+  {
+    path: 'notice/:id',
+    loadComponent: () =>
+      import('./pages/notice-detail/notice-detail.page').then(m => m.NoticeDetailPage),
+  },
+
+  // ── FAQ ──
+  {
+    path: 'faq',
+    loadComponent: () =>
+      import('./pages/faq/faq.page').then(m => m.FaqPage),
   },
 
   // ── 로그인 ──

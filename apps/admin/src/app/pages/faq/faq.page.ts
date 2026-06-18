@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { ToastService } from '../../shared/toast/toast.service';
 
 export interface FaqCategory {
   id :number;
@@ -31,12 +33,14 @@ export interface Faq {
 
 @Component({
   selector: 'app-faq',
-  imports : [FormsModule, DatePipe],
+  imports : [FormsModule, DatePipe, PaginationComponent],
   templateUrl: './faq.page.html',
 })
 export class FaqPage {
   private http = inject(HttpClient);
   router = inject(Router);
+
+  private toast = inject(ToastService);
   
 
 
@@ -68,6 +72,19 @@ selectedFaqId = signal<number | null>(null);
 showNewCategory = signal(false);
 newCategoryName = signal('');
 
+// 페이지네이션
+currentPage = signal(1);
+pageSize = 3;
+totalPages = computed(() => Math.ceil(this.filteredFaqs().length / this.pageSize));
+pagedFaqs = computed(() => {
+  const start = (this.currentPage() - 1) * this.pageSize;
+  return this.filteredFaqs().slice(start, start + this.pageSize);
+});
+
+onPageChange(page: number) {
+  this.currentPage.set(page);
+}
+
 // 리셋
 resetForm() {
     this.question.set('');
@@ -82,14 +99,14 @@ resetForm() {
 loadCategories() {
   this.http.get<FaqCategory[]>('/api/faq/category').subscribe({
     next: (res) => this.categories.set(res),
-    error: (err) => console.error('카테고리 조회 실패:', err),
+    error: (err) => { console.error('카테고리 조회 실패:', err); this.toast.error('카테고리 조회 실패'); },
   });
 }
 
 // 카테고리 생성
 createCategory() {
   const name = this.newCategoryName().trim();
-  if (!name) { alert('카테고리 이름을 입력해주세요.'); return; }
+  if (!name) { this.toast.error('카테고리 이름을 입력해주세요.'); return; }
   this.http.post<FaqCategory>('/api/faq/category', { name }).subscribe({
     next: (created) => {
       this.loadCategories();
@@ -97,7 +114,7 @@ createCategory() {
       this.newCategoryName.set('');
       this.showNewCategory.set(false);
     },
-    error: (err) => console.error('카테고리 생성 실패:', err),
+    error: (err) => { console.error('카테고리 생성 실패:', err); this.toast.error('카테고리 생성 실패'); },
   });
 }
 
@@ -106,13 +123,14 @@ deleteCategory(id: number) {
   if (!confirm('이 카테고리와 소속 FAQ가 모두 삭제됩니다. 계속하시겠습니까?')) return;
   this.http.delete(`/api/faq/category/${id}`).subscribe({
     next: () => {
+      this.toast.warning('삭제되었습니다.');
       this.loadCategories();
       this.loadFaqs();
       if (this.selectedCategoryId() === id) this.selectedCategoryId.set(null);
     },
     error: (err) => {
       console.error('카테고리 삭제 실패:', err);
-      alert('카테고리 삭제에 실패했습니다. 로그인 상태를 확인해주세요.');
+      this.toast.error('카테고리 삭제에 실패했습니다. 로그인 상태를 확인해주세요.');
     },
   });
 }
@@ -125,9 +143,7 @@ loadFaqs() {
     next: (response) => {
       this.faqs.set(response);
     },
-    error: (err) => {
-      console.error('FAQ 생성 실패:', err);
-    }
+    error: (err) => { console.error('FAQ 생성 실패:', err); this.toast.error('FAQ 생성 실패'); }
   });
 }
 
@@ -140,12 +156,11 @@ createFaq() {
     published: this.published(),
   }).subscribe({
     next: () => {
+      this.toast.success('FAQ이(가) 생성되었습니다.');
       this.loadFaqs();
       this.resetForm();
     },
-    error: (err) => {
-      console.error('FAQ 생성 실패:', err);
-    }
+    error: (err) => { console.error('FAQ 생성 실패:', err); this.toast.error('FAQ 생성 실패'); }
   })
   }
 
@@ -171,27 +186,26 @@ updateFaq() {
     published: this.published(),
   }).subscribe({
     next: () => {
+      this.toast.success('FAQ이(가) 수정되었습니다.');
       this.loadFaqs();
       this.resetForm();
     },
-    error: (err) => {
-      console.error('FAQ 수정 실패:', err);
-    }
+    error: (err) => { console.error('FAQ 수정 실패:', err); this.toast.error('FAQ 수정 실패'); }
   })
   }
 
   
   //삭제
   deleteFaq(id:number) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/faq/${id}`)
     .subscribe({
       next: () => {
+        this.toast.warning('삭제되었습니다.');
         this.loadFaqs();
         this.resetForm();
       },
-      error: (err) => {
-        console.error('FAQ 삭제 실패:', err);
-      }
+      error: (err) => { console.error('FAQ 삭제 실패:', err); this.toast.error('FAQ 삭제 실패'); }
     });
   }
   

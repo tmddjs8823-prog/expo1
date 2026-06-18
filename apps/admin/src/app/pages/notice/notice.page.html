@@ -24,6 +24,12 @@
         </button>
       }
     </div>
+
+<label class="flex items-center gap-2 text-sm select-none cursor-pointer">
+      <input type="checkbox" [ngModel]="published()" (ngModelChange)="published.set($event)"
+        name="published" class="w-4 h-4" />
+      공개
+    </label>    
   </form>
 
   <!-- 검색 -->
@@ -33,35 +39,44 @@
   </div>
 
   <!-- ── 공지사항 목록 ── -->
-  <table class="w-full bg-white rounded shadow">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="p-3 text-left">번호</th>
-        <th class="p-3 text-left">제목</th>
-        <th class="p-3 text-left">공개여부</th>
-        <th class="p-3 text-left">작성일</th>
-        <th class="p-3 text-left">관리</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (notice of filteredNotices(); track notice.id) {
-        <tr class="border-t hover:bg-gray-50 cursor-pointer" (click)="router.navigate(['/notice', notice.id])">
-          <td class="p-3">{{ notice.id }}</td>
-          <td class="p-3">{{ notice.title }}</td>
-          <td class="p-3">{{ notice.published ? '공개' : '비공개' }}</td>
-          <td class="p-3">{{ notice.createdAt | date:'yyyy-MM-dd' }}</td>
-          <td class="p-3 flex gap-2">
-            <button (click)="editNotice(notice)"
-              class="text-blue-600 hover:underline">수정</button>
-            <button (click)="deleteNotice(notice.id)"
-              class="text-red-600 hover:underline">삭제</button>
-          </td>
-        </tr>
-      } @empty {
+  <div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
+    <table class="w-full min-w-[700px] table-fixed">
+      <thead class="bg-gray-50">
         <tr>
-          <td colspan="5" class="p-6 text-center text-gray-400">등록된 공지사항이 없습니다.</td>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">번호</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">제목</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">공개여부</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">작성일</th>
+          <th class="p-3 text-left text-slate-600 font-semibold text-sm">관리</th>
         </tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @for (notice of pagedNotices(); track notice.id) {
+          <tr class="border-t hover:bg-slate-50 transition-colors cursor-pointer text-slate-700 text-sm" (click)="router.navigate(['/notice', notice.id])">
+            <td class="p-3">{{ notice.id }}</td>
+            <td class="p-3 truncate" [title]="notice.title">{{ notice.title }}</td>
+            <td class="p-3">
+              <span [class]="notice.published ? 'text-green-600' : 'text-slate-400'">{{ notice.published ? '공개' : '비공개' }}</span>
+            </td>
+            <td class="p-3">{{ notice.createdAt | date:'yy-MM-dd' }}</td>
+            <td class="p-3">
+              <button (click)="$event.stopPropagation(); deleteNotice(notice.id)"
+                class="text-red-600 hover:underline">삭제</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="p-6 text-center text-slate-400">등록된 공지사항이 없습니다.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-pagination
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    (pageChange)="onPageChange($event)" />
 </div>
+
+

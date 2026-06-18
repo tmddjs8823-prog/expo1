@@ -17,12 +17,22 @@
         name="description" rows="4" class="w-full p-2 border rounded"></textarea>
     </label>
 
-    <label class="flex flex-col gap-1">
-      이미지
+    <div class="flex flex-col gap-1">
+      <span class="text-sm font-medium text-gray-700">이미지</span>
       @if (imageUrl()) {
         <img [src]="imageUrl()" alt="미리보기" class="w-48 h-48 object-cover rounded border" />
       }
-      <input type="file" accept="image/*" (change)="onFileSelected($event)" class="p-2 border rounded" />
+      <input #galleryDetailFileInput type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden" />
+      <button type="button" (click)="galleryDetailFileInput.click()"
+        class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200 text-sm text-gray-700 w-fit">
+        파일 선택
+      </button>
+    </div>
+
+    <label class="flex items-center gap-2 text-sm select-none cursor-pointer">
+      <input type="checkbox" [ngModel]="published()" (ngModelChange)="published.set($event)"
+        name="published" class="w-4 h-4" />
+      공개
     </label>
 
     <div class="flex gap-2">

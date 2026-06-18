@@ -20,15 +20,21 @@ export class ExhibitionService {
         return exhibition;
     }
 
-    // 전시 생성
+    // 생성
     async create(dto: CreateExhibitionDto) {
-        return this.prisma.exhibition.create({
-            data: {
-                ...dto,
-                startDate: new Date(dto.startDate),
-                endDate: new Date(dto.endDate),
-            }
-        });
+        console.log('[Exhibition] create dto:', JSON.stringify(dto));
+        try {
+            return await this.prisma.exhibition.create({
+                data: {
+                    ...dto,
+                    startDate: new Date(dto.startDate),
+                    endDate: new Date(dto.endDate),
+                }
+            });
+        } catch (err) {
+            console.error('[Exhibition] create error:', err);
+            throw err;
+        }
     }
 
     // 전시 수정

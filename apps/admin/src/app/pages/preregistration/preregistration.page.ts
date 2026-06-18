@@ -2,6 +2,9 @@ import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { ToastService } from '../../shared/toast/toast.service';
 
 
 export interface PreRegistration {
@@ -19,11 +22,14 @@ export interface PreRegistration {
 
 @Component({
   selector: 'app-preregistration',
-  imports: [FormsModule,DatePipe],
+  imports: [FormsModule, DatePipe, PaginationComponent],
   templateUrl: './preregistration.page.html'
 })
 export class PreregistrationPage {
   private http = inject(HttpClient);
+  router = inject(Router);
+
+  private toast = inject(ToastService);
 
   //시그널 초기 상태 정의
   preRegistrations = signal<PreRegistration[]>([]);
@@ -38,7 +44,20 @@ export class PreregistrationPage {
       (r.phone ?? '').toLowerCase().includes(keyword)
     );
   });
-  selectedPreRegistrationId = signal<number | null>(null); // 현재 선택된 공지사항 ID
+  selectedPreRegistrationId = signal<number | null>(null);
+
+  // 페이지네이션
+  currentPage = signal(1);
+  pageSize = 3;
+  totalPages = computed(() => Math.ceil(this.filteredPreRegistrations().length / this.pageSize));
+  pagedPreRegistrations = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredPreRegistrations().slice(start, start + this.pageSize);
+  });
+
+  onPageChange(page: number) {
+    this.currentPage.set(page);
+  }
   
   //상태 목록 초기화
   constructor() {
@@ -51,9 +70,7 @@ export class PreregistrationPage {
       next: (response) => {
         this.preRegistrations.set(response);
       },
-      error: (err) => {
-        console.error('사전등록 조회 실패:', err);
-      }
+      error: (err) => { console.error('사전등록 조회 실패:', err); this.toast.error('사전등록 조회 실패'); }
     });
   }
   
@@ -63,13 +80,13 @@ export class PreregistrationPage {
   }
   //선택 삭제
   deletePreRegistration(id: number) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/preregistration/${id}`).subscribe({
       next: () => {
+        this.toast.warning('삭제되었습니다.');
         this.loadPreregistrations();
       },
-      error: (err) => {
-        console.error('사전등록 삭제 실패:', err);
-      }
+      error: (err) => { console.error('사전등록 삭제 실패:', err); this.toast.error('사전등록 삭제 실패'); }
     });
   }
 
