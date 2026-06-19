@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Param, Body, ParseIntPipe, Query } from '@nestjs/common';
 import { GalleryService } from './gallery.service';
 import { Auth } from '../auth/auth.decorator';
 import { CreateGalleryDto, UpdateGalleryDto } from './dto/gallery.dto';
@@ -14,10 +14,10 @@ export class GalleryController {
         return this.galleryService.create(dto);
     }
 
-    // 전체 조회 (공개)
+    // 전체 조회 (all=true 시 비공개 포함)
     @Get()
-    findAll() {
-        return this.galleryService.findAll();
+    findAll(@Query('all') all?: string) {
+        return this.galleryService.findAll(all === 'true');
     }
 
     // 단건 조회

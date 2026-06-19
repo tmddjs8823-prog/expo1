@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Faq, FaqCategory } from './faq.page';
@@ -37,14 +38,14 @@ export class FaqDetailPage {
         this.selectedCategoryId.set(res.categoryId);
         this.published.set(res.published);
       },
-      error: (err) => { console.error('FAQ 조회 실패:', err); this.toast.error('FAQ 조회 실패'); },
+      error: handleApiError(this.toast, 'FAQ 조회 실패'),
     });
   }
 
   loadCategories() {
     this.http.get<FaqCategory[]>('/api/faq/category').subscribe({
       next: (res) => this.categories.set(res),
-      error: (err) => { console.error('카테고리 조회 실패:', err); this.toast.error('카테고리 조회 실패'); },
+      error: handleApiError(this.toast, '카테고리 조회 실패'),
     });
   }
 
@@ -56,7 +57,7 @@ export class FaqDetailPage {
       published: this.published(),
     }).subscribe({
       next: () => { this.toast.success('답변이 등록되었습니다.'); this.router.navigate(['/faq']); },
-      error: (err) => { console.error('FAQ 수정 실패:', err); this.toast.error('FAQ 수정 실패'); },
+      error: handleApiError(this.toast, 'FAQ 수정 실패'),
     });
   }
 
@@ -64,7 +65,7 @@ export class FaqDetailPage {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/faq/${this.faqId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/faq']); },
-      error: (err) => { console.error('FAQ 삭제 실패:', err); this.toast.error('FAQ 삭제 실패'); },
+      error: handleApiError(this.toast, 'FAQ 삭제 실패'),
     });
   }
 

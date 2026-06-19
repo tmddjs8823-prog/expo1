@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Programs } from './program.page';
@@ -71,7 +72,7 @@ export class ProgramDetailPage {
         this.endHour.set(String(e.getHours()).padStart(2, '0'));
         this.endMinute.set(String(Math.round(e.getMinutes() / 5) * 5).padStart(2, '0'));
       },
-      error: (err) => { console.error('프로그램 조회 실패:', err); this.toast.error('프로그램 조회 실패'); },
+      error: handleApiError(this.toast, '프로그램 조회 실패'),
     });
   }
 
@@ -113,7 +114,7 @@ export class ProgramDetailPage {
 
     this.http.patch(`/api/program/${this.programId}`, payload).subscribe({
       next: () => { this.toast.success('수정되었습니다.'); this.router.navigate(['/program']); },
-      error: (err) => { console.error('프로그램 수정 실패:', err); this.toast.error('프로그램 수정 실패'); },
+      error: handleApiError(this.toast, '프로그램 수정 실패'),
     });
   }
 
@@ -121,7 +122,7 @@ export class ProgramDetailPage {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/program/${this.programId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/program']); },
-      error: (err) => { console.error('프로그램 삭제 실패:', err); this.toast.error('프로그램 삭제 실패'); },
+      error: handleApiError(this.toast, '프로그램 삭제 실패'),
     });
   }
 

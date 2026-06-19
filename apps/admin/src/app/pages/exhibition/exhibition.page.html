@@ -3,7 +3,7 @@
 
   <!-- 생성 폼 -->
   <form (submit)="$event.preventDefault()" class="bg-white p-6 rounded shadow flex flex-col gap-4">
-    <div class="flex gap-4">
+    <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
         제목
         <input [ngModel]="exhibitionForm().title"
@@ -25,7 +25,7 @@
         name="description" rows="3" class="w-full p-2 border rounded"></textarea>
     </label>
 
-    <div class="flex gap-4">
+    <div class="flex flex-col md:flex-row gap-4">
       <div class="flex flex-col gap-1 flex-1">
         <span class="text-sm font-medium">시작일</span>
         <div class="flex gap-2">
@@ -66,7 +66,7 @@
       </div>
     </div>
 
-    <div class="flex gap-4">
+    <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
         장소
         <input [ngModel]="exhibitionForm().venue"
@@ -78,8 +78,8 @@
         <select [ngModel]="exhibitionForm().status"
           (ngModelChange)="exhibitionForm.update(f => ({...f, status: $event}))"
           name="status" class="w-full p-2 border rounded">
-          <option value="DRAFT">초안</option>
-          <option value="PUBLISHED">공개</option>
+          <option value="DRAFT">예정</option>
+          <option value="PUBLISHED">진행중</option>
           <option value="CLOSED">종료</option>
         </select>
       </label>
@@ -88,6 +88,13 @@
     <input [ngModel]="exhibitionForm().linkUrl"
       (ngModelChange)="exhibitionForm.update(f => ({...f, linkUrl: $event}))"
       name="linkUrl" placeholder="클릭 시 이동할 링크 (선택)" class="w-full p-2 border rounded" />
+
+    <label class="flex items-center gap-2 text-sm select-none cursor-pointer">
+      <input type="checkbox" [ngModel]="exhibitionForm().published"
+        (ngModelChange)="exhibitionForm.update(f => ({...f, published: $event}))"
+        name="published" class="w-4 h-4" />
+      공개
+    </label>
 
     <!-- 이미지 업로드 -->
     <div class="flex flex-col gap-2">
@@ -109,55 +116,37 @@
     </div>
   </form>
 
-  <!-- 검색 -->
-  <div class="flex items-center gap-2">
-    <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
-      name="search" placeholder="제목, 장소, 상태로 검색" class="flex-1 p-2 border rounded" />
-  </div>
-
-  <!-- 전시회 목록 -->
-  <div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
-    <table class="w-full min-w-[800px] table-fixed">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">제목</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">장소</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">시작일</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">종료일</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">상태</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (ex of pagedExhibitions(); track ex.id) {
-          <tr class="border-t hover:bg-slate-50 transition-colors cursor-pointer text-slate-700 text-sm" (click)="router.navigate(['/exhibition', ex.id])">
-            <td class="p-3 truncate" [title]="ex.title">{{ ex.title }}</td>
-            <td class="p-3 truncate" [title]="ex.venue">{{ ex.venue }}</td>
-            <td class="p-3">{{ ex.startDate | date:'yy-MM-dd' }}</td>
-            <td class="p-3">{{ ex.endDate | date:'yy-MM-dd' }}</td>
-            <td class="p-3">
-              @switch (ex.status) {
-                @case ('DRAFT') { <span class="text-gray-500">초안</span> }
-                @case ('PUBLISHED') { <span class="text-green-600">공개</span> }
-                @case ('CLOSED') { <span class="text-red-500">종료</span> }
-              }
-            </td>
-            <td class="p-3">
-              <button (click)="$event.stopPropagation(); deleteExhibition(ex.id)"
-                class="text-red-600 hover:underline">삭제</button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="p-6 text-center text-slate-400">등록된 전시회가 없습니다.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-
-  <app-pagination
+  <!-- ── 전시회 목록 (공통 그리드) ── -->
+  <app-data-grid
+    [items]="pagedExhibitions()"
+    [searchKeyword]="searchKeyword()"
+    (searchChange)="searchKeyword.set($event)"
+    searchPlaceholder="제목, 장소, 상태(예정/진행중/종료)로 검색"
+    emptyMessage="등록된 전시회가 없습니다."
+    [columns]="['제목','장소','시작일','종료일','상태','관리']"
+    minWidth="800px"
+    [rowClickable]="true"
+    (rowClick)="router.navigate(['/exhibition', $event.id])"
     [currentPage]="currentPage()"
     [totalPages]="totalPages()"
-    (pageChange)="onPageChange($event)" />
+    (pageChange)="onPageChange($event)">
+
+    <ng-template appGridRow let-ex>
+      <td class="p-3 truncate" [title]="ex.title">{{ ex.title }}</td>
+      <td class="p-3 truncate" [title]="ex.venue">{{ ex.venue }}</td>
+      <td class="p-3 whitespace-nowrap">{{ ex.startDate | date:'yy-MM-dd' }}</td>
+      <td class="p-3 whitespace-nowrap">{{ ex.endDate | date:'yy-MM-dd' }}</td>
+      <td class="p-3">
+        @switch (ex.status) {
+          @case ('DRAFT') { <span class="text-blue-600">예정</span> }
+          @case ('PUBLISHED') { <span class="text-green-600">진행중</span> }
+          @case ('CLOSED') { <span class="text-red-500">종료</span> }
+        }
+      </td>
+      <td class="p-3">
+        <button (click)="$event.stopPropagation(); deleteExhibition(ex.id)"
+          class="text-red-600 hover:underline">삭제</button>
+      </td>
+    </ng-template>
+  </app-data-grid>
 </div>

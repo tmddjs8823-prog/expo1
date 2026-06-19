@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { CreateExhibitorDto, UpdateExhibitionDto } from "./dto/exhibitor.dto";
+import { CreateExhibitorDto, UpdateExhibitorDto } from "./dto/exhibitor.dto";
 
 
 
@@ -26,7 +26,7 @@ export class ExhibitorService {
     async findAll() {
         return this.prisma.exhibitor.findMany({
             include: { exhibition: true },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { updatedAt: 'desc' },
         });
     }
 
@@ -43,7 +43,7 @@ export class ExhibitorService {
     }
 
     //단건 수정
-    async update(id: number, dto: UpdateExhibitionDto){
+    async update(id: number, dto: UpdateExhibitorDto){
         await this.findOne(id);
 
         return this.prisma.exhibitor.update({

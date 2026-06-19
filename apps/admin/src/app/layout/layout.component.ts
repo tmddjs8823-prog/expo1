@@ -18,7 +18,7 @@ export class LayoutComponent {
     {label : '참가업체', path: '/exhibitor'},
     {label : '프로그램', path: '/program'},
     {label : '갤러리', path: '/gallery'},
-    {label : '문의', path: 'inquiry'},
+    {label : '문의하기', path: 'inquiry'},
     {label : '사전등록', path:'/preregistration'},
     {label : '배너', path:'/banner'},
   ];

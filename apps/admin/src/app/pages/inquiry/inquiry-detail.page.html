@@ -7,7 +7,7 @@
   @if (inquiry()) {
     <!-- 문의 내용 -->
     <div class="bg-white p-6 rounded shadow flex flex-col gap-4">
-      <div class="flex items-center justify-between">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h2 class="text-lg font-semibold">{{ inquiry()!.subject }}</h2>
         <span class="text-sm px-2.5 py-1 rounded-full"
               [class.bg-yellow-100]="inquiry()!.status === 'PENDING'"
@@ -20,26 +20,7 @@
         </span>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 text-sm border-t pt-4">
-        <div>
-          <span class="text-gray-500">이름</span>
-          <p class="font-medium">{{ inquiry()!.name }}</p>
-        </div>
-        <div>
-          <span class="text-gray-500">이메일</span>
-          <p class="font-medium">{{ inquiry()!.email }}</p>
-        </div>
-        @if (inquiry()!.phone) {
-          <div>
-            <span class="text-gray-500">전화번호</span>
-            <p class="font-medium">{{ inquiry()!.phone }}</p>
-          </div>
-        }
-        <div>
-          <span class="text-gray-500">접수일</span>
-          <p class="font-medium">{{ inquiry()!.createdAt | date:'yyyy-MM-dd HH:mm' }}</p>
-        </div>
-      </div>
+      <app-detail-fields [fields]="detailFields()" />
 
       <div class="border-t pt-4">
         <span class="text-sm text-gray-500">문의 내용</span>

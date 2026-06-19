@@ -1,47 +1,35 @@
 <div class="flex flex-col gap-4 p-6">
   <h1 class="text-2xl font-bold">문의 관리</h1>
 
-  <!-- 검색 -->
-  <div class="flex items-center gap-2">
-    <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
-      name="search" placeholder="이름, 제목, 이메일로 검색" class="flex-1 p-2 border rounded" />
-  </div>
-
-  <!-- 문의 목록 -->
-  <div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
-    <table class="w-full min-w-[700px]">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">이름</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">제목</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">상태</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">접수일</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (inq of pagedInquiries(); track inq.id) {
-          <tr class="border-t hover:bg-slate-50 transition-colors cursor-pointer text-slate-700 text-sm" (click)="router.navigate(['/inquiry', inq.id])">
-            <td class="p-3">{{ inq.name }}</td>
-            <td class="p-3">{{ inq.subject }}</td>
-            <td class="p-3">{{ statusLabel(inq.status) }}</td>
-            <td class="p-3">{{ inq.createdAt | date:'yy-MM-dd' }}</td>
-            <td class="p-3">
-              <button (click)="$event.stopPropagation(); deleteInquiry(inq.id)"
-                class="text-red-600 hover:underline">삭제</button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="5" class="p-6 text-center text-slate-400">등록된 문의가 없습니다.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-
-  <app-pagination
+  <!-- ── 문의 목록 (공통 그리드) ── -->
+  <app-data-grid
+    [items]="pagedInquiries()"
+    [searchKeyword]="searchKeyword()"
+    (searchChange)="searchKeyword.set($event)"
+    searchPlaceholder="이름, 제목, 이메일로 검색"
+    emptyMessage="등록된 문의가 없습니다."
+    [columns]="['이름','제목','상태','접수일','관리']"
+    [rowClickable]="true"
+    (rowClick)="router.navigate(['/inquiry', $event.id])"
     [currentPage]="currentPage()"
     [totalPages]="totalPages()"
-    (pageChange)="onPageChange($event)" />
+    (pageChange)="onPageChange($event)">
+
+    <ng-template appGridRow let-inq>
+      <td class="p-3">{{ inq.name }}</td>
+      <td class="p-3">{{ inq.subject }}</td>
+      <td class="p-3">
+        @switch (inq.status) {
+          @case ('PENDING') { <span class="text-blue-600">대기</span> }
+          @case ('ANSWERED') { <span class="text-green-600">답변완료</span> }
+          @case ('CLOSED') { <span class="text-red-500">종료</span> }
+        }
+      </td>
+      <td class="p-3 whitespace-nowrap">{{ inq.createdAt | date:'yy-MM-dd' }}</td>
+      <td class="p-3">
+        <button (click)="$event.stopPropagation(); deleteInquiry(inq.id)"
+          class="text-red-600 hover:underline">삭제</button>
+      </td>
+    </ng-template>
+  </app-data-grid>
 </div>

@@ -1,0 +1,63 @@
+<!-- 검색 -->
+@if (searchPlaceholder()) {
+  <div class="flex items-center gap-2 mb-2">
+    <input
+      type="text"
+      [ngModel]="searchKeyword()"
+      (ngModelChange)="searchChange.emit($event)"
+      name="search"
+      [placeholder]="searchPlaceholder()"
+      class="flex-1 p-2 border rounded"
+    />
+  </div>
+}
+
+<!-- 테이블 -->
+<div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
+  <table [style.min-width]="minWidth()" [class]="tableFixed() ? 'w-full table-fixed' : 'w-full'">
+    <thead class="bg-gray-50">
+      <tr>
+        @if (headerTpl) {
+          <ng-container
+            *ngTemplateOutlet="headerTpl.templateRef"
+          />
+        } @else {
+          @for (col of columns(); track col) {
+            <th class="p-3 text-left text-slate-600 font-semibold text-sm">{{ col }}</th>
+          }
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of items(); track trackByFn()(item)) {
+        <tr
+          class="border-t hover:bg-slate-50 transition-colors text-slate-700 text-sm"
+          [class.cursor-pointer]="rowClickable()"
+          (click)="rowClickable() && rowClick.emit(item)"
+        >
+          <ng-container
+            *ngTemplateOutlet="rowTpl?.templateRef ?? null; context: { $implicit: item }"
+          />
+        </tr>
+      } @empty {
+        <tr>
+          <td
+            [attr.colspan]="colCount()"
+            class="p-6 text-center text-slate-400"
+          >
+            {{ emptyMessage() }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<!-- 페이지네이션 (선택적) -->
+@if (totalPages() > 0) {
+  <app-pagination
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    (pageChange)="pageChange.emit($event)"
+  />
+}

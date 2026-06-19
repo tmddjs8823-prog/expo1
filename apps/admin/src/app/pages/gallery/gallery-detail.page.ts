@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
@@ -39,7 +40,7 @@ export class GalleryDetailPage {
         this.imageUrl.set(res.imageUrl);
         this.published.set(res.published);
       },
-      error: (err) => { console.error('갤러리 조회 실패:', err); this.toast.error('갤러리 조회 실패'); },
+      error: handleApiError(this.toast, '갤러리 조회 실패'),
     });
   }
 
@@ -76,7 +77,7 @@ export class GalleryDetailPage {
       published: this.published(),
     }).subscribe({
       next: () => { this.toast.success('수정되었습니다.'); this.router.navigate(['/gallery']); },
-      error: (err) => { console.error('갤러리 수정 실패:', err); this.toast.error('갤러리 수정 실패'); },
+      error: handleApiError(this.toast, '갤러리 수정 실패'),
     });
   }
 
@@ -84,7 +85,7 @@ export class GalleryDetailPage {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/gallery/${this.galleryId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/gallery']); },
-      error: (err) => { console.error('갤러리 삭제 실패:', err); this.toast.error('갤러리 삭제 실패'); },
+      error: handleApiError(this.toast, '갤러리 삭제 실패'),
     });
   }
 

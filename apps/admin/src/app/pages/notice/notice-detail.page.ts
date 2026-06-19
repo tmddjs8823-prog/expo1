@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Notice } from './notice.page';
@@ -33,7 +34,7 @@ export class NoticeDetailPage {
         this.content.set(res.content);
         this.published.set(res.published);
       },
-      error: (err) => { console.error('공지사항 조회 실패:', err); this.toast.error('공지사항 조회 실패'); },
+      error: handleApiError(this.toast, '공지사항 조회 실패'),
     });
   }
 
@@ -44,7 +45,7 @@ export class NoticeDetailPage {
       published: this.published(),
     }).subscribe({
       next: () => { this.toast.success('수정되었습니다.'); this.router.navigate(['/notice']); },
-      error: (err) => { console.error('공지사항 수정 실패:', err); this.toast.error('공지사항 수정 실패'); },
+      error: handleApiError(this.toast, '공지사항 수정 실패'),
     });
   }
 
@@ -52,7 +53,7 @@ export class NoticeDetailPage {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/notice/${this.noticeId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/notice']); },
-      error: (err) => { console.error('공지사항 삭제 실패:', err); this.toast.error('공지사항 삭제 실패'); },
+      error: handleApiError(this.toast, '공지사항 삭제 실패'),
     });
   }
 

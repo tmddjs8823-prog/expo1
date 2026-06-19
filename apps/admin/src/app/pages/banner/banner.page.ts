@@ -1,9 +1,12 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { SupabaseService } from '../../services/supabase.service';
 import { ToastService } from '../../shared/toast/toast.service';
+import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
+import { useClientPagination } from '../../shared/utils/pagination.utils';
 
 export interface Banner {
   id: number;
@@ -18,7 +21,7 @@ export interface Banner {
 
 @Component({
   selector: 'app-banner',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
   templateUrl: './banner.page.html',
 })
 export class BannerPage {
@@ -28,14 +31,16 @@ export class BannerPage {
   private supabase = inject(SupabaseService);
 
   banners = signal<Banner[]>([]);
-  searchKeyword = signal('');
-  filteredBanners = computed(() => {
-    const keyword = this.searchKeyword().toLowerCase();
-    if (!keyword) return this.banners();
-    return this.banners().filter(b =>
-      b.title.toLowerCase().includes(keyword)
-    );
+
+  // 검색 + 필터링 (공통 유틸리티 — 페이지네이션 미사용)
+  pg = useClientPagination({
+    items: this.banners,
+    filterFn: (b, kw) => b.title.toLowerCase().includes(kw),
   });
+
+  // 템플릿 바인딩용 alias
+  searchKeyword = this.pg.searchKeyword;
+  filteredBanners = this.pg.filtered;
 
   // 폼
   title = signal('');
@@ -43,7 +48,7 @@ export class BannerPage {
   imageUrl = signal('');
   linkUrl = signal('');
   published = signal(true);
-  sortOrder = signal(0);
+  sortOrder = signal(1);
   selectedBannerId = signal<number | null>(null);
   isEditing = signal(false);
   uploading = signal(false);
@@ -59,7 +64,7 @@ export class BannerPage {
     this.imageUrl.set('');
     this.linkUrl.set('');
     this.published.set(true);
-    this.sortOrder.set(0);
+    this.sortOrder.set(1);
     this.selectedBannerId.set(null);
     this.isEditing.set(false);
     this.selectedFile.set(null);
@@ -90,9 +95,9 @@ export class BannerPage {
   }
 
   loadBanners() {
-    this.http.get<Banner[]>('/api/banner').subscribe({
+    this.http.get<Banner[]>('/api/banner?all=true').subscribe({
       next: (res) => this.banners.set(res),
-      error: (err) => { console.error('배너 조회 실패:', err); this.toast.error('배너 조회 실패'); },
+      error: handleApiError(this.toast, '배너 조회 실패'),
     });
   }
 
@@ -103,14 +108,14 @@ export class BannerPage {
 
     this.http.post('/api/banner', {
       title: this.title(),
-      subtitle: this.subtitle() || undefined,
+      subtitle: this.subtitle()?.trim() || null,
       imageUrl: url,
-      linkUrl: this.linkUrl() || undefined,
+      linkUrl: this.linkUrl()?.trim() || null,
       published: this.published(),
       sortOrder: this.sortOrder(),
     }).subscribe({
       next: () => { this.toast.success('배너가 생성되었습니다.'); this.loadBanners(); this.resetForm(); },
-      error: (err) => { console.error('배너 생성 실패:', err); this.toast.error('배너 생성 실패'); },
+      error: handleApiError(this.toast, '배너 생성 실패'),
     });
   }
 
@@ -132,14 +137,14 @@ export class BannerPage {
 
     this.http.patch(`/api/banner/${id}`, {
       title: this.title(),
-      subtitle: this.subtitle() || undefined,
+      subtitle: this.subtitle()?.trim() || null,
       imageUrl: url ?? this.imageUrl(),
-      linkUrl: this.linkUrl() || undefined,
+      linkUrl: this.linkUrl()?.trim() || null,
       published: this.published(),
       sortOrder: this.sortOrder(),
     }).subscribe({
       next: () => { this.toast.success('배너가 수정되었습니다.'); this.loadBanners(); this.resetForm(); },
-      error: (err) => { console.error('배너 수정 실패:', err); this.toast.error('배너 수정 실패'); },
+      error: handleApiError(this.toast, '배너 수정 실패'),
     });
   }
 
@@ -147,7 +152,7 @@ export class BannerPage {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/banner/${id}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.loadBanners(); },
-      error: (err) => { console.error('배너 삭제 실패:', err); this.toast.error('배너 삭제 실패'); },
+      error: handleApiError(this.toast, '배너 삭제 실패'),
     });
   }
 }

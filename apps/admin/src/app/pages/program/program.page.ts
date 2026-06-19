@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { useClientPagination } from '../../shared/utils/pagination.utils';
 
 export interface Programs {
   id: number
@@ -25,7 +27,7 @@ export interface Programs {
 
 @Component({
   selector: 'app-program',
-  imports: [FormsModule, DatePipe, PaginationComponent],
+  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
   templateUrl: './program.page.html'
 })
 export class ProgramPage {
@@ -36,30 +38,24 @@ export class ProgramPage {
 
   //시그널 초기상태 정리
   programs = signal<Programs[]>([]);
-  searchKeyword = signal('');
-  filteredPrograms = computed(() => {
-    const keyword = this.searchKeyword().toLowerCase();
-    if (!keyword) return this.programs();
-    return this.programs().filter(p =>
-      p.title.toLowerCase().includes(keyword) ||
-      (p.speaker ?? '').toLowerCase().includes(keyword) ||
-      (p.location ?? '').toLowerCase().includes(keyword)
-    );
-  });
   selectedProgramId = signal<number | null>(null);
 
-  // 페이지네이션
-  currentPage = signal(1);
-  pageSize = 3;
-  totalPages = computed(() => Math.ceil(this.filteredPrograms().length / this.pageSize));
-  pagedPrograms = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize;
-    return this.filteredPrograms().slice(start, start + this.pageSize);
+  // 검색 + 페이지네이션 (공통 유틸리티)
+  pg = useClientPagination({
+    items: this.programs,
+    filterFn: (p, kw) =>
+      p.title.toLowerCase().includes(kw) ||
+      (p.speaker ?? '').toLowerCase().includes(kw) ||
+      (p.location ?? '').toLowerCase().includes(kw),
+    pageSize: 3,
   });
 
-  onPageChange(page: number) {
-    this.currentPage.set(page);
-  }
+  // 템플릿 바인딩용 alias
+  searchKeyword = this.pg.searchKeyword;
+  currentPage = this.pg.currentPage;
+  totalPages = this.pg.totalPages;
+  pagedPrograms = this.pg.paged;
+  onPageChange = this.pg.onPageChange;
 
   // 선택된 공지사항의 전체 데이터
   selectedPrograms = signal<Programs | null>(null);
@@ -75,16 +71,16 @@ export class ProgramPage {
     startTime: '',
     endTime: '',
     location: '',
-    published: false,
+    published: true,
     sortOrder: 0,
   });
 
   // 시간 선택용 시그널
   startDate = signal('');
-  startHour = signal('09');
+  startHour = signal('00');
   startMinute = signal('00');
   endDate = signal('');
-  endHour = signal('10');
+  endHour = signal('00');
   endMinute = signal('00');
 
   // 24시간 드롭다운 옵션
@@ -116,23 +112,23 @@ export class ProgramPage {
           startTime: '',
           endTime: '',
           location: '',
-          published: false,
+          published: true,
           sortOrder: 0,
         });
     this.startDate.set('');
-    this.startHour.set('09');
+    this.startHour.set('00');
     this.startMinute.set('00');
     this.endDate.set('');
-    this.endHour.set('10');
+    this.endHour.set('00');
     this.endMinute.set('00');
   }
   
 
   // 전체 목록 조회
   loadprograms() {
-    this.http.get<Programs[]>('/api/program').subscribe({
+    this.http.get<Programs[]>('/api/program?all=true').subscribe({
       next: (res) => this.programs.set(res),
-      error: (err) => { console.error('프로그램 목록 조회 실패:', err); this.toast.error('프로그램 목록 조회 실패'); },
+      error: handleApiError(this.toast, '프로그램 목록 조회 실패'),
     }); 
   }
 
@@ -196,7 +192,7 @@ export class ProgramPage {
       next: () => { 
         this.loadprograms(); 
         this.resetForm(); },
-      error: (err) => { console.error('프로그램 생성 실패:', err); this.toast.error('프로그램 생성 실패'); },
+      error: handleApiError(this.toast, '프로그램 생성 실패'),
     });
   }
 
@@ -229,7 +225,7 @@ export class ProgramPage {
         this.loadprograms();
         this.resetForm();
       },
-      error: (err) => { console.error('프로그램 수정 실패:', err); this.toast.error('프로그램 수정 실패'); },
+      error: handleApiError(this.toast, '프로그램 수정 실패'),
     });
   }
 
@@ -242,8 +238,10 @@ export class ProgramPage {
         this.loadprograms();
         this.resetForm();
       },
-      error: (err) => { console.error('프로그램 삭제 실패:', err); this.toast.error('프로그램 삭제 실패'); },
+      error: handleApiError(this.toast, '프로그램 삭제 실패'),
     });
   }
+
+
 
 }

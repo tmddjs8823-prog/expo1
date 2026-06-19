@@ -5,7 +5,7 @@
   </div>
 
   <form class="bg-white p-6 rounded shadow flex flex-col gap-4" (ngSubmit)="updateExhibition()">
-    <div class="flex gap-4">
+    <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
         제목
         <input [ngModel]="exhibitionForm().title"
@@ -34,7 +34,7 @@
         name="descriptionEn" rows="4" class="w-full p-2 border rounded"></textarea>
     </label>
 
-    <div class="flex gap-4">
+    <div class="flex flex-col md:flex-row gap-4">
       <div class="flex flex-col gap-1 flex-1">
         <span class="text-sm font-medium">시작일</span>
         <div class="flex gap-2">
@@ -75,7 +75,7 @@
       </div>
     </div>
 
-    <div class="flex gap-4">
+    <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
         장소
         <input [ngModel]="exhibitionForm().venue"
@@ -87,8 +87,8 @@
         <select [ngModel]="exhibitionForm().status"
           (ngModelChange)="exhibitionForm.update(f => ({...f, status: $event}))"
           name="status" class="w-full p-2 border rounded">
-          <option value="DRAFT">초안</option>
-          <option value="PUBLISHED">공개</option>
+          <option value="DRAFT">예정</option>
+          <option value="PUBLISHED">진행중</option>
           <option value="CLOSED">종료</option>
         </select>
       </label>
@@ -99,6 +99,13 @@
       <input [ngModel]="exhibitionForm().linkUrl"
         (ngModelChange)="exhibitionForm.update(f => ({...f, linkUrl: $event}))"
         name="linkUrl" placeholder="https://example.com (선택)" class="w-full p-2 border rounded" />
+    </label>
+
+    <label class="flex items-center gap-2 text-sm select-none cursor-pointer">
+      <input type="checkbox" [ngModel]="exhibitionForm().published"
+        (ngModelChange)="exhibitionForm.update(f => ({...f, published: $event}))"
+        name="published" class="w-4 h-4" />
+      공개
     </label>
 
     <!-- 이미지 -->

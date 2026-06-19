@@ -16,6 +16,7 @@ model Exhibition {
   status      ExhibitionStatus @default(DRAFT)
   published   Boolean          @default(false)
   exhibitors  Exhibitor[]
+  preRegistrations PreRegistration[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 }

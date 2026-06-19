@@ -1,10 +1,12 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { useClientPagination } from '../../shared/utils/pagination.utils';
 
 export interface FaqCategory {
   id :number;
@@ -33,7 +35,7 @@ export interface Faq {
 
 @Component({
   selector: 'app-faq',
-  imports : [FormsModule, DatePipe, PaginationComponent],
+  imports : [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
   templateUrl: './faq.page.html',
 })
 export class FaqPage {
@@ -52,16 +54,6 @@ constructor() {
 // 시그널 초기상태 정의
 
 faqs = signal<Faq[]>([]);
-searchKeyword = signal('');
-filteredFaqs = computed(() => {
-  const keyword = this.searchKeyword().toLowerCase();
-  if (!keyword) return this.faqs();
-  return this.faqs().filter(f =>
-    f.question.toLowerCase().includes(keyword) ||
-    f.answer.toLowerCase().includes(keyword) ||
-    (f.category?.name ?? '').toLowerCase().includes(keyword)
-  );
-});
 categories = signal<FaqCategory[]>([]); //카테고리 목록
 question = signal('');
 answer = signal('');
@@ -72,18 +64,22 @@ selectedFaqId = signal<number | null>(null);
 showNewCategory = signal(false);
 newCategoryName = signal('');
 
-// 페이지네이션
-currentPage = signal(1);
-pageSize = 3;
-totalPages = computed(() => Math.ceil(this.filteredFaqs().length / this.pageSize));
-pagedFaqs = computed(() => {
-  const start = (this.currentPage() - 1) * this.pageSize;
-  return this.filteredFaqs().slice(start, start + this.pageSize);
+// 검색 + 페이지네이션 (공통 유틸리티)
+pg = useClientPagination({
+  items: this.faqs,
+  filterFn: (f, kw) =>
+    f.question.toLowerCase().includes(kw) ||
+    f.answer.toLowerCase().includes(kw) ||
+    (f.category?.name ?? '').toLowerCase().includes(kw),
+  pageSize: 3,
 });
 
-onPageChange(page: number) {
-  this.currentPage.set(page);
-}
+// 템플릿 바인딩용 alias
+searchKeyword = this.pg.searchKeyword;
+currentPage = this.pg.currentPage;
+totalPages = this.pg.totalPages;
+pagedFaqs = this.pg.paged;
+onPageChange = this.pg.onPageChange;
 
 // 리셋
 resetForm() {
@@ -99,7 +95,7 @@ resetForm() {
 loadCategories() {
   this.http.get<FaqCategory[]>('/api/faq/category').subscribe({
     next: (res) => this.categories.set(res),
-    error: (err) => { console.error('카테고리 조회 실패:', err); this.toast.error('카테고리 조회 실패'); },
+    error: handleApiError(this.toast, '카테고리 조회 실패'),
   });
 }
 
@@ -114,7 +110,7 @@ createCategory() {
       this.newCategoryName.set('');
       this.showNewCategory.set(false);
     },
-    error: (err) => { console.error('카테고리 생성 실패:', err); this.toast.error('카테고리 생성 실패'); },
+    error: handleApiError(this.toast, '카테고리 생성 실패'),
   });
 }
 
@@ -139,11 +135,11 @@ deleteCategory(id: number) {
 
 // 로드
 loadFaqs() {
-  this.http.get<Faq[]>("/api/faq").subscribe({
+  this.http.get<Faq[]>("/api/faq?all=true").subscribe({
     next: (response) => {
       this.faqs.set(response);
     },
-    error: (err) => { console.error('FAQ 생성 실패:', err); this.toast.error('FAQ 생성 실패'); }
+    error: handleApiError(this.toast, 'FAQ 생성 실패')
   });
 }
 
@@ -160,7 +156,7 @@ createFaq() {
       this.loadFaqs();
       this.resetForm();
     },
-    error: (err) => { console.error('FAQ 생성 실패:', err); this.toast.error('FAQ 생성 실패'); }
+    error: handleApiError(this.toast, 'FAQ 생성 실패')
   })
   }
 
@@ -190,7 +186,7 @@ updateFaq() {
       this.loadFaqs();
       this.resetForm();
     },
-    error: (err) => { console.error('FAQ 수정 실패:', err); this.toast.error('FAQ 수정 실패'); }
+    error: handleApiError(this.toast, 'FAQ 수정 실패')
   })
   }
 
@@ -205,7 +201,7 @@ updateFaq() {
         this.loadFaqs();
         this.resetForm();
       },
-      error: (err) => { console.error('FAQ 삭제 실패:', err); this.toast.error('FAQ 삭제 실패'); }
+      error: handleApiError(this.toast, 'FAQ 삭제 실패')
     });
   }
   

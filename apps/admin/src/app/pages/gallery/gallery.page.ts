@@ -1,11 +1,13 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { SupabaseService } from '../../services/supabase.service';
 import { Router } from '@angular/router';
-import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { useClientPagination } from '../../shared/utils/pagination.utils';
 
 export interface Gallery {
   id: number;
@@ -22,7 +24,7 @@ export interface Gallery {
 
 @Component({
   selector: 'app-gallery',
-  imports: [FormsModule, DatePipe, PaginationComponent],
+  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
   templateUrl: './gallery.page.html'
 })
 export class GalleryPage {
@@ -34,15 +36,6 @@ export class GalleryPage {
 
   // 시그널 초기상태
   galleries = signal<Gallery[]>([]);
-  searchKeyword = signal('');
-  filteredGalleries = computed(() => {
-    const keyword = this.searchKeyword().toLowerCase();
-    if (!keyword) return this.galleries();
-    return this.galleries().filter(g =>
-      g.title.toLowerCase().includes(keyword) ||
-      (g.description ?? '').toLowerCase().includes(keyword)
-    );
-  });
   title = signal('');
   description = signal('');
   imageUrl = signal('');
@@ -52,18 +45,21 @@ export class GalleryPage {
   selectedFile = signal<File | null>(null);
   published = signal(true);
 
-  // 페이지네이션
-  currentPage = signal(1);
-  pageSize = 3;
-  totalPages = computed(() => Math.ceil(this.filteredGalleries().length / this.pageSize));
-  pagedGalleries = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize;
-    return this.filteredGalleries().slice(start, start + this.pageSize);
+  // 검색 + 페이지네이션 (공통 유틸리티)
+  pg = useClientPagination({
+    items: this.galleries,
+    filterFn: (g, kw) =>
+      g.title.toLowerCase().includes(kw) ||
+      (g.description ?? '').toLowerCase().includes(kw),
+    pageSize: 3,
   });
 
-  onPageChange(page: number) {
-    this.currentPage.set(page);
-  }
+  // 템플릿 바인딩용 alias
+  searchKeyword = this.pg.searchKeyword;
+  currentPage = this.pg.currentPage;
+  totalPages = this.pg.totalPages;
+  pagedGalleries = this.pg.paged;
+  onPageChange = this.pg.onPageChange;
 
   constructor() {
     this.loadGalleries();
@@ -107,13 +103,22 @@ export class GalleryPage {
   }
 
   loadGalleries() {
-    this.http.get<Gallery[]>('/api/gallery').subscribe({
+    this.http.get<Gallery[]>('/api/gallery?all=true').subscribe({
       next: (res) => this.galleries.set(res),
-      error: (err) => { console.error('갤러리 목록 조회 실패:', err); this.toast.error('갤러리 목록 조회 실패'); },
+      error: handleApiError(this.toast, '갤러리 목록 조회 실패'),
     });
   }
 
   async createGallery() {
+    if (!this.title().trim()) {
+      this.toast.error('제목을 입력해주세요.');
+      return;
+    }
+    if (!this.selectedFile() && !this.imageUrl()) {
+      this.toast.error('이미지를 선택해주세요.');
+      return;
+    }
+
     const url = await this.uploadImage();
     if (!url) return;
 
@@ -128,7 +133,7 @@ export class GalleryPage {
         this.loadGalleries();
         this.resetForm();
       },
-      error: (err) => { console.error('갤러리 생성 실패:', err); this.toast.error('갤러리 생성 실패'); },
+      error: handleApiError(this.toast, '갤러리 생성 실패'),
     });
   }
 
@@ -155,7 +160,7 @@ export class GalleryPage {
         this.loadGalleries();
         this.resetForm();
       },
-      error: (err) => { console.error('갤러리 수정 실패:', err); this.toast.error('갤러리 수정 실패'); },
+      error: handleApiError(this.toast, '갤러리 수정 실패'),
     });
   }
 
@@ -167,7 +172,7 @@ export class GalleryPage {
         this.loadGalleries();
         this.resetForm();
       },
-      error: (err) => { console.error('갤러리 삭제 실패:', err); this.toast.error('갤러리 삭제 실패'); },
+      error: handleApiError(this.toast, '갤러리 삭제 실패'),
     });
   }
 }

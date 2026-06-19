@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { CreateProgramDto, UpdateProgramDto } from './dto/program.dto';
 import { ProgramService } from './program.service';
 import { Auth } from '../auth/auth.decorator';
@@ -14,8 +14,8 @@ export class ProgramController {
     }
 
     @Get()
-    findAll() {
-        return this.programService.findAll();
+    findAll(@Query('all') all?: string) {
+        return this.programService.findAll(all === 'true');
     }
 
     @Get(':id')

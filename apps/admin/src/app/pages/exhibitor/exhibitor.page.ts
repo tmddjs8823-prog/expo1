@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, signal, computed } from '@angular/core';
+import { handleApiError } from '../../shared/utils/api-error';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Exhibition } from '../exhibition/exhibition.page';
-import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { useClientPagination } from '../../shared/utils/pagination.utils';
 
 export interface Exhibitor {
   exhibitionId: number;
@@ -26,7 +28,7 @@ export interface Exhibitor {
 
 @Component({
   selector: 'app-exhibitor',
-  imports: [FormsModule, PaginationComponent],
+  imports: [FormsModule, AdminDataGridComponent, GridRowDef],
   templateUrl: './exhibitor.page.html'
 })
 export class ExhibitorPage {
@@ -37,31 +39,25 @@ export class ExhibitorPage {
 
   //초기 시그널 폼 정의
   exhibitors = signal<Exhibitor[]>([]);
-  searchKeyword = signal('');
-  filteredExhibitors = computed(() => {
-    const keyword = this.searchKeyword().toLowerCase();
-    if (!keyword) return this.exhibitors();
-    return this.exhibitors().filter(e =>
-      e.companyName.toLowerCase().includes(keyword) ||
-      (e.boothNumber ?? '').toLowerCase().includes(keyword) ||
-      (e.contactEmail ?? '').toLowerCase().includes(keyword) ||
-      (e.exhibition?.title ?? '').toLowerCase().includes(keyword)
-    );
-  });
   exhibitions = signal<Exhibition[]>([]);
 
-  // 페이지네이션
-  currentPage = signal(1);
-  pageSize = 3;
-  totalPages = computed(() => Math.ceil(this.filteredExhibitors().length / this.pageSize));
-  pagedExhibitors = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize;
-    return this.filteredExhibitors().slice(start, start + this.pageSize);
+  // 검색 + 페이지네이션 (공통 유틸리티)
+  pg = useClientPagination({
+    items: this.exhibitors,
+    filterFn: (e, kw) =>
+      e.companyName.toLowerCase().includes(kw) ||
+      (e.boothNumber ?? '').toLowerCase().includes(kw) ||
+      (e.contactEmail ?? '').toLowerCase().includes(kw) ||
+      (e.exhibition?.title ?? '').toLowerCase().includes(kw),
+    pageSize: 3,
   });
 
-  onPageChange(page: number) {
-    this.currentPage.set(page);
-  }
+  // 템플릿 바인딩용 alias
+  searchKeyword = this.pg.searchKeyword;
+  currentPage = this.pg.currentPage;
+  totalPages = this.pg.totalPages;
+  pagedExhibitors = this.pg.paged;
+  onPageChange = this.pg.onPageChange;
   exhibitorForm = signal<Exhibitor>({
     id: 0,
     companyName: '',
@@ -92,9 +88,9 @@ export class ExhibitorPage {
 
   //행사 목록 조회
   loadExhibitions() {
-    this.http.get<Exhibition[]>('/api/exhibition').subscribe({
+    this.http.get<Exhibition[]>('/api/exhibition?all=true').subscribe({
       next: (res) => this.exhibitions.set(res),
-      error: (err) => { console.error('전시회 목록 조회 실패:', err); this.toast.error('전시회 목록 조회 실패'); },
+      error: handleApiError(this.toast, '전시회 목록 조회 실패'),
     });
   }
   
@@ -102,7 +98,7 @@ export class ExhibitorPage {
   loadExhibitors() {
     this.http.get<Exhibitor[]>('/api/exhibitor').subscribe({
       next: (res) => this.exhibitors.set(res),
-      error: (err) => { console.error('참가업체 조회 실패:', err); this.toast.error('참가업체 조회 실패'); },
+      error: handleApiError(this.toast, '참가업체 조회 실패'),
     });
   }
 
@@ -132,7 +128,7 @@ export class ExhibitorPage {
         this.loadExhibitors();
         this.resetForm();
       },
-      error: (err) => { console.error('참가업체 생성 실패:', err); this.toast.error('참가업체 생성 실패'); },
+      error: handleApiError(this.toast, '참가업체 생성 실패'),
     });
   }
 
@@ -153,12 +149,12 @@ export class ExhibitorPage {
       contactEmail: data.contactEmail,
       contactPhone: data.contactPhone,
       website: data.website,
-      exhibitionId: data.exhibitionId,
+      exhibitionId: Number(data.exhibitionId),
     };
 
     this.http.patch(`/api/exhibitor/${data.id}`, payload).subscribe({
       next: () => { this.toast.success('수정되었습니다.'); this.loadExhibitors(); },
-      error: (err) => { console.error('참가업체 수정 실패:', err); this.toast.error('참가업체 수정 실패'); },
+      error: handleApiError(this.toast, '참가업체 수정 실패'),
     });
   }
 
@@ -170,7 +166,7 @@ export class ExhibitorPage {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/exhibitor/${id}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.loadExhibitors(); },
-      error: (err) => { console.error('참가업체 삭제 실패:', err); this.toast.error('참가업체 삭제 실패'); },
+      error: handleApiError(this.toast, '참가업체 삭제 실패'),
     });
   }
 

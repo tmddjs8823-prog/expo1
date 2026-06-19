@@ -29,8 +29,16 @@ export class InquiryPage {
       this.errorMessage.set('이름을 입력해주세요.');
       return;
     }
+    if (/\d/.test(this.name)) {
+      this.errorMessage.set('이름에 숫자를 입력할 수 없습니다.');
+      return;
+    }
     if (!this.email.trim() || !this.email.includes('@')) {
       this.errorMessage.set('올바른 이메일을 입력해주세요.');
+      return;
+    }
+    if (!this.phone.trim() || !/^[\d-]+$/.test(this.phone.trim())) {
+      this.errorMessage.set('올바른 전화번호를 입력해주세요.');
       return;
     }
     if (!this.subject.trim()) {
@@ -58,7 +66,10 @@ export class InquiryPage {
       },
       error: (err) => {
         console.error('문의 접수 실패:', err);
-        this.errorMessage.set('접수 중 오류가 발생했습니다. 다시 시도해주세요.');
+        const msg = err.error?.message;
+        this.errorMessage.set(
+          Array.isArray(msg) ? msg.join('\n') : (msg || '접수 중 오류가 발생했습니다. 다시 시도해주세요.')
+        );
         this.submitting.set(false);
       },
     });

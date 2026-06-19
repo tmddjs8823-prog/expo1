@@ -1,0 +1,125 @@
+<!-- 등록 완료 화면 -->
+@if (submitted()) {
+  <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
+      <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-slate-900 mb-2">참가업체 등록이 완료되었습니다</h1>
+    <p class="text-slate-500 mb-8">
+      <span class="font-medium text-slate-700">{{ submittedName() }}</span> 업체의 등록이 접수되었습니다.<br />
+      확인 후 담당자가 연락드릴 예정입니다.
+    </p>
+    <a routerLink="/"
+       class="inline-flex items-center px-6 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors">
+      홈으로 돌아가기
+    </a>
+  </div>
+} @else {
+
+  <!-- 참가업체 등록 폼 -->
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900">참가업체 등록</h1>
+      <p class="mt-2 text-slate-500">전시회 참가를 위해 아래 정보를 입력해주세요.</p>
+    </div>
+
+    <form (ngSubmit)="submitForm()" class="space-y-6">
+
+      <!-- 전시회 선택 -->
+      <div>
+        <label for="exhibitionId" class="block text-sm font-medium text-slate-700 mb-1">
+          참가 전시회 <span class="text-red-500">*</span>
+        </label>
+        <select id="exhibitionId" [ngModel]="exhibitionId()" (ngModelChange)="exhibitionId.set($event)"
+          name="exhibitionId"
+          class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+          <option [ngValue]="null">전시회를 선택해주세요</option>
+          @for (ex of exhibitions(); track ex.id) {
+            <option [ngValue]="ex.id">{{ ex.title }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- 업체명 -->
+      <div>
+        <label for="companyName" class="block text-sm font-medium text-slate-700 mb-1">
+          업체명 <span class="text-red-500">*</span>
+        </label>
+        <input id="companyName" type="text" [ngModel]="companyName()" (ngModelChange)="companyName.set($event)"
+               name="companyName" placeholder="업체명을 입력해주세요"
+               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+      </div>
+
+      <!-- 업체명(영문) -->
+      <div>
+        <label for="companyNameEn" class="block text-sm font-medium text-slate-700 mb-1">업체명 (영문)</label>
+        <input id="companyNameEn" type="text" [ngModel]="companyNameEn()" (ngModelChange)="companyNameEn.set($event)"
+               name="companyNameEn" placeholder="Company name in English"
+               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+      </div>
+
+      <!-- 부스번호 -->
+      <div>
+        <label for="boothNumber" class="block text-sm font-medium text-slate-700 mb-1">부스번호</label>
+        <input id="boothNumber" type="text" [ngModel]="boothNumber()" (ngModelChange)="boothNumber.set($event)"
+               name="boothNumber" placeholder="예: A-01"
+               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+      </div>
+
+      <!-- 업체 소개 -->
+      <div>
+        <label for="description" class="block text-sm font-medium text-slate-700 mb-1">업체 소개</label>
+        <textarea id="description" [ngModel]="description()" (ngModelChange)="description.set($event)"
+               name="description" rows="4" placeholder="업체를 소개해주세요"
+               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors resize-none"></textarea>
+      </div>
+
+      <!-- 이메일 / 연락처 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="contactEmail" class="block text-sm font-medium text-slate-700 mb-1">이메일</label>
+          <input id="contactEmail" type="email" [ngModel]="contactEmail()" (ngModelChange)="contactEmail.set($event)"
+                 name="contactEmail" placeholder="example@company.com"
+                 class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+        </div>
+        <div>
+          <label for="contactPhone" class="block text-sm font-medium text-slate-700 mb-1">
+            연락처 <span class="text-red-500">*</span>
+          </label>
+          <input id="contactPhone" type="tel" [ngModel]="contactPhone()" (ngModelChange)="contactPhone.set($event)"
+                 name="contactPhone" placeholder="010-1234-5678"
+                 class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+        </div>
+      </div>
+
+      <!-- 웹사이트 -->
+      <div>
+        <label for="website" class="block text-sm font-medium text-slate-700 mb-1">웹사이트</label>
+        <input id="website" type="url" [ngModel]="website()" (ngModelChange)="website.set($event)"
+               name="website" placeholder="https://www.example.com"
+               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+      </div>
+
+      <!-- 에러 메시지 -->
+      @if (errorMessage()) {
+        <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <!-- 제출 버튼 -->
+      <div class="pt-2">
+        <button type="submit" [disabled]="submitting()"
+                class="w-full py-3 px-6 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          @if (submitting()) {
+            등록 중...
+          } @else {
+            참가업체 등록
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+}

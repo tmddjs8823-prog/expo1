@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Param, Body, ParseIntPipe, Query } from '@nestjs/common';
 import { FaqService } from './faq.service';
 import { Auth } from '../auth/auth.decorator';
 import { CreateFaqDto, UpdateFaqDto, CreateFaqCategoryDto } from './dto/faq.dto';
@@ -14,10 +14,10 @@ export class FaqController {
         return this.faqService.create(dto);
     }
 
-    //전체 조회
+    //전체 조회 (all=true 시 비공개 포함)
     @Get()
-    findAll() {
-        return this.faqService.findAll();
+    findAll(@Query('all') all?: string) {
+        return this.faqService.findAll(all === 'true');
     }
 
     // ── 카테고리 ──

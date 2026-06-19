@@ -1,10 +1,12 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { useClientPagination } from '../../shared/utils/pagination.utils';
 
 export interface Notice {
   id : number ;
@@ -22,7 +24,7 @@ export interface Notice {
 
 @Component({
   selector: 'app-notice',
-  imports: [FormsModule, DatePipe, PaginationComponent],
+  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
   templateUrl: './notice.page.html',
 })
 export class NoticePage{private http = 
@@ -32,33 +34,27 @@ export class NoticePage{private http =
   private toast = inject(ToastService);
 
 notices = signal<Notice[]>([]);
-searchKeyword = signal('');
-filteredNotices = computed(() => {
-  const keyword = this.searchKeyword().toLowerCase();
-  if (!keyword) return this.notices();
-  return this.notices().filter(n =>
-    n.title.toLowerCase().includes(keyword) ||
-    n.content.toLowerCase().includes(keyword)
-  );
-});
 selectedNoticeId = signal<number | null>(null);
 title = signal ('');
 content = signal('');
 isEditing = signal(false);
 published = signal(true);
 
-// 페이지네이션
-currentPage = signal(1);
-pageSize = 3;
-totalPages = computed(() => Math.ceil(this.filteredNotices().length / this.pageSize));
-pagedNotices = computed(() => {
-  const start = (this.currentPage() - 1) * this.pageSize;
-  return this.filteredNotices().slice(start, start + this.pageSize);
+// 검색 + 페이지네이션 (공통 유틸리티)
+pg = useClientPagination({
+  items: this.notices,
+  filterFn: (n, kw) =>
+    n.title.toLowerCase().includes(kw) ||
+    n.content.toLowerCase().includes(kw),
+  pageSize: 3,
 });
 
-onPageChange(page: number) {
-  this.currentPage.set(page);
-}
+// 템플릿 바인딩용 alias
+searchKeyword = this.pg.searchKeyword;
+currentPage = this.pg.currentPage;
+totalPages = this.pg.totalPages;
+pagedNotices = this.pg.paged;
+onPageChange = this.pg.onPageChange;
 
 
 
@@ -80,12 +76,12 @@ resetForm(){
 }
 
 loadNotice(){
-  this.http.get<Notice[]>('/api/notice')
+  this.http.get<Notice[]>('/api/notice?all=true')
     .subscribe({
       next: (res)=> {
         this.notices.set(res); 
       },
-      error: (err) => { console.error('Error fetching notices:', err); this.toast.error('Error fetching notices'); }
+      error: handleApiError(this.toast, '공지사항 목록 조회 실패')
     });
 }
 
@@ -102,7 +98,7 @@ createNotice() {
       this.loadNotice();
       this.resetForm();
     },
-    error: (err) => { console.error('Error creating notice:', err); this.toast.error('Error creating notice'); }
+    error: handleApiError(this.toast, '공지사항 생성 실패')
     })
 }
 
@@ -130,7 +126,7 @@ updateNotice() {
         this.loadNotice();
         this.resetForm();
       },
-      error: (err) => { console.error('Error updating notice:', err); this.toast.error('Error updating notice'); }
+      error: handleApiError(this.toast, '공지사항 수정 실패')
     })
   }
 
@@ -143,7 +139,7 @@ deleteNotice(id : number) {
         this.loadNotice();
         this.resetForm();
       },
-      error: (err) => { console.error('Error deleting notice:', err); this.toast.error('Error deleting notice'); }
+      error: handleApiError(this.toast, '공지사항 삭제 실패')
     })
 }
 }

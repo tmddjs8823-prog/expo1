@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
@@ -83,7 +84,7 @@ export class ExhibitionDetailPage {
         this.endHour.set(String(e.getHours()).padStart(2, '0'));
         this.endMinute.set(String(Math.round(e.getMinutes() / 5) * 5).padStart(2, '0'));
       },
-      error: (err) => { console.error('전시회 조회 실패:', err); this.toast.error('전시회 조회 실패'); },
+      error: handleApiError(this.toast, '전시회 조회 실패'),
     });
   }
 
@@ -132,18 +133,18 @@ export class ExhibitionDetailPage {
       endDate: endIso,
       status: data.status,
       published: data.published,
+      titleEn: data.titleEn?.trim() || null,
+      description: data.description?.trim() || null,
+      descriptionEn: data.descriptionEn?.trim() || null,
+      venue: data.venue?.trim() || null,
+      linkUrl: data.linkUrl?.trim() || null,
     };
 
-    if (data.titleEn) payload['titleEn'] = data.titleEn;
-    if (data.description) payload['description'] = data.description;
-    if (data.descriptionEn) payload['descriptionEn'] = data.descriptionEn;
-    if (data.venue) payload['venue'] = data.venue;
-    if (data.linkUrl) payload['linkUrl'] = data.linkUrl;
     if (imageUrl && !imageUrl.startsWith('blob:')) payload['imageUrl'] = imageUrl;
 
     this.http.patch(`/api/exhibition/${this.exhibitionId}`, payload).subscribe({
       next: () => { this.toast.success('수정되었습니다.'); this.router.navigate(['/exhibition']); },
-      error: (err) => { console.error('전시회 수정 실패:', err); this.toast.error('전시회 수정 실패'); },
+      error: handleApiError(this.toast, '전시회 수정 실패'),
     });
   }
 
@@ -151,7 +152,7 @@ export class ExhibitionDetailPage {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/exhibition/${this.exhibitionId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/exhibition']); },
-      error: (err) => { console.error('전시회 삭제 실패:', err); this.toast.error('전시회 삭제 실패'); },
+      error: handleApiError(this.toast, '전시회 삭제 실패'),
     });
   }
 

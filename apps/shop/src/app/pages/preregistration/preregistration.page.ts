@@ -3,6 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
+interface ExhibitionOption {
+  id: number;
+  title: string;
+}
+
 @Component({
   selector: 'app-preregistration',
   imports: [FormsModule, RouterModule],
@@ -19,6 +24,10 @@ export class PreregistrationPage {
   jobTitle = '';
   agreeTerms = false;
   agreeMarketing = false;
+  selectedExhibitionId = signal<number | null>(null);
+
+  // 전시회 목록
+  exhibitions = signal<ExhibitionOption[]>([]);
 
   // 상태
   submitting = signal(false);
@@ -26,14 +35,37 @@ export class PreregistrationPage {
   submittedName = signal('');
   errorMessage = signal('');
 
+  constructor() {
+    this.loadExhibitions();
+  }
+
+  loadExhibitions() {
+    this.http.get<ExhibitionOption[]>('/api/exhibition').subscribe({
+      next: (res) => this.exhibitions.set(res.filter(e => e.title)),
+      error: (err) => console.error('전시회 목록 조회 실패:', err),
+    });
+  }
+
   onSubmit() {
     // 유효성 검사
+    if (!this.selectedExhibitionId()) {
+      this.errorMessage.set('전시회를 선택해주세요.');
+      return;
+    }
     if (!this.name.trim()) {
       this.errorMessage.set('이름을 입력해주세요.');
       return;
     }
+    if (/\d/.test(this.name)) {
+      this.errorMessage.set('이름에 숫자를 입력할 수 없습니다.');
+      return;
+    }
     if (!this.email.trim() || !this.email.includes('@')) {
       this.errorMessage.set('올바른 이메일을 입력해주세요.');
+      return;
+    }
+    if (!this.phone.trim() || !/^[\d-]+$/.test(this.phone.trim())) {
+      this.errorMessage.set('올바른 전화번호를 입력해주세요.');
       return;
     }
     if (!this.agreeTerms) {
@@ -52,6 +84,7 @@ export class PreregistrationPage {
       jobTitle: this.jobTitle.trim() || undefined,
       agreeTerms: this.agreeTerms,
       agreeMarketing: this.agreeMarketing,
+      exhibitionId: this.selectedExhibitionId() || undefined,
     }).subscribe({
       next: () => {
         this.submittedName.set(this.name.trim());
@@ -60,7 +93,10 @@ export class PreregistrationPage {
       },
       error: (err) => {
         console.error('사전등록 실패:', err);
-        this.errorMessage.set('등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+        const msg = err.error?.message;
+        this.errorMessage.set(
+          Array.isArray(msg) ? msg.join('\n') : (msg || '등록 중 오류가 발생했습니다. 다시 시도해주세요.')
+        );
         this.submitting.set(false);
       },
     });

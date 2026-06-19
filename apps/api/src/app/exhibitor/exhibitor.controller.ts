@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
 import { ExhibitorService } from "./exhibitor.service";
-import { CreateExhibitorDto, UpdateExhibitionDto } from "./dto/exhibitor.dto";
+import { CreateExhibitorDto, UpdateExhibitorDto } from "./dto/exhibitor.dto";
 
 @Controller('exhibitor')
 export class ExhibitorController {
@@ -27,7 +27,7 @@ export class ExhibitorController {
    //수정 
    @Patch(':id')
     async update(@Param('id') id: string, 
-    @Body() dto: UpdateExhibitionDto) {
+    @Body() dto: UpdateExhibitorDto) {
     return this.exhibitorService.update(parseInt(id), dto);
     }
     

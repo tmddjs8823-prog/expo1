@@ -37,7 +37,7 @@
       <label class="flex items-center gap-2 text-sm">
         순서
         <input type="number" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)"
-          name="sortOrder" min="0" class="w-20 p-2 border rounded" />
+          name="sortOrder" min="1" class="w-20 p-2 border rounded" />
       </label>
     </div>
 
@@ -59,49 +59,30 @@
     </div>
   </form>
 
-  <!-- 검색 -->
-  <div class="flex items-center gap-2">
-    <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
-      name="search" placeholder="제목으로 검색" class="flex-1 p-2 border rounded" />
-  </div>
+  <!-- ── 배너 목록 (공통 그리드) ── -->
+  <app-data-grid
+    [items]="filteredBanners()"
+    [searchKeyword]="searchKeyword()"
+    (searchChange)="searchKeyword.set($event)"
+    searchPlaceholder="제목으로 검색"
+    emptyMessage="등록된 배너가 없습니다."
+    [columns]="['미리보기','제목','공개','순서','작성일','관리']">
 
-  <!-- 배너 목록 -->
-  <div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
-    <table class="w-full min-w-[700px] table-fixed">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">미리보기</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">제목</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">공개</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">순서</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">작성일</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (banner of filteredBanners(); track banner.id) {
-          <tr class="border-t hover:bg-slate-50 transition-colors text-slate-700 text-sm">
-            <td class="p-3 align-middle">
-              <img [src]="banner.imageUrl" [alt]="banner.title"
-                class="w-32 h-16 object-cover rounded" />
-            </td>
-            <td class="p-3 align-middle truncate" [title]="banner.title">{{ banner.title }}</td>
-            <td class="p-3 align-middle">{{ banner.published ? '공개' : '비공개' }}</td>
-            <td class="p-3 align-middle">{{ banner.sortOrder }}</td>
-            <td class="p-3 align-middle">{{ banner.createdAt | date:'yy-MM-dd' }}</td>
-            <td class="p-3 align-middle whitespace-nowrap">
-              <button (click)="editBanner(banner)"
-                class="text-blue-600 hover:underline mr-3">수정</button>
-              <button (click)="deleteBanner(banner.id)"
-                class="text-red-600 hover:underline">삭제</button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="p-6 text-center text-slate-400">등록된 배너가 없습니다.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+    <ng-template appGridRow let-banner>
+      <td class="p-3 align-middle">
+        <img [src]="banner.imageUrl" [alt]="banner.title"
+          class="w-32 h-16 object-cover rounded" />
+      </td>
+      <td class="p-3 align-middle truncate" [title]="banner.title">{{ banner.title }}</td>
+      <td class="p-3 align-middle">{{ banner.published ? '공개' : '비공개' }}</td>
+      <td class="p-3 align-middle">{{ banner.sortOrder }}</td>
+      <td class="p-3 align-middle">{{ banner.createdAt | date:'yy-MM-dd' }}</td>
+      <td class="p-3 align-middle whitespace-nowrap">
+        <button (click)="editBanner(banner)"
+          class="text-blue-600 hover:underline mr-3">수정</button>
+        <button (click)="deleteBanner(banner.id)"
+          class="text-red-600 hover:underline">삭제</button>
+      </td>
+    </ng-template>
+  </app-data-grid>
 </div>

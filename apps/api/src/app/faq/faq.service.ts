@@ -39,10 +39,11 @@ import { CreateFaqDto, UpdateFaqDto, CreateFaqCategoryDto } from './dto/faq.dto'
         }
     
         // 전체 조회 (Read All)
-        async findAll() {
+        async findAll(includeAll = false) {
             return this.prisma.faq.findMany({
-                orderBy: { createdAt: 'desc' },
-                include: { category: true }
+                orderBy: { updatedAt: 'desc' },
+                include: { category: true },
+                ...(includeAll ? {} : { where: { published: true } }),
             });
         }
     

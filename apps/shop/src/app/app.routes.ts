@@ -78,6 +78,13 @@ export const appRoutes: Route[] = [
       import('./pages/preregistration/preregistration.page').then(m => m.PreregistrationPage),
   },
 
+  // ── 참가업체 등록 ──
+  {
+    path: 'exhibitor',
+    loadComponent: () =>
+      import('./pages/exhibitor/exhibitor.page').then(m => m.ExhibitorPage),
+  },
+
   // ── 404 → 홈으로 리다이렉트 ──
   { path: '**', redirectTo: '' },
 ];

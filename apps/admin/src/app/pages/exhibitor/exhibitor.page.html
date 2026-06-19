@@ -3,7 +3,7 @@
 
   <!-- 생성 폼 -->
   <form (ngSubmit)="createExhibitor()" class="bg-white p-6 rounded shadow flex flex-col gap-4">
-    <div class="flex gap-4">
+    <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
         업체명
         <input [ngModel]="exhibitorForm().companyName"
@@ -18,13 +18,7 @@
       </label>
     </div>
 
-    <div class="flex gap-4">
-      <label class="flex flex-col gap-1 flex-1">
-        부스번호
-        <input [ngModel]="exhibitorForm().boothNumber"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, boothNumber: $event}))"
-          name="boothNumber" class="w-full p-2 border rounded" />
-      </label>
+    <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
         전시회
         <select [ngModel]="exhibitorForm().exhibitionId"
@@ -36,6 +30,12 @@
           }
         </select>
       </label>
+      <label class="flex flex-col gap-1 flex-1">
+        부스번호
+        <input [ngModel]="exhibitorForm().boothNumber"
+          (ngModelChange)="exhibitorForm.update(f => ({...f, boothNumber: $event}))"
+          name="boothNumber" class="w-full p-2 border rounded" />
+      </label>
     </div>
 
     <div class="flex gap-2">
@@ -44,47 +44,29 @@
     </div>
   </form>
 
-  <!-- 검색 -->
-  <div class="flex items-center gap-2">
-    <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
-      name="search" placeholder="업체명, 부스번호, 이메일로 검색" class="flex-1 p-2 border rounded" />
-  </div>
-
-  <!-- 참가업체 목록 -->
-  <div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
-    <table class="w-full min-w-[700px] table-fixed">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">업체명</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">부스번호</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">전시회</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">이메일</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (ex of pagedExhibitors(); track ex.id) {
-          <tr class="border-t hover:bg-slate-50 transition-colors cursor-pointer text-slate-700 text-sm" (click)="router.navigate(['/exhibitor', ex.id])">
-            <td class="p-3 truncate" [title]="ex.companyName">{{ ex.companyName }}</td>
-            <td class="p-3 truncate" [title]="ex.boothNumber">{{ ex.boothNumber }}</td>
-            <td class="p-3 truncate" [title]="ex.exhibition?.title ?? '-'">{{ ex.exhibition?.title ?? '-' }}</td>
-            <td class="p-3 truncate" [title]="ex.contactEmail">{{ ex.contactEmail }}</td>
-            <td class="p-3">
-              <button (click)="$event.stopPropagation(); deleteExhibitor(ex.id)"
-                class="text-red-600 hover:underline">삭제</button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="5" class="p-6 text-center text-slate-400">등록된 참가업체가 없습니다.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-
-  <app-pagination
+  <!-- ── 참가업체 목록 (공통 그리드) ── -->
+  <app-data-grid
+    [items]="pagedExhibitors()"
+    [searchKeyword]="searchKeyword()"
+    (searchChange)="searchKeyword.set($event)"
+    searchPlaceholder="업체명, 부스번호, 이메일로 검색"
+    emptyMessage="등록된 참가업체가 없습니다."
+    [columns]="['전시회','업체명','부스번호','이메일','관리']"
+    [rowClickable]="true"
+    (rowClick)="router.navigate(['/exhibitor', $event.id])"
     [currentPage]="currentPage()"
     [totalPages]="totalPages()"
-    (pageChange)="onPageChange($event)" />
+    (pageChange)="onPageChange($event)">
+
+    <ng-template appGridRow let-ex>
+      <td class="p-3 truncate" [title]="ex.exhibition?.title ?? '-'">{{ ex.exhibition?.title ?? '-' }}</td>
+      <td class="p-3 truncate" [title]="ex.companyName">{{ ex.companyName }}</td>
+      <td class="p-3 truncate" [title]="ex.boothNumber">{{ ex.boothNumber }}</td>
+      <td class="p-3 truncate" [title]="ex.contactEmail">{{ ex.contactEmail }}</td>
+      <td class="p-3">
+        <button (click)="$event.stopPropagation(); deleteExhibitor(ex.id)"
+          class="text-red-600 hover:underline">삭제</button>
+      </td>
+    </ng-template>
+  </app-data-grid>
 </div>

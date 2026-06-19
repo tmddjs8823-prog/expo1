@@ -17,9 +17,10 @@ export class NoticeService {
     }
 
     // 전체 조회 (Read All)
-    async findAll() {
+    async findAll(includeAll = false) {
         return this.prisma.notice.findMany({
-            orderBy: { createdAt: 'desc' },
+            orderBy: { updatedAt: 'desc' },
+            ...(includeAll ? {} : { where: { published: true } }),
         });
     }
 

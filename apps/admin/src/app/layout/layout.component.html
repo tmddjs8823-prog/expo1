@@ -46,7 +46,9 @@
 
   <!-- 모바일 사이드바 배경 오버레이 -->
   @if (isMobileMenuOpen()) {
-    <div (click)="isMobileMenuOpen.set(false)" class="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-20 transition-opacity"></div>
+    <div (click)="isMobileMenuOpen.set(false)" (keyup.enter)="isMobileMenuOpen.set(false)"
+         tabindex="0" role="button"
+         class="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-20 transition-opacity"></div>
   }
 
   <!-- 메인 콘텐츠 -->

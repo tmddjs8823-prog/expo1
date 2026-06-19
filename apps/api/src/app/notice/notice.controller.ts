@@ -1,5 +1,5 @@
 import {
-    Controller, Post, Body, Patch, Param, Delete, Get, Req, ParseIntPipe,
+    Controller, Post, Body, Patch, Param, Delete, Get, Req, ParseIntPipe, Query,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { NoticeService } from './notice.service';
@@ -17,10 +17,10 @@ export class NoticeController {
         return this.noticeService.create(dto, req.user.id);
     }
 
-    // 전체 조회
+    // 전체 조회 (all=true 시 비공개 포함)
     @Get()
-    findAll() {
-        return this.noticeService.findAll();
+    findAll(@Query('all') all?: string) {
+        return this.noticeService.findAll(all === 'true');
     }
 
     // 단건 조회

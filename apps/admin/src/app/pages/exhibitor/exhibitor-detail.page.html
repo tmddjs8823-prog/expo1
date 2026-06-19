@@ -5,7 +5,7 @@
   </div>
 
   <form class="bg-white p-6 rounded shadow flex flex-col gap-4" (ngSubmit)="updateExhibitor()">
-    <div class="flex gap-4">
+    <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
         업체명
         <input [ngModel]="exhibitorForm().companyName"
@@ -27,13 +27,7 @@
         name="description" rows="4" class="w-full p-2 border rounded"></textarea>
     </label>
 
-    <div class="flex gap-4">
-      <label class="flex flex-col gap-1 flex-1">
-        부스번호
-        <input [ngModel]="exhibitorForm().boothNumber"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, boothNumber: $event}))"
-          name="boothNumber" class="w-full p-2 border rounded" />
-      </label>
+    <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
         전시회
         <select [ngModel]="exhibitorForm().exhibitionId"
@@ -44,9 +38,15 @@
           }
         </select>
       </label>
+      <label class="flex flex-col gap-1 flex-1">
+        부스번호
+        <input [ngModel]="exhibitorForm().boothNumber"
+          (ngModelChange)="exhibitorForm.update(f => ({...f, boothNumber: $event}))"
+          name="boothNumber" class="w-full p-2 border rounded" />
+      </label>
     </div>
 
-    <div class="flex gap-4">
+    <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
         이메일
         <input type="email" [ngModel]="exhibitorForm().contactEmail"

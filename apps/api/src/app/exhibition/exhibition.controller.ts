@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Delete, Query } from '@nestjs/common';
 import { ExhibitionService } from './exhibition.service';
 import { CreateExhibitionDto, UpdateExhibitionDto } from './dto/exhibition.dto';
 
@@ -12,10 +12,10 @@ export class ExhibitionController {
         return this.exhibitionService.create(dto);
     }
 
-    //전체 전시 목록조회
+    //전체 전시 목록조회 (all=true 시 비공개 포함)
     @Get()
-    async findAll() {
-        return this.exhibitionService.findAll();
+    async findAll(@Query('all') all?: string) {
+        return this.exhibitionService.findAll(all === 'true');
     }
 
     //단건 조회

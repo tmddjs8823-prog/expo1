@@ -1,5 +1,5 @@
 <!-- ① 히어로 배너 슬라이더 -->
-<section class="relative w-full h-[400px] sm:h-[500px] bg-slate-900 overflow-hidden">
+<section class="relative w-full h-[280px] sm:h-[350px] bg-slate-900 overflow-hidden">
   @if (banners().length > 0) {
     @for (banner of banners(); track banner.id; let i = $index) {
       <div class="absolute inset-0 transition-opacity duration-700"
@@ -76,7 +76,7 @@
 </section>
 
 <!-- ② 전시회 개요 -->
-<section class="bg-white py-16">
+<section class="bg-white py-10">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col gap-4 items-center">
     <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">전시회 안내</h2>
     <p class="text-slate-500 max-w-2xl">
@@ -84,19 +84,19 @@
       새로운 트렌드를 발견하고 비즈니스 기회를 만나보세요.
     </p>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      <div class="p-6 bg-slate-50 rounded-xl">
-        <div class="text-3xl font-bold text-primary-600">{{ exhibitions().length }}+</div>
-        <div class="text-sm text-slate-500">진행 전시회</div>
+    <div class="grid grid-cols-3 gap-3 sm:gap-6 w-full">
+      <div class="p-3 sm:p-6 bg-slate-50 rounded-xl text-center">
+        <div class="text-2xl sm:text-3xl font-bold text-primary-600">{{ exhibitions().length }}+</div>
+        <div class="text-xs sm:text-sm text-slate-500">진행 전시회</div>
       </div>
-      <div class="p-6 bg-slate-50 rounded-xl">
-        <div class="text-3xl font-bold text-primary-600">{{ galleries().length }}+</div>
-        <div class="text-sm text-slate-500">갤러리 사진</div>
+      <div class="p-3 sm:p-6 bg-slate-50 rounded-xl text-center">
+        <div class="text-2xl sm:text-3xl font-bold text-primary-600">{{ galleries().length }}+</div>
+        <div class="text-xs sm:text-sm text-slate-500">갤러리 사진</div>
       </div>
-      <div class="p-6 bg-slate-50 rounded-xl">
+      <div class="p-3 sm:p-6 bg-slate-50 rounded-xl text-center">
         <a routerLink="/preregistration" class="block">
-          <div class="text-3xl font-bold text-primary-600">참여하기</div>
-          <div class="text-sm text-slate-500">사전등록 →</div>
+          <div class="text-2xl sm:text-3xl font-bold text-primary-600">참여하기</div>
+          <div class="text-xs sm:text-sm text-slate-500">사전등록 →</div>
         </a>
       </div>
     </div>
@@ -105,7 +105,7 @@
 
 <!-- ③ 진행 중인 전시회 -->
 @if (exhibitions().length > 0) {
-  <section class="bg-slate-50 py-16">
+  <section class="bg-slate-50 py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
       <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold text-slate-900">진행 중인 전시회</h2>
@@ -121,7 +121,7 @@
                tabindex="0" role="link"
              class="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
             @if (ex.imageUrl) {
-              <div class="h-48 overflow-hidden">
+              <div class="h-64 overflow-hidden">
                 <img [src]="ex.imageUrl" [alt]="ex.title"
                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
@@ -147,7 +147,7 @@
 
 <!-- ⑤ 갤러리 미리보기 -->
 @if (galleries().length > 0) {
-  <section class="bg-white py-16">
+  <section class="bg-white py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
       <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold text-slate-900">갤러리</h2>
@@ -156,9 +156,12 @@
         </a>
       </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (g of galleries(); track g.id) {
-          <div class="aspect-square overflow-hidden rounded-lg">
+          <div class="h-64 overflow-hidden rounded-xl cursor-pointer"
+               (click)="router.navigate(['/gallery', g.id])"
+               (keyup.enter)="router.navigate(['/gallery', g.id])"
+               tabindex="0" role="link">
             <img [src]="g.imageUrl" [alt]="g.title"
                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
           </div>
@@ -169,7 +172,7 @@
 }
 
 <!-- CTA -->
-<section class="bg-slate-900 py-16">
+<section class="bg-slate-900 py-10">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col gap-3 items-center">
     <h2 class="text-2xl sm:text-3xl font-bold text-white">사전등록하고 광주 밀리언쇼를 만나보세요</h2>
     <p class="text-slate-400">무료 사전등록으로 다양한 전시와 프로그램을 경험해보세요.</p>

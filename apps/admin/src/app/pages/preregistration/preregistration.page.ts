@@ -1,10 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, signal, computed } from '@angular/core';
+import { handleApiError } from '../../shared/utils/api-error';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { useClientPagination } from '../../shared/utils/pagination.utils';
 
 
 export interface PreRegistration {
@@ -17,12 +19,14 @@ export interface PreRegistration {
   createdAt: string;
   updatedAt: string;
   agreeTerms: boolean;
-  agreeMarketing: boolean; 
+  agreeMarketing: boolean;
+  exhibitionId?: number;
+  exhibition?: { id: number; title: string };
 }
 
 @Component({
   selector: 'app-preregistration',
-  imports: [FormsModule, DatePipe, PaginationComponent],
+  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
   templateUrl: './preregistration.page.html'
 })
 export class PreregistrationPage {
@@ -33,31 +37,25 @@ export class PreregistrationPage {
 
   //시그널 초기 상태 정의
   preRegistrations = signal<PreRegistration[]>([]);
-  searchKeyword = signal('');
-  filteredPreRegistrations = computed(() => {
-    const keyword = this.searchKeyword().toLowerCase();
-    if (!keyword) return this.preRegistrations();
-    return this.preRegistrations().filter(r =>
-      r.name.toLowerCase().includes(keyword) ||
-      r.email.toLowerCase().includes(keyword) ||
-      (r.company ?? '').toLowerCase().includes(keyword) ||
-      (r.phone ?? '').toLowerCase().includes(keyword)
-    );
-  });
   selectedPreRegistrationId = signal<number | null>(null);
 
-  // 페이지네이션
-  currentPage = signal(1);
-  pageSize = 3;
-  totalPages = computed(() => Math.ceil(this.filteredPreRegistrations().length / this.pageSize));
-  pagedPreRegistrations = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize;
-    return this.filteredPreRegistrations().slice(start, start + this.pageSize);
+  // 검색 + 페이지네이션 (공통 유틸리티)
+  pg = useClientPagination({
+    items: this.preRegistrations,
+    filterFn: (r, kw) =>
+      r.name.toLowerCase().includes(kw) ||
+      r.email.toLowerCase().includes(kw) ||
+      (r.company ?? '').toLowerCase().includes(kw) ||
+      (r.phone ?? '').toLowerCase().includes(kw),
+    pageSize: 3,
   });
 
-  onPageChange(page: number) {
-    this.currentPage.set(page);
-  }
+  // 템플릿 바인딩용 alias
+  searchKeyword = this.pg.searchKeyword;
+  currentPage = this.pg.currentPage;
+  totalPages = this.pg.totalPages;
+  pagedPreRegistrations = this.pg.paged;
+  onPageChange = this.pg.onPageChange;
   
   //상태 목록 초기화
   constructor() {
@@ -70,7 +68,7 @@ export class PreregistrationPage {
       next: (response) => {
         this.preRegistrations.set(response);
       },
-      error: (err) => { console.error('사전등록 조회 실패:', err); this.toast.error('사전등록 조회 실패'); }
+      error: handleApiError(this.toast, '사전등록 조회 실패')
     });
   }
   
@@ -86,7 +84,7 @@ export class PreregistrationPage {
         this.toast.warning('삭제되었습니다.');
         this.loadPreregistrations();
       },
-      error: (err) => { console.error('사전등록 삭제 실패:', err); this.toast.error('사전등록 삭제 실패'); }
+      error: handleApiError(this.toast, '사전등록 삭제 실패')
     });
   }
 

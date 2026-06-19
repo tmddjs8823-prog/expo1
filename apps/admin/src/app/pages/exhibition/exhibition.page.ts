@@ -1,11 +1,13 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { handleApiError } from '../../shared/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
-import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { useClientPagination } from '../../shared/utils/pagination.utils';
 
 export interface Exhibition {
   id: number;
@@ -26,7 +28,7 @@ export interface Exhibition {
 
 @Component({
   selector: 'app-exhibition',
-  imports: [FormsModule, DatePipe, PaginationComponent],
+  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
   templateUrl: './exhibition.page.html',
 })
 export class ExhibitionPage {
@@ -37,16 +39,40 @@ export class ExhibitionPage {
   private toast = inject(ToastService);
 
   exhibitions = signal<Exhibition[]>([]);
-  searchKeyword = signal('');
-  filteredExhibitions = computed(() => {
-    const keyword = this.searchKeyword().toLowerCase();
-    if (!keyword) return this.exhibitions();
-    return this.exhibitions().filter(e =>
-      e.title.toLowerCase().includes(keyword) ||
-      (e.venue ?? '').toLowerCase().includes(keyword) ||
-      e.status.toLowerCase().includes(keyword)
-    );
+  private statusOrder: Record<string, number> = { PUBLISHED: 0, DRAFT: 1, CLOSED: 2 };
+
+  // 상태 정렬된 시그널 (useClientPagination에 전달)
+  private sortedExhibitions = computed(() =>
+    [...this.exhibitions()].sort((a, b) =>
+      (this.statusOrder[a.status] ?? 9) - (this.statusOrder[b.status] ?? 9)
+    )
+  );
+
+  // 상태 한글 매핑
+  private statusKo: Record<string, string[]> = {
+    DRAFT: ['예정'],
+    PUBLISHED: ['진행중', '진행 중'],
+    CLOSED: ['종료'],
+  };
+
+  // 검색 + 페이지네이션 (공통 유틸리티)
+  pg = useClientPagination({
+    items: this.sortedExhibitions,
+    filterFn: (e, kw) =>
+      e.title.toLowerCase().includes(kw) ||
+      (e.venue ?? '').toLowerCase().includes(kw) ||
+      e.status.toLowerCase().includes(kw) ||
+      (this.statusKo[e.status] ?? []).some(label => label.includes(kw)),
+    pageSize: 3,
   });
+
+  // 템플릿 바인딩용 alias
+  searchKeyword = this.pg.searchKeyword;
+  currentPage = this.pg.currentPage;
+  totalPages = this.pg.totalPages;
+  pagedExhibitions = this.pg.paged;
+  onPageChange = this.pg.onPageChange;
+
   exhibitionForm = signal<Exhibition>({
     id: 0,
     title: '',
@@ -59,35 +85,22 @@ export class ExhibitionPage {
     imageUrl: '',
     linkUrl: '',
     status: 'DRAFT',
-    published: false,
+    published: true,
   });
   selectedFile = signal<File | null>(null);
   uploading = signal(false);
 
   // 시간 선택용 시그널
   startDate = signal('');
-  startHour = signal('09');
+  startHour = signal('00');
   startMinute = signal('00');
   endDate = signal('');
-  endHour = signal('18');
+  endHour = signal('00');
   endMinute = signal('00');
 
   // 24시간 드롭다운 옵션
   hours24 = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   minuteOptions = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
-
-  // 페이지네이션
-  currentPage = signal(1);
-  pageSize = 3;
-  totalPages = computed(() => Math.ceil(this.filteredExhibitions().length / this.pageSize));
-  pagedExhibitions = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize;
-    return this.filteredExhibitions().slice(start, start + this.pageSize);
-  });
-
-  onPageChange(page: number) {
-    this.currentPage.set(page);
-  }
 
   constructor() {
     this.loadExhibitions();
@@ -110,10 +123,10 @@ export class ExhibitionPage {
     });
     this.selectedFile.set(null);
     this.startDate.set('');
-    this.startHour.set('09');
+    this.startHour.set('00');
     this.startMinute.set('00');
     this.endDate.set('');
-    this.endHour.set('18');
+    this.endHour.set('00');
     this.endMinute.set('00');
   }
 
@@ -155,9 +168,9 @@ export class ExhibitionPage {
   }
 
   loadExhibitions() {
-    this.http.get<Exhibition[]>('/api/exhibition').subscribe({
+    this.http.get<Exhibition[]>('/api/exhibition?all=true').subscribe({
       next: (res) => this.exhibitions.set(res),
-      error: (err) => { console.error('전시회 목록 조회 실패:', err); this.toast.error('전시회 목록 조회 실패'); },
+      error: handleApiError(this.toast, '전시회 목록 조회 실패'),
     });
   }
 
@@ -199,7 +212,7 @@ export class ExhibitionPage {
         this.loadExhibitions();
         this.resetForm();
       },
-      error: (err) => { console.error('전시회 생성 실패:', err); this.toast.error('전시회 생성 실패'); },
+      error: handleApiError(this.toast, '전시회 생성 실패'),
     });
   }
 
@@ -207,7 +220,7 @@ export class ExhibitionPage {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     this.http.delete(`/api/exhibition/${id}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.loadExhibitions(); },
-      error: (err) => { console.error('전시회 삭제 실패:', err); this.toast.error('전시회 삭제 실패'); },
+      error: handleApiError(this.toast, '전시회 삭제 실패'),
     });
   }
 }

@@ -14,7 +14,7 @@ export class InquiryService {
     // 전체 조회 (관리자)
     async findAll() {
         return this.prisma.inquiry.findMany({
-            orderBy: { createdAt: 'desc' },
+            orderBy: { updatedAt: 'desc' },
         });
     }
 

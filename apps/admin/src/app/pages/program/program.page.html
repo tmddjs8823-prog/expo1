@@ -17,7 +17,7 @@
       (ngModelChange)="programForm.update(f => ({...f, description: $event}))"
       name="description" placeholder="설명" rows="3" class="w-full p-2 border rounded"></textarea>
 
-    <div class="flex gap-4">
+    <div class="flex flex-col md:flex-row gap-4">
       <div class="flex flex-col gap-1 flex-1">
         <span class="text-sm font-medium">시작 시간</span>
         <div class="flex gap-2">
@@ -83,49 +83,33 @@
     </div>
   </form>
 
-  <!-- 검색 -->
-  <div class="flex items-center gap-2">
-    <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
-      name="search" placeholder="제목, 발표자, 장소로 검색" class="flex-1 p-2 border rounded" />
-  </div>
-
-  <!-- ── 프로그램 목록 ── -->
-  <div class="overflow-x-auto w-full bg-white rounded-lg shadow-sm border border-slate-100">
-    <table class="w-full min-w-[800px] table-fixed">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">제목</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">발표자</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">시작시간</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">종료시간</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">장소</th>
-          <th class="p-3 text-left text-slate-600 font-semibold text-sm">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (prog of pagedPrograms(); track prog.id) {
-          <tr class="border-t hover:bg-slate-50 transition-colors cursor-pointer text-slate-700 text-sm" (click)="router.navigate(['/program', prog.id])">
-            <td class="p-3 truncate" [title]="prog.title">{{ prog.title }}</td>
-            <td class="p-3 truncate" [title]="prog.speaker ?? ''">{{ prog.speaker }}</td>
-            <td class="p-3">{{ prog.startTime | date:'yy-MM-dd HH:mm' }}</td>
-            <td class="p-3">{{ prog.endTime | date:'yy-MM-dd HH:mm' }}</td>
-            <td class="p-3 truncate" [title]="prog.location">{{ prog.location }}</td>
-            <td class="p-3">
-              <button (click)="$event.stopPropagation(); deletePrograms(prog.id)"
-                class="text-red-600 hover:underline">삭제</button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="p-6 text-center text-slate-400">등록된 프로그램이 없습니다.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-
-  <app-pagination
+  <!-- ── 프로그램 목록 (공통 그리드) ── -->
+  <app-data-grid
+    [items]="pagedPrograms()"
+    [searchKeyword]="searchKeyword()"
+    (searchChange)="searchKeyword.set($event)"
+    searchPlaceholder="제목, 장소로 검색"
+    emptyMessage="등록된 프로그램이 없습니다."
+    [columns]="['제목','시작시간','종료시간','장소','공개','관리']"
+    minWidth="800px"
+    [rowClickable]="true"
+    (rowClick)="router.navigate(['/program', $event.id])"
     [currentPage]="currentPage()"
     [totalPages]="totalPages()"
-    (pageChange)="onPageChange($event)" />
+    (pageChange)="onPageChange($event)">
+
+    <ng-template appGridRow let-prog>
+      <td class="p-3 truncate" [title]="prog.title">{{ prog.title }}</td>
+      <td class="p-3 whitespace-nowrap">{{ prog.startTime | date:'yy-MM-dd HH:mm' }}</td>
+      <td class="p-3 whitespace-nowrap">{{ prog.endTime | date:'yy-MM-dd HH:mm' }}</td>
+      <td class="p-3 truncate" [title]="prog.location">{{ prog.location }}</td>
+      <td class="p-3">
+        <span [class]="prog.published ? 'text-green-600' : 'text-red-500'">{{ prog.published ? '공개' : '비공개' }}</span>
+      </td>
+      <td class="p-3">
+        <button (click)="$event.stopPropagation(); deletePrograms(prog.id)"
+          class="text-red-600 hover:underline">삭제</button>
+      </td>
+    </ng-template>
+  </app-data-grid>
 </div>

@@ -16,9 +16,10 @@ export class ProgramService {
         });
     }
 
-    async findAll() {
+    async findAll(includeAll = false) {
         return this.prisma.program.findMany({
-            orderBy: { sortOrder : 'asc'},
+            orderBy: { updatedAt: 'desc'},
+            ...(includeAll ? {} : { where: { published: true } }),
         });
     }
     async findOne(id : number) {

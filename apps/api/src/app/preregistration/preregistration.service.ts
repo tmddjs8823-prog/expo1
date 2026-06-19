@@ -20,7 +20,8 @@ export class PreregistrationService {
 
     async findAll() {
         return this.prisma.preRegistration.findMany({
-            orderBy: { createdAt: 'desc' },
+            include: { exhibition: { select: { id: true, title: true } } },
+            orderBy: { updatedAt: 'desc' },
         });
     }
 // 단일 조회
@@ -28,6 +29,7 @@ export class PreregistrationService {
     async findOne(id: number) {
         const reg = await this.prisma.preRegistration.findUnique({
             where: { id },
+            include: { exhibition: { select: { id: true, title: true } } },
         });
         if (!reg) {
             throw new NotFoundException('사전등록을 찾을 수 없습니다.');

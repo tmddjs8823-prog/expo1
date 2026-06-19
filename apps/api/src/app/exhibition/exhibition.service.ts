@@ -7,8 +7,11 @@ export class ExhibitionService {
     constructor(private readonly prisma: PrismaService) {}
 
     // 전시 목록 조회
-    async findAll() {
-        return this.prisma.exhibition.findMany({ orderBy: { startDate: 'desc' } });
+    async findAll(includeAll = false) {
+        return this.prisma.exhibition.findMany({
+            orderBy: { updatedAt: 'desc' },
+            ...(includeAll ? {} : { where: { published: true } }),
+        });
     }
 
     async findOne(id: number) {

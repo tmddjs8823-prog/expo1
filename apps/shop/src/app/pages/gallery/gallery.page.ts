@@ -1,7 +1,6 @@
 import { Component, inject, signal, computed, HostListener } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-import { DatePipe } from '@angular/common';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
 
 interface Gallery {
@@ -18,7 +17,7 @@ interface Gallery {
 
 @Component({
   selector: 'app-gallery',
-  imports: [RouterModule, DatePipe, PaginationComponent],
+  imports: [RouterModule, PaginationComponent],
   templateUrl: './gallery.page.html',
 })
 export class GalleryPage {
@@ -28,15 +27,14 @@ export class GalleryPage {
   selectedIndex = signal<number | null>(null);
 
   // 공개된 항목만 필터링
-  publishedGalleries = computed(() => this.galleries().filter(g => g.published));
 
   // 페이지네이션
   currentPage = signal(1);
   pageSize = 3;
-  totalPages = computed(() => Math.ceil(this.publishedGalleries().length / this.pageSize));
+  totalPages = computed(() => Math.ceil(this.galleries().length / this.pageSize));
   pagedGalleries = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize;
-    return this.publishedGalleries().slice(start, start + this.pageSize);
+    return this.galleries().slice(start, start + this.pageSize);
   });
 
   constructor() {

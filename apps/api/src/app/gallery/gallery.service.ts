@@ -12,9 +12,10 @@ export class GalleryService {
     }
 
     // 전체 조회
-    async findAll() {
+    async findAll(includeAll = false) {
         return this.prisma.gallery.findMany({
-            orderBy: { sortOrder: 'asc' },
+            orderBy: { updatedAt: 'desc' },
+            ...(includeAll ? {} : { where: { published: true } }),
         });
     }
 
