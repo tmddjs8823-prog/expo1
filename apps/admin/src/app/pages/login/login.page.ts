@@ -15,8 +15,13 @@ export class LoginPage {
   email = signal('');
   password = signal('');
   error = signal('');
+  loading = signal(false);
 
   login() {
+    if (this.loading()) return;
+    this.loading.set(true);
+    this.error.set('');
+
     this.http
       .post<{ accessToken: string; refreshToken: string }>('/api/auth/login', {
         email: this.email(),
@@ -30,7 +35,8 @@ export class LoginPage {
         },
         error: () => {
           this.error.set('이메일 또는 비밀번호가 올바르지 않습니다.');
+          this.loading.set(false);
         },
       });
   }
-}
+}

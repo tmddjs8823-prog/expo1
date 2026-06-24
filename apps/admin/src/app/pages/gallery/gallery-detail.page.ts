@@ -2,14 +2,16 @@ import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { Gallery } from './gallery.page';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-gallery-detail',
-  imports: [FormsModule],
+  imports: [FormsModule, PageHeaderComponent],
   templateUrl: './gallery-detail.page.html',
 })
 export class GalleryDetailPage {
@@ -18,6 +20,7 @@ export class GalleryDetailPage {
   private router = inject(Router);
 
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
   private supabase = inject(SupabaseService);
 
   galleryId = Number(this.route.snapshot.paramMap.get('id'));
@@ -81,8 +84,8 @@ export class GalleryDetailPage {
     });
   }
 
-  deleteGallery() {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  async deleteGallery() {
+    const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/gallery/${this.galleryId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/gallery']); },
       error: handleApiError(this.toast, '갤러리 삭제 실패'),

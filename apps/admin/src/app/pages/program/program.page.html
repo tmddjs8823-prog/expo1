@@ -1,36 +1,36 @@
-<div class="flex flex-col gap-4 p-6">
-  <h1 class="text-2xl font-bold">프로그램 관리</h1>
+<div class="flex flex-col gap-4">
+  <app-page-header title="프로그램 관리" />
 
-  <!-- ── 생성/수정 폼 ── -->
-  <form class="bg-white p-6 rounded shadow flex flex-col gap-4"
+  <!-- 생성/수정 폼 -->
+  <form class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4"
     (ngSubmit)="selectedProgramId() ? updatePrograms() : createProgram()">
 
     <input [ngModel]="programForm().title"
       (ngModelChange)="programForm.update(f => ({...f, title: $event}))"
-      name="title" placeholder="프로그램 제목" class="w-full p-2 border rounded" />
+      name="title" placeholder="프로그램 제목" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
 
     <input [ngModel]="programForm().speaker"
       (ngModelChange)="programForm.update(f => ({...f, speaker: $event}))"
-      name="speaker" placeholder="발표자" class="w-full p-2 border rounded" />
+      name="speaker" placeholder="발표자" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
 
     <textarea [ngModel]="programForm().description"
       (ngModelChange)="programForm.update(f => ({...f, description: $event}))"
-      name="description" placeholder="설명" rows="3" class="w-full p-2 border rounded"></textarea>
+      name="description" placeholder="설명" rows="3" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all resize-none"></textarea>
 
     <div class="flex flex-col md:flex-row gap-4">
       <div class="flex flex-col gap-1 flex-1">
-        <span class="text-sm font-medium">시작 시간</span>
+        <span class="text-sm font-medium text-slate-700">시작 시간</span>
         <div class="flex gap-2">
           <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)"
-            name="startDate" (keydown)="$event.preventDefault()" class="flex-1 p-2 border rounded cursor-pointer" />
+            name="startDate" (keydown)="$event.preventDefault()" class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
           <select [ngModel]="startHour()" (ngModelChange)="startHour.set($event)"
-            name="startHour" class="w-20 p-2 border rounded">
+            name="startHour" class="w-20 px-2 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500">
             @for (h of hours24; track h) {
               <option [value]="h">{{ h }}시</option>
             }
           </select>
           <select [ngModel]="startMinute()" (ngModelChange)="startMinute.set($event)"
-            name="startMinute" class="w-20 p-2 border rounded">
+            name="startMinute" class="w-20 px-2 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500">
             @for (m of minutes; track m) {
               <option [value]="m">{{ m }}분</option>
             }
@@ -38,18 +38,18 @@
         </div>
       </div>
       <div class="flex flex-col gap-1 flex-1">
-        <span class="text-sm font-medium">종료 시간</span>
+        <span class="text-sm font-medium text-slate-700">종료 시간</span>
         <div class="flex gap-2">
           <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)"
-            name="endDate" (keydown)="$event.preventDefault()" class="flex-1 p-2 border rounded cursor-pointer" />
+            name="endDate" (keydown)="$event.preventDefault()" class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
           <select [ngModel]="endHour()" (ngModelChange)="endHour.set($event)"
-            name="endHour" class="w-20 p-2 border rounded">
+            name="endHour" class="w-20 px-2 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500">
             @for (h of hours24; track h) {
               <option [value]="h">{{ h }}시</option>
             }
           </select>
           <select [ngModel]="endMinute()" (ngModelChange)="endMinute.set($event)"
-            name="endMinute" class="w-20 p-2 border rounded">
+            name="endMinute" class="w-20 px-2 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500">
             @for (m of minutes; track m) {
               <option [value]="m">{{ m }}분</option>
             }
@@ -60,30 +60,30 @@
 
     <input [ngModel]="programForm().location"
       (ngModelChange)="programForm.update(f => ({...f, location: $event}))"
-      name="location" placeholder="장소" class="w-full p-2 border rounded" />
+      name="location" placeholder="장소" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
 
-    <label class="flex items-center gap-2 text-sm">
+    <label class="flex items-center gap-2 text-sm select-none cursor-pointer text-slate-700">
       <input type="checkbox" [ngModel]="programForm().published"
         (ngModelChange)="programForm.update(f => ({...f, published: $event}))"
-        name="published" class="w-4 h-4" />
+        name="published" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
       공개
     </label>
 
     <div class="flex gap-2">
       <button type="submit"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm transition-colors">
         {{ selectedProgramId() ? '수정' : '생성' }}
       </button>
       @if (selectedProgramId()) {
         <button type="button" (click)="resetForm()"
-          class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
+          class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">
           취소
         </button>
       }
     </div>
   </form>
 
-  <!-- ── 프로그램 목록 (공통 그리드) ── -->
+  <!-- 프로그램 목록 -->
   <app-data-grid
     [option]="gridOption"
     (rowClick)="router.navigate(['/program', $event.id])" />

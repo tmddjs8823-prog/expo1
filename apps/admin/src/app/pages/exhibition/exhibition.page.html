@@ -1,44 +1,44 @@
-<div class="flex flex-col gap-4 p-6">
-  <h1 class="text-2xl font-bold">전시회 관리</h1>
+<div class="flex flex-col gap-4">
+  <app-page-header title="전시회 관리" />
 
   <!-- 생성 폼 -->
-  <form (submit)="$event.preventDefault()" class="bg-white p-6 rounded shadow flex flex-col gap-4">
+  <form (submit)="$event.preventDefault()" class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4">
     <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
-        제목
+        <span class="text-sm font-medium text-slate-700">제목</span>
         <input [ngModel]="exhibitionForm().title"
           (ngModelChange)="exhibitionForm.update(f => ({...f, title: $event}))"
-          name="title" class="w-full p-2 border rounded" />
+          name="title" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
       </label>
       <label class="flex flex-col gap-1 flex-1">
-        제목 (EN)
+        <span class="text-sm font-medium text-slate-700">제목 (EN)</span>
         <input [ngModel]="exhibitionForm().titleEn"
           (ngModelChange)="exhibitionForm.update(f => ({...f, titleEn: $event}))"
-          name="titleEn" class="w-full p-2 border rounded" />
+          name="titleEn" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
       </label>
     </div>
 
     <label class="flex flex-col gap-1">
-      설명
+      <span class="text-sm font-medium text-slate-700">설명</span>
       <textarea [ngModel]="exhibitionForm().description"
         (ngModelChange)="exhibitionForm.update(f => ({...f, description: $event}))"
-        name="description" rows="3" class="w-full p-2 border rounded"></textarea>
+        name="description" rows="3" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all resize-none"></textarea>
     </label>
 
     <div class="flex flex-col md:flex-row gap-4">
       <div class="flex flex-col gap-1 flex-1">
-        <span class="text-sm font-medium">시작일</span>
+        <span class="text-sm font-medium text-slate-700">시작일</span>
         <div class="flex gap-2">
           <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)"
-            name="startDate" (keydown)="$event.preventDefault()" class="flex-1 p-2 border rounded cursor-pointer" />
+            name="startDate" (keydown)="$event.preventDefault()" class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
           <select [ngModel]="startHour()" (ngModelChange)="startHour.set($event)"
-            name="startHour" class="w-20 p-2 border rounded">
+            name="startHour" class="w-20 px-2 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500">
             @for (h of hours24; track h) {
               <option [value]="h">{{ h }}시</option>
             }
           </select>
           <select [ngModel]="startMinute()" (ngModelChange)="startMinute.set($event)"
-            name="startMinute" class="w-20 p-2 border rounded">
+            name="startMinute" class="w-20 px-2 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500">
             @for (m of minuteOptions; track m) {
               <option [value]="m">{{ m }}분</option>
             }
@@ -46,18 +46,18 @@
         </div>
       </div>
       <div class="flex flex-col gap-1 flex-1">
-        <span class="text-sm font-medium">종료일</span>
+        <span class="text-sm font-medium text-slate-700">종료일</span>
         <div class="flex gap-2">
           <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)"
-            name="endDate" (keydown)="$event.preventDefault()" class="flex-1 p-2 border rounded cursor-pointer" />
+            name="endDate" (keydown)="$event.preventDefault()" class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
           <select [ngModel]="endHour()" (ngModelChange)="endHour.set($event)"
-            name="endHour" class="w-20 p-2 border rounded">
+            name="endHour" class="w-20 px-2 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500">
             @for (h of hours24; track h) {
               <option [value]="h">{{ h }}시</option>
             }
           </select>
           <select [ngModel]="endMinute()" (ngModelChange)="endMinute.set($event)"
-            name="endMinute" class="w-20 p-2 border rounded">
+            name="endMinute" class="w-20 px-2 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500">
             @for (m of minuteOptions; track m) {
               <option [value]="m">{{ m }}분</option>
             }
@@ -68,16 +68,16 @@
 
     <div class="flex flex-col md:flex-row gap-4">
       <label class="flex flex-col gap-1 flex-1">
-        장소
+        <span class="text-sm font-medium text-slate-700">장소</span>
         <input [ngModel]="exhibitionForm().venue"
           (ngModelChange)="exhibitionForm.update(f => ({...f, venue: $event}))"
-          name="venue" class="w-full p-2 border rounded" />
+          name="venue" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
       </label>
       <label class="flex flex-col gap-1 flex-1">
-        상태
+        <span class="text-sm font-medium text-slate-700">상태</span>
         <select [ngModel]="exhibitionForm().status"
           (ngModelChange)="exhibitionForm.update(f => ({...f, status: $event}))"
-          name="status" class="w-full p-2 border rounded">
+          name="status" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500">
           <option value="DRAFT">예정</option>
           <option value="PUBLISHED">진행중</option>
           <option value="CLOSED">종료</option>
@@ -87,36 +87,36 @@
 
     <input [ngModel]="exhibitionForm().linkUrl"
       (ngModelChange)="exhibitionForm.update(f => ({...f, linkUrl: $event}))"
-      name="linkUrl" placeholder="클릭 시 이동할 링크 (선택)" class="w-full p-2 border rounded" />
+      name="linkUrl" placeholder="클릭 시 이동할 링크 (선택)" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
 
-    <label class="flex items-center gap-2 text-sm select-none cursor-pointer">
+    <label class="flex items-center gap-2 text-sm select-none cursor-pointer text-slate-700">
       <input type="checkbox" [ngModel]="exhibitionForm().published"
         (ngModelChange)="exhibitionForm.update(f => ({...f, published: $event}))"
-        name="published" class="w-4 h-4" />
+        name="published" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
       공개
     </label>
 
     <!-- 이미지 업로드 -->
     <div class="flex flex-col gap-2">
-      <span class="text-sm font-medium text-gray-700">전시회 이미지 (선택)</span>
+      <span class="text-sm font-medium text-slate-700">전시회 이미지 (선택)</span>
       <input #exhibitionFileInput type="file" accept="image/*" (change)="onFileSelected($event)"
         class="hidden" />
       <button type="button" (click)="exhibitionFileInput.click()"
-        class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200 text-sm text-gray-700 w-fit">
+        class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 text-sm text-slate-600 w-fit transition-colors">
         파일 선택
       </button>
       @if (exhibitionForm().imageUrl) {
-        <img [src]="exhibitionForm().imageUrl" alt="미리보기" class="w-full max-h-48 object-cover rounded" />
+        <img [src]="exhibitionForm().imageUrl" alt="미리보기" class="w-full max-h-48 object-cover rounded-lg" />
       }
     </div>
 
     <div class="flex gap-2">
-      <button type="button" (click)="createExhibition()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">생성</button>
-      <button type="button" (click)="resetForm()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">초기화</button>
+      <button type="button" (click)="createExhibition()" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm transition-colors">생성</button>
+      <button type="button" (click)="resetForm()" class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">초기화</button>
     </div>
   </form>
 
-  <!-- ── 전시회 목록 (공통 그리드) ── -->
+  <!-- 전시회 목록 -->
   <app-data-grid
     [option]="gridOption"
     (rowClick)="router.navigate(['/exhibition', $event.id])" />

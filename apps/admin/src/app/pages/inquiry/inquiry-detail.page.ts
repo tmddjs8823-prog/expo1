@@ -2,15 +2,17 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { Inquiry } from './inquiry.page';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { AppDetailFieldsComponent, DetailField } from '../../shared/detail-fields/detail-fields.component';
 
 @Component({
   selector: 'app-inquiry-detail',
-  imports: [FormsModule, AppDetailFieldsComponent],
+  imports: [FormsModule, AppDetailFieldsComponent, PageHeaderComponent],
   templateUrl: './inquiry-detail.page.html',
 })
 export class InquiryDetailPage {
@@ -19,6 +21,7 @@ export class InquiryDetailPage {
   private router = inject(Router);
 
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   private datePipe = inject(DatePipe);
 
@@ -61,8 +64,8 @@ export class InquiryDetailPage {
     });
   }
 
-  deleteInquiry() {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  async deleteInquiry() {
+    const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/inquiry/${this.inquiryId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/inquiry']); },
       error: handleApiError(this.toast, '문의 삭제 실패'),

@@ -6,7 +6,9 @@ import { FormsModule } from '@angular/forms';
 import { Exhibition } from '../exhibition/exhibition.page';
 import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 export interface Exhibitor {
   exhibitionId: number;
@@ -28,7 +30,7 @@ export interface Exhibitor {
 
 @Component({
   selector: 'app-exhibitor',
-  imports: [FormsModule, AdminDataGridComponent],
+  imports: [FormsModule, AdminDataGridComponent, PageHeaderComponent],
   templateUrl: './exhibitor.page.html'
 })
 export class ExhibitorPage {
@@ -36,6 +38,7 @@ export class ExhibitorPage {
   router = inject(Router);
 
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   //초기 시그널 폼 정의
   exhibitors = signal<Exhibitor[]>([]);
@@ -178,8 +181,8 @@ export class ExhibitorPage {
   
   //참가업체 목록 삭제
 
-  deleteExhibitor(id: number) {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  async deleteExhibitor(id: number) {
+    const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/exhibitor/${id}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.loadExhibitors(); },
       error: handleApiError(this.toast, '참가업체 삭제 실패'),

@@ -5,7 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 export interface FaqCategory {
   id :number;
@@ -34,7 +36,7 @@ export interface Faq {
 
 @Component({
   selector: 'app-faq',
-  imports : [FormsModule, AdminDataGridComponent],
+  imports : [FormsModule, AdminDataGridComponent, PageHeaderComponent],
   templateUrl: './faq.page.html',
 })
 export class FaqPage {
@@ -42,6 +44,7 @@ export class FaqPage {
   router = inject(Router);
 
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
   
 
 
@@ -135,8 +138,8 @@ createCategory() {
 }
 
 // 카테고리 삭제
-deleteCategory(id: number) {
-  if (!confirm('이 카테고리와 소속 FAQ가 모두 삭제됩니다. 계속하시겠습니까?')) return;
+async deleteCategory(id: number) {
+  const ok = await this.confirmDialog.open({ title: '카테고리 삭제', message: '이 카테고리와 소속 FAQ가 모두 삭제됩니다.', variant: 'warning' }); if (!ok) return;
   this.http.delete(`/api/faq/category/${id}`).subscribe({
     next: () => {
       this.toast.warning('삭제되었습니다.');
@@ -212,8 +215,8 @@ updateFaq() {
 
   
   //삭제
-  deleteFaq(id:number) {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  async deleteFaq(id:number) {
+    const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/faq/${id}`)
     .subscribe({
       next: () => {

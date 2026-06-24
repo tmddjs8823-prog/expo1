@@ -4,8 +4,10 @@ import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 export interface Banner {
   id: number;
@@ -20,13 +22,14 @@ export interface Banner {
 
 @Component({
   selector: 'app-banner',
-  imports: [FormsModule, AdminDataGridComponent],
+  imports: [FormsModule, AdminDataGridComponent, PageHeaderComponent],
   templateUrl: './banner.page.html',
 })
 export class BannerPage {
   private http = inject(HttpClient);
 
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
   private supabase = inject(SupabaseService);
 
   banners = signal<Banner[]>([]);
@@ -173,8 +176,8 @@ export class BannerPage {
     });
   }
 
-  deleteBanner(id: number) {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  async deleteBanner(id: number) {
+    const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/banner/${id}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.loadBanners(); },
       error: handleApiError(this.toast, '배너 삭제 실패'),

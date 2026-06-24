@@ -2,13 +2,15 @@ import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Faq, FaqCategory } from './faq.page';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-faq-detail',
-  imports: [FormsModule],
+  imports: [FormsModule, PageHeaderComponent],
   templateUrl: './faq-detail.page.html',
 })
 export class FaqDetailPage {
@@ -17,6 +19,7 @@ export class FaqDetailPage {
   private router = inject(Router);
 
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   faqId = Number(this.route.snapshot.paramMap.get('id'));
   question = signal('');
@@ -61,8 +64,8 @@ export class FaqDetailPage {
     });
   }
 
-  deleteFaq() {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  async deleteFaq() {
+    const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/faq/${this.faqId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/faq']); },
       error: handleApiError(this.toast, 'FAQ 삭제 실패'),

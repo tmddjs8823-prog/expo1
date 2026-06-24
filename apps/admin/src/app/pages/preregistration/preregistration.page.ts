@@ -5,7 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 
 export interface PreRegistration {
@@ -25,7 +27,7 @@ export interface PreRegistration {
 
 @Component({
   selector: 'app-preregistration',
-  imports: [FormsModule, AdminDataGridComponent],
+  imports: [FormsModule, AdminDataGridComponent, PageHeaderComponent],
   templateUrl: './preregistration.page.html'
 })
 export class PreregistrationPage {
@@ -33,6 +35,7 @@ export class PreregistrationPage {
   router = inject(Router);
 
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   //시그널 초기 상태 정의
   preRegistrations = signal<PreRegistration[]>([]);
@@ -96,8 +99,8 @@ export class PreregistrationPage {
     this.selectedPreRegistrationId.set(id);
   }
   //선택 삭제
-  deletePreRegistration(id: number) {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  async deletePreRegistration(id: number) {
+    const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/preregistration/${id}`).subscribe({
       next: () => {
         this.toast.warning('삭제되었습니다.');

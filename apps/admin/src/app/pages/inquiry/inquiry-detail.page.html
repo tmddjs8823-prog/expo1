@@ -1,15 +1,12 @@
-<div class="flex flex-col gap-4 p-6">
-  <div class="flex items-center gap-4">
-    <button (click)="goBack()" class="text-gray-500 hover:text-gray-700">← 목록</button>
-    <h1 class="text-2xl font-bold">문의 상세</h1>
-  </div>
+<div class="flex flex-col gap-4">
+  <app-page-header title="문의 상세" backLabel="목록" (backClick)="goBack()" />
 
   @if (inquiry()) {
     <!-- 문의 내용 -->
-    <div class="bg-white p-6 rounded shadow flex flex-col gap-4">
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <h2 class="text-lg font-semibold">{{ inquiry()!.subject }}</h2>
-        <span class="text-sm px-2.5 py-1 rounded-full"
+        <h2 class="text-lg font-semibold text-slate-900">{{ inquiry()!.subject }}</h2>
+        <span class="text-sm px-2.5 py-1 rounded-full w-fit"
               [class.bg-yellow-100]="inquiry()!.status === 'PENDING'"
               [class.text-yellow-700]="inquiry()!.status === 'PENDING'"
               [class.bg-green-100]="inquiry()!.status === 'ANSWERED'"
@@ -23,25 +20,25 @@
       <app-detail-fields [fields]="detailFields()" />
 
       <div class="border-t pt-4">
-        <span class="text-sm text-gray-500">문의 내용</span>
-        <p class="mt-1 text-gray-900 whitespace-pre-line">{{ inquiry()!.content }}</p>
+        <span class="text-sm text-slate-500">문의 내용</span>
+        <p class="mt-1 text-slate-900 whitespace-pre-line">{{ inquiry()!.content }}</p>
       </div>
     </div>
 
     <!-- 답변 작성 -->
-    <div class="bg-white p-6 rounded shadow flex flex-col gap-4">
-      <h2 class="text-lg font-semibold">답변</h2>
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4">
+      <h2 class="text-lg font-semibold text-slate-900">답변</h2>
       <textarea [ngModel]="answerText()" (ngModelChange)="answerText.set($event)"
         name="answer" placeholder="답변을 입력하세요" rows="5"
-        class="w-full p-3 border rounded"></textarea>
+        class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all resize-none"></textarea>
 
       <div class="flex gap-2">
         <button (click)="submitAnswer()"
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">답변 저장</button>
+          class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm transition-colors">답변 저장</button>
         <button (click)="deleteInquiry()"
-          class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">삭제</button>
+          class="px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors">삭제</button>
         <button (click)="goBack()"
-          class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">취소</button>
+          class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">취소</button>
       </div>
     </div>
   }

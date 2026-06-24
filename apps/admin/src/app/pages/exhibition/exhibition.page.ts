@@ -6,7 +6,9 @@ import { Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 export interface Exhibition {
   id: number;
@@ -27,7 +29,7 @@ export interface Exhibition {
 
 @Component({
   selector: 'app-exhibition',
-  imports: [FormsModule, AdminDataGridComponent],
+  imports: [FormsModule, AdminDataGridComponent, PageHeaderComponent],
   templateUrl: './exhibition.page.html',
 })
 export class ExhibitionPage {
@@ -36,6 +38,7 @@ export class ExhibitionPage {
   router = inject(Router);
 
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   exhibitions = signal<Exhibition[]>([]);
   private statusOrder: Record<string, number> = { PUBLISHED: 0, DRAFT: 1, CLOSED: 2 };
@@ -256,8 +259,9 @@ export class ExhibitionPage {
     });
   }
 
-  deleteExhibition(id: number) {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  async deleteExhibition(id: number) {
+    const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' });
+    if (!ok) return;
     this.http.delete(`/api/exhibition/${id}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.loadExhibitions(); },
       error: handleApiError(this.toast, '전시회 삭제 실패'),

@@ -5,7 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 export interface Notice {
   id : number ;
@@ -23,7 +25,7 @@ export interface Notice {
 
 @Component({
   selector: 'app-notice',
-  imports: [FormsModule, AdminDataGridComponent],
+  imports: [FormsModule, AdminDataGridComponent, PageHeaderComponent],
   templateUrl: './notice.page.html',
 })
 export class NoticePage{private http = 
@@ -31,6 +33,7 @@ export class NoticePage{private http =
   router = inject(Router);
 
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
 notices = signal<Notice[]>([]);
 selectedNoticeId = signal<number | null>(null);
@@ -143,8 +146,8 @@ updateNotice() {
     })
   }
 
-deleteNotice(id : number) {
-  if (!confirm('정말 삭제하시겠습니까?')) return;
+async deleteNotice(id : number) {
+  const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
   this.http.delete(`/api/notice/${id}`)
     .subscribe({
       next: ()=> {

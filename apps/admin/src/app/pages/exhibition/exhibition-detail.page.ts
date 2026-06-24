@@ -2,22 +2,24 @@ import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { Exhibition } from './exhibition.page';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-exhibition-detail',
-  imports: [FormsModule],
+  imports: [FormsModule, PageHeaderComponent],
   templateUrl: './exhibition-detail.page.html',
 })
 export class ExhibitionDetailPage {
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
   private supabase = inject(SupabaseService);
 
   exhibitionId = Number(this.route.snapshot.paramMap.get('id'));
@@ -38,7 +40,6 @@ export class ExhibitionDetailPage {
   selectedFile = signal<File | null>(null);
   uploading = signal(false);
 
-  // 시간 선택용 시그널
   startDate = signal('');
   startHour = signal('09');
   startMinute = signal('00');
@@ -46,7 +47,6 @@ export class ExhibitionDetailPage {
   endHour = signal('18');
   endMinute = signal('00');
 
-  // 24시간 드롭다운 옵션
   hours24 = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   minuteOptions = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
 
@@ -54,13 +54,11 @@ export class ExhibitionDetailPage {
     this.loadExhibition();
   }
 
-  // 날짜 + 시/분 → ISO 문자열 조합
   assembleDateTime(date: string, hour: string, minute: string): string {
     if (!date) return '';
     return new Date(`${date}T${hour}:${minute}:00`).toISOString();
   }
 
-  // Date → yyyy-MM-dd (로컬 시간 기준)
   toLocalDateStr(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -72,13 +70,10 @@ export class ExhibitionDetailPage {
     this.http.get<Exhibition>(`/api/exhibition/${this.exhibitionId}`).subscribe({
       next: (res) => {
         this.exhibitionForm.set({ ...res });
-
-        // 로컬 시간 기준으로 분해
         const s = new Date(res.startDate);
         this.startDate.set(this.toLocalDateStr(s));
         this.startHour.set(String(s.getHours()).padStart(2, '0'));
         this.startMinute.set(String(Math.round(s.getMinutes() / 5) * 5).padStart(2, '0'));
-
         const e = new Date(res.endDate);
         this.endDate.set(this.toLocalDateStr(e));
         this.endHour.set(String(e.getHours()).padStart(2, '0'));
@@ -126,7 +121,6 @@ export class ExhibitionDetailPage {
     }
 
     const imageUrl = await this.uploadImage();
-
     const payload: Record<string, unknown> = {
       title: data.title,
       startDate: startIso,
@@ -139,7 +133,6 @@ export class ExhibitionDetailPage {
       venue: data.venue?.trim() || null,
       linkUrl: data.linkUrl?.trim() || null,
     };
-
     if (imageUrl && !imageUrl.startsWith('blob:')) payload['imageUrl'] = imageUrl;
 
     this.http.patch(`/api/exhibition/${this.exhibitionId}`, payload).subscribe({
@@ -148,8 +141,9 @@ export class ExhibitionDetailPage {
     });
   }
 
-  deleteExhibition() {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  async deleteExhibition() {
+    const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' });
+    if (!ok) return;
     this.http.delete(`/api/exhibition/${this.exhibitionId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/exhibition']); },
       error: handleApiError(this.toast, '전시회 삭제 실패'),

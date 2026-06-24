@@ -5,11 +5,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { PreRegistration } from './preregistration.page';
 import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { AppDetailFieldsComponent, DetailField } from '../../shared/detail-fields/detail-fields.component';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 @Component({
   selector: 'app-preregistration-detail',
-  imports: [AppDetailFieldsComponent],
+  imports: [AppDetailFieldsComponent, PageHeaderComponent],
   templateUrl: './preregistration-detail.page.html',
 })
 export class PreregistrationDetailPage {
@@ -18,6 +20,7 @@ export class PreregistrationDetailPage {
   private router = inject(Router);
 
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   private datePipe = inject(DatePipe);
 
@@ -49,8 +52,8 @@ export class PreregistrationDetailPage {
     });
   }
 
-  deleteRegistration() {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  async deleteRegistration() {
+    const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/preregistration/${this.regId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/preregistration']); },
       error: handleApiError(this.toast, '사전등록 삭제 실패'),
