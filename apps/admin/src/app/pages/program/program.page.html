@@ -85,31 +85,6 @@
 
   <!-- ── 프로그램 목록 (공통 그리드) ── -->
   <app-data-grid
-    [items]="pagedPrograms()"
-    [searchKeyword]="searchKeyword()"
-    (searchChange)="searchKeyword.set($event)"
-    searchPlaceholder="제목, 장소로 검색"
-    emptyMessage="등록된 프로그램이 없습니다."
-    [columns]="['제목','시작시간','종료시간','장소','공개','관리']"
-    minWidth="800px"
-    [rowClickable]="true"
-    (rowClick)="router.navigate(['/program', $event.id])"
-    [currentPage]="currentPage()"
-    [totalPages]="totalPages()"
-    (pageChange)="onPageChange($event)">
-
-    <ng-template appGridRow let-prog>
-      <td class="p-3 truncate" [title]="prog.title">{{ prog.title }}</td>
-      <td class="p-3 whitespace-nowrap">{{ prog.startTime | date:'yy-MM-dd HH:mm' }}</td>
-      <td class="p-3 whitespace-nowrap">{{ prog.endTime | date:'yy-MM-dd HH:mm' }}</td>
-      <td class="p-3 truncate" [title]="prog.location">{{ prog.location }}</td>
-      <td class="p-3">
-        <span [class]="prog.published ? 'text-green-600' : 'text-red-500'">{{ prog.published ? '공개' : '비공개' }}</span>
-      </td>
-      <td class="p-3">
-        <button (click)="$event.stopPropagation(); deletePrograms(prog.id)"
-          class="text-red-600 hover:underline">삭제</button>
-      </td>
-    </ng-template>
-  </app-data-grid>
+    [option]="gridOption"
+    (rowClick)="router.navigate(['/program', $event.id])" />
 </div>

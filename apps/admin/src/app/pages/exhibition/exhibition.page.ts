@@ -1,11 +1,10 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error';
+import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
-import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
+import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
 
@@ -28,7 +27,7 @@ export interface Exhibition {
 
 @Component({
   selector: 'app-exhibition',
-  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
+  imports: [FormsModule, AdminDataGridComponent],
   templateUrl: './exhibition.page.html',
 })
 export class ExhibitionPage {
@@ -66,12 +65,53 @@ export class ExhibitionPage {
     pageSize: 3,
   });
 
-  // 템플릿 바인딩용 alias
   searchKeyword = this.pg.searchKeyword;
-  currentPage = this.pg.currentPage;
-  totalPages = this.pg.totalPages;
-  pagedExhibitions = this.pg.paged;
-  onPageChange = this.pg.onPageChange;
+
+  private statusLabel(status: string): string {
+    switch (status) {
+      case 'DRAFT': return '예정';
+      case 'PUBLISHED': return '진행중';
+      case 'CLOSED': return '종료';
+      default: return status;
+    }
+  }
+
+  private statusClass(status: string): string {
+    switch (status) {
+      case 'DRAFT': return 'text-blue-600';
+      case 'PUBLISHED': return 'text-green-600';
+      case 'CLOSED': return 'text-red-500';
+      default: return '';
+    }
+  }
+
+  private readonly columnDefs: ColumnDef<Exhibition>[] = [
+    { header: '제목', field: 'title', truncate: true, title: (e) => e.title },
+    { header: '장소', field: 'venue', truncate: true, title: (e) => e.venue ?? '' },
+    { header: '시작일', field: 'startDate', type: 'date' },
+    { header: '종료일', field: 'endDate', type: 'date' },
+    {
+      header: '상태',
+      type: 'badge',
+      render: (e) => this.statusLabel(e.status),
+      badgeClass: (e) => this.statusClass(e.status),
+    },
+    {
+      header: '관리',
+      actions: [
+        { label: '삭제', class: 'text-red-600 hover:underline', onClick: (e) => this.deleteExhibition(e.id) },
+      ],
+    },
+  ];
+
+  readonly gridOption: DataGridOption<Exhibition> = {
+    columnDefs: this.columnDefs,
+    searchPlaceholder: '제목, 장소, 상태(예정/진행중/종료)로 검색',
+    emptyMessage: '등록된 전시회가 없습니다.',
+    minWidth: '800px',
+    rowClickable: true,
+    pagination: this.pg,
+  };
 
   exhibitionForm = signal<Exhibition>({
     id: 0,

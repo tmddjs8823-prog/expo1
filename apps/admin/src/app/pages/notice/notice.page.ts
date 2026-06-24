@@ -1,10 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error';
+import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
+import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
 
@@ -24,7 +23,7 @@ export interface Notice {
 
 @Component({
   selector: 'app-notice',
-  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
+  imports: [FormsModule, AdminDataGridComponent],
   templateUrl: './notice.page.html',
 })
 export class NoticePage{private http = 
@@ -49,16 +48,30 @@ pg = useClientPagination({
   pageSize: 3,
 });
 
-// 템플릿 바인딩용 alias
-searchKeyword = this.pg.searchKeyword;
-currentPage = this.pg.currentPage;
-totalPages = this.pg.totalPages;
-pagedNotices = this.pg.paged;
-onPageChange = this.pg.onPageChange;
+  private readonly columnDefs: ColumnDef<Notice>[] = [
+    { header: '제목', field: 'title', truncate: true, title: (n) => n.title },
+    {
+      header: '공개여부',
+      type: 'badge',
+      render: (n) => n.published ? '공개' : '비공개',
+      badgeClass: (n) => n.published ? 'text-green-600' : 'text-red-500',
+    },
+    { header: '작성일', field: 'createdAt', type: 'date' },
+    {
+      header: '관리',
+      actions: [
+        { label: '삭제', class: 'text-red-600 hover:underline', onClick: (n) => this.deleteNotice(n.id) },
+      ],
+    },
+  ];
 
-
-
-
+  readonly gridOption: DataGridOption<Notice> = {
+    columnDefs: this.columnDefs,
+    searchPlaceholder: '제목, 내용으로 검색',
+    emptyMessage: '등록된 공지사항이 없습니다.',
+    rowClickable: true,
+    pagination: this.pg,
+  };
 
 // 상태 목록 초기화
 constructor(){

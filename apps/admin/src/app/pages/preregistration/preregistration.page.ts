@@ -1,10 +1,9 @@
-import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error';
+import { handleApiError } from '../../shared/utils/api-error.utils';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
+import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
 
@@ -26,7 +25,7 @@ export interface PreRegistration {
 
 @Component({
   selector: 'app-preregistration',
-  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
+  imports: [FormsModule, AdminDataGridComponent],
   templateUrl: './preregistration.page.html'
 })
 export class PreregistrationPage {
@@ -50,12 +49,32 @@ export class PreregistrationPage {
     pageSize: 3,
   });
 
-  // 템플릿 바인딩용 alias
   searchKeyword = this.pg.searchKeyword;
-  currentPage = this.pg.currentPage;
-  totalPages = this.pg.totalPages;
-  pagedPreRegistrations = this.pg.paged;
-  onPageChange = this.pg.onPageChange;
+
+  private readonly columnDefs: ColumnDef<PreRegistration>[] = [
+    { header: '이름', field: 'name' },
+    { header: '이메일', field: 'email', truncate: true, title: (r) => r.email },
+    { header: '전화번호', field: 'phone', truncate: true, title: (r) => r.phone },
+    { header: '회사', field: 'company', truncate: true, title: (r) => r.company },
+    { header: '직책', field: 'jobTitle' },
+    { header: '전시회', render: (r) => r.exhibition?.title ?? '-', truncate: true, title: (r) => r.exhibition?.title ?? '-' },
+    { header: '등록일', field: 'createdAt', type: 'date' },
+    {
+      header: '관리',
+      actions: [
+        { label: '삭제', class: 'text-red-600 hover:underline', onClick: (r) => this.deletePreRegistration(r.id) },
+      ],
+    },
+  ];
+
+  readonly gridOption: DataGridOption<PreRegistration> = {
+    columnDefs: this.columnDefs,
+    searchPlaceholder: '이름, 이메일, 회사, 전화번호로 검색',
+    emptyMessage: '등록된 사전등록이 없습니다.',
+    minWidth: '800px',
+    rowClickable: true,
+    pagination: this.pg,
+  };
   
   //상태 목록 초기화
   constructor() {

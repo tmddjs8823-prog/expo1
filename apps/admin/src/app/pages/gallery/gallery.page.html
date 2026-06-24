@@ -52,36 +52,6 @@
 
   <!-- ── 갤러리 목록 (공통 그리드) ── -->
   <app-data-grid
-    [items]="pagedGalleries()"
-    [searchKeyword]="searchKeyword()"
-    (searchChange)="searchKeyword.set($event)"
-    searchPlaceholder="제목, 설명으로 검색"
-    emptyMessage="등록된 갤러리가 없습니다."
-    [columns]="['미리보기','제목','공개여부','작성일','관리']"
-    [rowClickable]="true"
-    (rowClick)="router.navigate(['/gallery', $event.id])"
-    [currentPage]="currentPage()"
-    [totalPages]="totalPages()"
-    (pageChange)="onPageChange($event)">
-
-    <ng-template appGridRow let-gallery>
-      <td class="p-3">
-        <img [src]="gallery.imageUrl" [alt]="gallery.title"
-          class="w-16 h-16 object-cover rounded">
-      </td>
-      <td class="p-3 truncate" [title]="gallery.title">{{ gallery.title }}</td>
-      <td class="p-3">
-        @if (gallery.published) {
-          <span class="text-green-600">공개</span>
-        } @else {
-          <span class="text-red-500">비공개</span>
-        }
-      </td>
-      <td class="p-3 whitespace-nowrap">{{ gallery.createdAt | date:'yy-MM-dd' }}</td>
-      <td class="p-3">
-        <button (click)="$event.stopPropagation(); deleteGallery(gallery.id)"
-          class="text-red-600 hover:underline">삭제</button>
-      </td>
-    </ng-template>
-  </app-data-grid>
+    [option]="gridOption"
+    (rowClick)="router.navigate(['/gallery', $event.id])" />
 </div>

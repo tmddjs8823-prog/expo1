@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error';
+import { handleApiError } from '../../shared/utils/api-error.utils';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Exhibition } from '../exhibition/exhibition.page';
-import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
+import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
 
@@ -28,7 +28,7 @@ export interface Exhibitor {
 
 @Component({
   selector: 'app-exhibitor',
-  imports: [FormsModule, AdminDataGridComponent, GridRowDef],
+  imports: [FormsModule, AdminDataGridComponent],
   templateUrl: './exhibitor.page.html'
 })
 export class ExhibitorPage {
@@ -52,12 +52,28 @@ export class ExhibitorPage {
     pageSize: 3,
   });
 
-  // 템플릿 바인딩용 alias
   searchKeyword = this.pg.searchKeyword;
-  currentPage = this.pg.currentPage;
-  totalPages = this.pg.totalPages;
-  pagedExhibitors = this.pg.paged;
-  onPageChange = this.pg.onPageChange;
+
+  private readonly columnDefs: ColumnDef<Exhibitor>[] = [
+    { header: '전시회', render: (e) => e.exhibition?.title ?? '-', truncate: true, title: (e) => e.exhibition?.title ?? '-' },
+    { header: '업체명', field: 'companyName', truncate: true, title: (e) => e.companyName },
+    { header: '부스번호', field: 'boothNumber', truncate: true, title: (e) => e.boothNumber ?? '' },
+    { header: '이메일', field: 'contactEmail', truncate: true, title: (e) => e.contactEmail ?? '' },
+    {
+      header: '관리',
+      actions: [
+        { label: '삭제', class: 'text-red-600 hover:underline', onClick: (e) => this.deleteExhibitor(e.id) },
+      ],
+    },
+  ];
+
+  readonly gridOption: DataGridOption<Exhibitor> = {
+    columnDefs: this.columnDefs,
+    searchPlaceholder: '업체명, 부스번호, 이메일로 검색',
+    emptyMessage: '등록된 참가업체가 없습니다.',
+    rowClickable: true,
+    pagination: this.pg,
+  };
   exhibitorForm = signal<Exhibitor>({
     id: 0,
     companyName: '',

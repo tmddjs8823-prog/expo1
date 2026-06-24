@@ -1,10 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error';
+import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
+import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
 
@@ -23,7 +22,7 @@ export interface Inquiry {
 
 @Component({
   selector: 'app-inquiry',
-  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
+  imports: [FormsModule, AdminDataGridComponent],
   templateUrl: './inquiry.page.html'
 })
 export class InquiryPage {
@@ -47,12 +46,49 @@ export class InquiryPage {
     pageSize: 3,
   });
 
-  // 템플릿 바인딩용 alias
-  searchKeyword = this.pg.searchKeyword;
-  currentPage = this.pg.currentPage;
-  totalPages = this.pg.totalPages;
-  pagedInquiries = this.pg.paged;
-  onPageChange = this.pg.onPageChange;
+  private statusLabel(status: string): string {
+    switch (status) {
+      case 'PENDING': return '대기';
+      case 'ANSWERED': return '답변완료';
+      case 'CLOSED': return '종료';
+      default: return status;
+    }
+  }
+
+  private statusClass(status: string): string {
+    switch (status) {
+      case 'PENDING': return 'text-blue-600';
+      case 'ANSWERED': return 'text-green-600';
+      case 'CLOSED': return 'text-red-500';
+      default: return '';
+    }
+  }
+
+  private readonly columnDefs: ColumnDef<Inquiry>[] = [
+    { header: '이름', field: 'name' },
+    { header: '제목', field: 'subject' },
+    {
+      header: '상태',
+      type: 'badge',
+      render: (i) => this.statusLabel(i.status),
+      badgeClass: (i) => this.statusClass(i.status),
+    },
+    { header: '접수일', field: 'createdAt', type: 'date' },
+    {
+      header: '관리',
+      actions: [
+        { label: '삭제', class: 'text-red-600 hover:underline', onClick: (i) => this.deleteInquiry(i.id) },
+      ],
+    },
+  ];
+
+  readonly gridOption: DataGridOption<Inquiry> = {
+    columnDefs: this.columnDefs,
+    searchPlaceholder: '이름, 제목, 이메일로 검색',
+    emptyMessage: '등록된 문의가 없습니다.',
+    rowClickable: true,
+    pagination: this.pg,
+  };
 
   constructor() {
     this.loadInquiries();
@@ -111,13 +147,4 @@ export class InquiryPage {
     this.answerText.set('');
   }
 
-  // 상태 한글 변환
-  statusLabel(status: string): string {
-    switch (status) {
-      case 'PENDING': return '대기';
-      case 'ANSWERED': return '답변완료';
-      case 'CLOSED': return '종료';
-      default: return status;
-    }
-  }
 }

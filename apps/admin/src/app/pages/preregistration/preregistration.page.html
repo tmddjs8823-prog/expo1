@@ -1,33 +1,8 @@
 <div class="flex flex-col gap-4 p-6">
   <h1 class="text-2xl font-bold">사전등록 관리</h1>
 
-  <!-- ── 사전등록 목록 (공통 그리드) ── -->
+  <!-- 사전등록 목록 (공통 그리드) -->
   <app-data-grid
-    [items]="pagedPreRegistrations()"
-    [searchKeyword]="searchKeyword()"
-    (searchChange)="searchKeyword.set($event)"
-    searchPlaceholder="이름, 이메일, 회사, 전화번호로 검색"
-    emptyMessage="등록된 사전등록이 없습니다."
-    [columns]="['이름','이메일','전화번호','회사','직책','전시회','등록일','관리']"
-    minWidth="800px"
-    [rowClickable]="true"
-    (rowClick)="router.navigate(['/preregistration', $event.id])"
-    [currentPage]="currentPage()"
-    [totalPages]="totalPages()"
-    (pageChange)="onPageChange($event)">
-
-    <ng-template appGridRow let-reg>
-      <td class="p-3">{{ reg.name }}</td>
-      <td class="p-3 truncate" [title]="reg.email">{{ reg.email }}</td>
-      <td class="p-3 truncate" [title]="reg.phone">{{ reg.phone }}</td>
-      <td class="p-3 truncate" [title]="reg.company">{{ reg.company }}</td>
-      <td class="p-3">{{ reg.jobTitle }}</td>
-      <td class="p-3 truncate" [title]="reg.exhibition?.title ?? '-'">{{ reg.exhibition?.title ?? '-' }}</td>
-      <td class="p-3 whitespace-nowrap">{{ reg.createdAt | date:'yy-MM-dd' }}</td>
-      <td class="p-3">
-        <button (click)="$event.stopPropagation(); deletePreRegistration(reg.id)"
-          class="text-red-600 hover:underline">삭제</button>
-      </td>
-    </ng-template>
-  </app-data-grid>
+    [option]="gridOption"
+    (rowClick)="router.navigate(['/preregistration', $event.id])" />
 </div>

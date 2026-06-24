@@ -118,35 +118,6 @@
 
   <!-- ── 전시회 목록 (공통 그리드) ── -->
   <app-data-grid
-    [items]="pagedExhibitions()"
-    [searchKeyword]="searchKeyword()"
-    (searchChange)="searchKeyword.set($event)"
-    searchPlaceholder="제목, 장소, 상태(예정/진행중/종료)로 검색"
-    emptyMessage="등록된 전시회가 없습니다."
-    [columns]="['제목','장소','시작일','종료일','상태','관리']"
-    minWidth="800px"
-    [rowClickable]="true"
-    (rowClick)="router.navigate(['/exhibition', $event.id])"
-    [currentPage]="currentPage()"
-    [totalPages]="totalPages()"
-    (pageChange)="onPageChange($event)">
-
-    <ng-template appGridRow let-ex>
-      <td class="p-3 truncate" [title]="ex.title">{{ ex.title }}</td>
-      <td class="p-3 truncate" [title]="ex.venue">{{ ex.venue }}</td>
-      <td class="p-3 whitespace-nowrap">{{ ex.startDate | date:'yy-MM-dd' }}</td>
-      <td class="p-3 whitespace-nowrap">{{ ex.endDate | date:'yy-MM-dd' }}</td>
-      <td class="p-3">
-        @switch (ex.status) {
-          @case ('DRAFT') { <span class="text-blue-600">예정</span> }
-          @case ('PUBLISHED') { <span class="text-green-600">진행중</span> }
-          @case ('CLOSED') { <span class="text-red-500">종료</span> }
-        }
-      </td>
-      <td class="p-3">
-        <button (click)="$event.stopPropagation(); deleteExhibition(ex.id)"
-          class="text-red-600 hover:underline">삭제</button>
-      </td>
-    </ng-template>
-  </app-data-grid>
+    [option]="gridOption"
+    (rowClick)="router.navigate(['/exhibition', $event.id])" />
 </div>

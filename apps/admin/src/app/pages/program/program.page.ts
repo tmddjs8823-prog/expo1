@@ -1,10 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error';
+import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
 import { Component, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
+import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
 
@@ -27,7 +26,7 @@ export interface Programs {
 
 @Component({
   selector: 'app-program',
-  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
+  imports: [FormsModule, AdminDataGridComponent],
   templateUrl: './program.page.html'
 })
 export class ProgramPage {
@@ -50,12 +49,35 @@ export class ProgramPage {
     pageSize: 3,
   });
 
-  // 템플릿 바인딩용 alias
   searchKeyword = this.pg.searchKeyword;
-  currentPage = this.pg.currentPage;
-  totalPages = this.pg.totalPages;
-  pagedPrograms = this.pg.paged;
-  onPageChange = this.pg.onPageChange;
+
+  private readonly columnDefs: ColumnDef<Programs>[] = [
+    { header: '제목', field: 'title', truncate: true, title: (p) => p.title },
+    { header: '시작시간', field: 'startTime', type: 'date', dateFormat: 'yy-MM-dd HH:mm' },
+    { header: '종료시간', field: 'endTime', type: 'date', dateFormat: 'yy-MM-dd HH:mm' },
+    { header: '장소', field: 'location', truncate: true, title: (p) => p.location },
+    {
+      header: '공개',
+      type: 'badge',
+      render: (p) => p.published ? '공개' : '비공개',
+      badgeClass: (p) => p.published ? 'text-green-600' : 'text-red-500',
+    },
+    {
+      header: '관리',
+      actions: [
+        { label: '삭제', class: 'text-red-600 hover:underline', onClick: (p) => this.deletePrograms(p.id) },
+      ],
+    },
+  ];
+
+  readonly gridOption: DataGridOption<Programs> = {
+    columnDefs: this.columnDefs,
+    searchPlaceholder: '제목, 장소로 검색',
+    emptyMessage: '등록된 프로그램이 없습니다.',
+    minWidth: '800px',
+    rowClickable: true,
+    pagination: this.pg,
+  };
 
   // 선택된 공지사항의 전체 데이터
   selectedPrograms = signal<Programs | null>(null);

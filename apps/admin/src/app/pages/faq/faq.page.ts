@@ -1,10 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error';
+import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
+import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
 
@@ -35,7 +34,7 @@ export interface Faq {
 
 @Component({
   selector: 'app-faq',
-  imports : [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
+  imports : [FormsModule, AdminDataGridComponent],
   templateUrl: './faq.page.html',
 })
 export class FaqPage {
@@ -74,12 +73,33 @@ pg = useClientPagination({
   pageSize: 3,
 });
 
-// 템플릿 바인딩용 alias
 searchKeyword = this.pg.searchKeyword;
-currentPage = this.pg.currentPage;
-totalPages = this.pg.totalPages;
-pagedFaqs = this.pg.paged;
-onPageChange = this.pg.onPageChange;
+
+private readonly columnDefs: ColumnDef<Faq>[] = [
+  { header: '카테고리', render: (f) => f.category?.name ?? '-', truncate: true, title: (f) => f.category?.name ?? '-' },
+  { header: '질문', field: 'question', truncate: true, title: (f) => f.question },
+  {
+    header: '상태',
+    type: 'badge',
+    render: (f) => f.published ? '공개' : '비공개',
+    badgeClass: (f) => f.published ? 'text-green-600' : 'text-red-500',
+  },
+  { header: '작성일', field: 'createdAt', type: 'date' },
+  {
+    header: '관리',
+    actions: [
+      { label: '삭제', class: 'text-red-600 hover:underline', onClick: (f) => this.deleteFaq(f.id) },
+    ],
+  },
+];
+
+readonly gridOption: DataGridOption<Faq> = {
+  columnDefs: this.columnDefs,
+  searchPlaceholder: '질문, 답변, 카테고리로 검색',
+  emptyMessage: '등록된 FAQ가 없습니다.',
+  rowClickable: true,
+  pagination: this.pg,
+};
 
 // 리셋
 resetForm() {

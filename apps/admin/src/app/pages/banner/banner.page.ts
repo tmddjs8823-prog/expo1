@@ -1,11 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error';
+import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 import { SupabaseService } from '../../services/supabase.service';
 import { ToastService } from '../../shared/toast/toast.service';
-import { AdminDataGridComponent, GridRowDef } from '../../shared/data-grid/data-grid.component';
+import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
 
 export interface Banner {
@@ -21,7 +20,7 @@ export interface Banner {
 
 @Component({
   selector: 'app-banner',
-  imports: [FormsModule, DatePipe, AdminDataGridComponent, GridRowDef],
+  imports: [FormsModule, AdminDataGridComponent],
   templateUrl: './banner.page.html',
 })
 export class BannerPage {
@@ -38,9 +37,35 @@ export class BannerPage {
     filterFn: (b, kw) => b.title.toLowerCase().includes(kw),
   });
 
-  // 템플릿 바인딩용 alias
   searchKeyword = this.pg.searchKeyword;
   filteredBanners = this.pg.filtered;
+
+  private readonly columnDefs: ColumnDef<Banner>[] = [
+    { header: '미리보기', field: 'imageUrl', type: 'image', imageClass: 'w-32 h-16 object-cover rounded' },
+    { header: '제목', field: 'title', truncate: true, title: (b) => b.title },
+    {
+      header: '공개',
+      type: 'badge',
+      render: (b) => b.published ? '공개' : '비공개',
+      badgeClass: (b) => b.published ? 'text-green-600' : 'text-red-500',
+    },
+    { header: '순서', field: 'sortOrder' },
+    { header: '작성일', field: 'createdAt', type: 'date' },
+    {
+      header: '관리',
+      actions: [
+        { label: '수정', class: 'text-blue-600 hover:underline mr-3', onClick: (b) => this.editBanner(b) },
+        { label: '삭제', class: 'text-red-600 hover:underline', onClick: (b) => this.deleteBanner(b.id) },
+      ],
+    },
+  ];
+
+  readonly gridOption: DataGridOption<Banner> = {
+    columnDefs: this.columnDefs,
+    searchPlaceholder: '제목으로 검색',
+    emptyMessage: '등록된 배너가 없습니다.',
+    pagination: this.pg,
+  };
 
   // 폼
   title = signal('');

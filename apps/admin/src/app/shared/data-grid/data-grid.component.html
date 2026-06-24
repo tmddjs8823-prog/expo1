@@ -3,8 +3,8 @@
   <div class="flex items-center gap-2 mb-2">
     <input
       type="text"
-      [ngModel]="searchKeyword()"
-      (ngModelChange)="searchChange.emit($event)"
+      [ngModel]="displaySearchKeyword()"
+      (ngModelChange)="onSearchChange($event)"
       name="search"
       [placeholder]="searchPlaceholder()"
       class="flex-1 p-2 border rounded"
@@ -17,27 +17,61 @@
   <table [style.min-width]="minWidth()" [class]="tableFixed() ? 'w-full table-fixed' : 'w-full'">
     <thead class="bg-gray-50">
       <tr>
-        @if (headerTpl) {
-          <ng-container
-            *ngTemplateOutlet="headerTpl.templateRef"
-          />
-        } @else {
-          @for (col of columns(); track col) {
-            <th class="p-3 text-left text-slate-600 font-semibold text-sm">{{ col }}</th>
-          }
+        @for (col of columns(); track col) {
+          <th class="p-6 text-left text-slate-600 font-semibold text-sm">{{ col }}</th>
         }
       </tr>
     </thead>
     <tbody>
-      @for (item of items(); track trackByFn()(item)) {
+      @for (item of displayItems(); track trackByFn()(item)) {
         <tr
-          class="border-t hover:bg-slate-50 transition-colors text-slate-700 text-sm"
+          class="border-t hover:bg-slate-50 transition-colors text-slate-600 text-sm [&>td]:p-6 [&>td]:align-middle"
           [class.cursor-pointer]="rowClickable()"
           (click)="rowClickable() && rowClick.emit(item)"
         >
-          <ng-container
-            *ngTemplateOutlet="rowTpl?.templateRef ?? null; context: { $implicit: item }"
-          />
+          @for (col of columnDefs(); track col.header) {
+            <td [class.truncate]="col.truncate" [attr.title]="col.title ? col.title(item) : null">
+
+              @switch (col.type) {
+
+                @case ('image') {
+                  <img
+                    [src]="getCellValue(item, col)"
+                    [alt]="col.header"
+                    loading="lazy"
+                    [class]="col.imageClass ?? 'w-16 h-16 object-cover rounded'"
+                  />
+                }
+
+                @case ('date') {
+                  {{ getCellValue(item, col) | gridDate:(col.dateFormat ?? 'yy-MM-dd') }}
+                }
+
+                @case ('badge') {
+                  <span [class]="col.badgeClass ? col.badgeClass(item) : ''">
+                    {{ getCellValue(item, col) }}
+                  </span>
+                }
+
+                @default {
+                  @if (col.actions && col.actions.length) {
+                    <span class="flex gap-3 whitespace-nowrap">
+                      @for (action of col.actions; track action.label) {
+                        <button
+                          [class]="action.class ?? 'text-slate-600 hover:underline'"
+                          (click)="onActionClick(action, item, $event)"
+                        >{{ action.label }}</button>
+                      }
+                    </span>
+                  } @else {
+                    {{ getCellValue(item, col) }}
+                  }
+                }
+
+              }
+
+            </td>
+          }
         </tr>
       } @empty {
         <tr>
@@ -54,10 +88,10 @@
 </div>
 
 <!-- 페이지네이션 (선택적) -->
-@if (totalPages() > 0) {
+@if (displayTotalPages() > 0) {
   <app-pagination
-    [currentPage]="currentPage()"
-    [totalPages]="totalPages()"
-    (pageChange)="pageChange.emit($event)"
+    [currentPage]="displayCurrentPage()"
+    [totalPages]="displayTotalPages()"
+    (pageChange)="onPageChanged($event)"
   />
 }

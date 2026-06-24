@@ -1,0 +1,35 @@
+@if (totalPages() > 1) {
+  <nav class="flex items-center justify-center gap-1 py-4" aria-label="페이지 탐색">
+    <button (click)="goToPage(currentPage() - 1)"
+            [disabled]="currentPage() === 1"
+            class="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    @for (page of visiblePages(); track page) {
+      @if (page === -1) {
+        <span class="w-8 h-8 flex items-center justify-center text-gray-400">…</span>
+      } @else {
+        <button (click)="goToPage(page)"
+                class="w-8 h-8 flex items-center justify-center rounded text-sm font-medium"
+                [class.bg-blue-600]="page === currentPage()"
+                [class.text-white]="page === currentPage()"
+                [class.text-gray-700]="page !== currentPage()"
+                [class.hover:bg-gray-100]="page !== currentPage()"
+                [attr.aria-current]="page === currentPage() ? 'page' : null">
+          {{ page }}
+        </button>
+      }
+    }
+
+    <button (click)="goToPage(currentPage() + 1)"
+            [disabled]="currentPage() === totalPages()"
+            class="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </nav>
+}

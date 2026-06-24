@@ -59,30 +59,6 @@
     </div>
   </form>
 
-  <!-- ── 배너 목록 (공통 그리드) ── -->
-  <app-data-grid
-    [items]="filteredBanners()"
-    [searchKeyword]="searchKeyword()"
-    (searchChange)="searchKeyword.set($event)"
-    searchPlaceholder="제목으로 검색"
-    emptyMessage="등록된 배너가 없습니다."
-    [columns]="['미리보기','제목','공개','순서','작성일','관리']">
-
-    <ng-template appGridRow let-banner>
-      <td class="p-3 align-middle">
-        <img [src]="banner.imageUrl" [alt]="banner.title"
-          class="w-32 h-16 object-cover rounded" />
-      </td>
-      <td class="p-3 align-middle truncate" [title]="banner.title">{{ banner.title }}</td>
-      <td class="p-3 align-middle">{{ banner.published ? '공개' : '비공개' }}</td>
-      <td class="p-3 align-middle">{{ banner.sortOrder }}</td>
-      <td class="p-3 align-middle">{{ banner.createdAt | date:'yy-MM-dd' }}</td>
-      <td class="p-3 align-middle whitespace-nowrap">
-        <button (click)="editBanner(banner)"
-          class="text-blue-600 hover:underline mr-3">수정</button>
-        <button (click)="deleteBanner(banner.id)"
-          class="text-red-600 hover:underline">삭제</button>
-      </td>
-    </ng-template>
-  </app-data-grid>
+  <!-- 배너 목록 (공통 그리드) -->
+  <app-data-grid [option]="gridOption" />
 </div>
