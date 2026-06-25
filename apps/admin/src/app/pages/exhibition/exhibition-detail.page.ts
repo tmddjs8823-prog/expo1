@@ -8,6 +8,7 @@ import { SupabaseService } from '../../services/supabase.service';
 import { Exhibition } from './exhibition.page';
 import { ToastService } from '../../shared/toast/toast.service';
 import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
+import { useImageUpload } from '../../shared/utils/image-upload.utils';
 
 @Component({
   selector: 'app-exhibition-detail',
@@ -38,7 +39,10 @@ export class ExhibitionDetailPage {
     published: false,
   });
   selectedFile = signal<File | null>(null);
-  uploading = signal(false);
+
+  // 이미지 업로드 (공통 유틸)
+  private imgUpload = useImageUpload(this.supabase, 'LSG');
+  uploading = this.imgUpload.uploading;
 
   startDate = signal('');
   startHour = signal('09');
@@ -87,23 +91,15 @@ export class ExhibitionDetailPage {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      this.selectedFile.set(file);
+      this.imgUpload.selectedFile.set(file);
       this.exhibitionForm.update(f => ({ ...f, imageUrl: URL.createObjectURL(file) }));
     }
   }
 
   async uploadImage(): Promise<string | null> {
-    const file = this.selectedFile();
+    const file = this.imgUpload.selectedFile();
     if (!file) return this.exhibitionForm().imageUrl || null;
-    this.uploading.set(true);
-    try {
-      return await this.supabase.uploadImage('LSG', file);
-    } catch (err) {
-      console.error('이미지 업로드 실패:', err);
-      return null;
-    } finally {
-      this.uploading.set(false);
-    }
+    return await this.imgUpload.upload();
   }
 
   async updateExhibition() {

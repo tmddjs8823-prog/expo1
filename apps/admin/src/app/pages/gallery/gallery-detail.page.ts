@@ -8,6 +8,7 @@ import { SupabaseService } from '../../services/supabase.service';
 import { Gallery } from './gallery.page';
 import { ToastService } from '../../shared/toast/toast.service';
 import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
+import { useImageUpload } from '../../shared/utils/image-upload.utils';
 
 @Component({
   selector: 'app-gallery-detail',
@@ -26,13 +27,26 @@ export class GalleryDetailPage {
   galleryId = Number(this.route.snapshot.paramMap.get('id'));
   title = signal('');
   description = signal('');
-  imageUrl = signal('');
-  selectedFile = signal<File | null>(null);
-  uploading = signal(false);
   published = signal(false);
+  exhibitionId = signal<number | null>(null);
+  exhibitions = signal<{ id: number; title: string }[]>([]);
+
+  // 이미지 업로드 (공통 유틸)
+  private imgUpload = useImageUpload(this.supabase, 'LSG');
+  imageUrl = this.imgUpload.imageUrl;
+  uploading = this.imgUpload.uploading;
+  onFileSelected = this.imgUpload.onFileSelected.bind(this.imgUpload);
 
   constructor() {
     this.loadGallery();
+    this.loadExhibitions();
+  }
+
+  loadExhibitions() {
+    this.http.get<{ id: number; title: string }[]>('/api/exhibition?all=true').subscribe({
+      next: (res) => this.exhibitions.set(res),
+      error: handleApiError(this.toast, '전시회 목록 조회 실패'),
+    });
   }
 
   loadGallery() {
@@ -42,42 +56,22 @@ export class GalleryDetailPage {
         this.description.set(res.description ?? '');
         this.imageUrl.set(res.imageUrl);
         this.published.set(res.published);
+        this.exhibitionId.set(res.exhibitionId ?? null);
       },
       error: handleApiError(this.toast, '갤러리 조회 실패'),
     });
   }
 
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      this.selectedFile.set(input.files[0]);
-      this.imageUrl.set(URL.createObjectURL(input.files[0]));
-    }
-  }
 
-  async uploadImage(): Promise<string | null> {
-    const file = this.selectedFile();
-    if (!file) return this.imageUrl() || null;
-    this.uploading.set(true);
-    try {
-      const url = await this.supabase.uploadImage('LSG', file);
-      this.imageUrl.set(url);
-      return url;
-    } catch (err) {
-      console.error('이미지 업로드 실패:', err);
-      return null;
-    } finally {
-      this.uploading.set(false);
-    }
-  }
 
   async updateGallery() {
-    const url = await this.uploadImage();
+    const url = await this.imgUpload.upload();
     this.http.patch(`/api/gallery/${this.galleryId}`, {
       title: this.title(),
       description: this.description(),
       imageUrl: url || this.imageUrl(),
       published: this.published(),
+      exhibitionId: this.exhibitionId() || undefined,
     }).subscribe({
       next: () => { this.toast.success('수정되었습니다.'); this.router.navigate(['/gallery']); },
       error: handleApiError(this.toast, '갤러리 수정 실패'),

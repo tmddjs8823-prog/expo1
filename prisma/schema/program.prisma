@@ -12,7 +12,8 @@ model Program {
   speakerEn   String?
   startTime   DateTime
   endTime     DateTime
-  location    String?
+  exhibitionId Int?
+  exhibition   Exhibition?  @relation(fields: [exhibitionId], references: [id], onDelete: Restrict)
   published   Boolean  @default(false)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())

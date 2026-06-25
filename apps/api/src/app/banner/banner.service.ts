@@ -24,13 +24,14 @@ export class BannerService {
     async findAll(includeAll = false) {
         return this.prisma.banner.findMany({
             orderBy: { sortOrder: 'asc' },
-            ...(includeAll ? {} : { where: { published: true } }),
+            include: { exhibition: true },
+            where: includeAll ? undefined : { published: true },
         });
     }
 
     // 단건 조회
     async findOne(id: number) {
-        const banner = await this.prisma.banner.findUnique({ where: { id } });
+        const banner = await this.prisma.banner.findUnique({ where: { id }, include: { exhibition: true } });
         if (!banner) throw new NotFoundException('배너를 찾을 수 없습니다.');
         return banner;
     }

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
 import { ToastService } from '../../shared/toast/toast.service';
@@ -19,7 +19,8 @@ export interface Programs {
   speakerEn?: string
   startTime: string
   endTime: string
-  location: string
+  exhibitionId?: number
+  exhibition?: { id: number; title: string }
   published?: boolean
   sortOrder?: number
   createdAt?: Date
@@ -40,7 +41,13 @@ export class ProgramPage {
 
   //시그널 초기상태 정리
   programs = signal<Programs[]>([]);
+  exhibitions = signal<{ id: number; title: string }[]>([]);
   selectedProgramId = signal<number | null>(null);
+
+  // 행사 옵션 (동적)
+  exhibitionOptions = computed(() =>
+    this.exhibitions().map(e => ({ label: e.title, value: String(e.id) }))
+  );
 
   // 검색 + 페이지네이션 (공통 유틸리티)
   pg = useClientPagination({
@@ -48,7 +55,20 @@ export class ProgramPage {
     filterFn: (p, kw) =>
       p.title.toLowerCase().includes(kw) ||
       (p.speaker ?? '').toLowerCase().includes(kw) ||
-      (p.location ?? '').toLowerCase().includes(kw),
+      (p.exhibition?.title ?? '').toLowerCase().includes(kw),
+    filterDefs: [
+      {
+        key: 'published', label: '공개여부',
+        options: [{ label: '공개', value: 'true' }, { label: '비공개', value: 'false' }],
+        filterFn: (p, v) => String(p.published) === v,
+      },
+      {
+        key: 'exhibitionId', label: '행사',
+        options: this.exhibitionOptions,
+        filterFn: (p, v) => String(p.exhibitionId) === v,
+      },
+    ],
+    manualSearch: true,
     pageSize: 3,
   });
 
@@ -58,7 +78,7 @@ export class ProgramPage {
     { header: '제목', field: 'title', truncate: true, title: (p) => p.title },
     { header: '시작시간', field: 'startTime', type: 'date', dateFormat: 'yy-MM-dd HH:mm' },
     { header: '종료시간', field: 'endTime', type: 'date', dateFormat: 'yy-MM-dd HH:mm' },
-    { header: '장소', field: 'location', truncate: true, title: (p) => p.location },
+    { header: '전시회', render: (p) => p.exhibition?.title ?? '-', truncate: true, title: (p) => p.exhibition?.title ?? '-' },
     {
       header: '공개',
       type: 'badge',
@@ -75,7 +95,7 @@ export class ProgramPage {
 
   readonly gridOption: DataGridOption<Programs> = {
     columnDefs: this.columnDefs,
-    searchPlaceholder: '제목, 장소로 검색',
+    searchPlaceholder: '제목, 발표자, 전시회로 검색',
     emptyMessage: '등록된 프로그램이 없습니다.',
     minWidth: '800px',
     rowClickable: true,
@@ -95,7 +115,7 @@ export class ProgramPage {
     speakerEn: '',
     startTime: '',
     endTime: '',
-    location: '',
+    exhibitionId: undefined,
     published: true,
     sortOrder: 0,
   });
@@ -115,6 +135,14 @@ export class ProgramPage {
   // constructor
   constructor() {
     this.loadprograms();
+    this.loadExhibitions();
+  }
+
+  loadExhibitions() {
+    this.http.get<{ id: number; title: string }[]>('/api/exhibition?all=true').subscribe({
+      next: (res) => this.exhibitions.set(res),
+      error: handleApiError(this.toast, '전시회 목록 조회 실패'),
+    });
   }
 
   // 날짜 + 시/분 → ISO 문자열 조합
@@ -136,7 +164,7 @@ export class ProgramPage {
           speakerEn: '',
           startTime: '',
           endTime: '',
-          location: '',
+          exhibitionId: undefined,
           published: true,
           sortOrder: 0,
         });
@@ -199,19 +227,20 @@ export class ProgramPage {
       return;
     }
     
-    const payload = {
+    const payload: Record<string, unknown> = {
       title: data.title,
-      titleEn: data.titleEn,
-      description: data.description,
-      descriptionEn: data.descriptionEn,
-      speaker: data.speaker,
-      speakerEn: data.speakerEn,
       startTime: startIso,
       endTime: endIso,
-      location: data.location,
       published: data.published,
       sortOrder: data.sortOrder,
     };
+
+    if (data.titleEn) payload['titleEn'] = data.titleEn;
+    if (data.description) payload['description'] = data.description;
+    if (data.descriptionEn) payload['descriptionEn'] = data.descriptionEn;
+    if (data.speaker) payload['speaker'] = data.speaker;
+    if (data.speakerEn) payload['speakerEn'] = data.speakerEn;
+    if (data.exhibitionId) payload['exhibitionId'] = data.exhibitionId;
 
     this.http.post('/api/program', payload).subscribe({
       next: () => { 
@@ -230,7 +259,7 @@ export class ProgramPage {
     const startIso = this.assembleDateTime(this.startDate(), this.startHour(), this.startMinute());
     const endIso = this.assembleDateTime(this.endDate(), this.endHour(), this.endMinute());
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       title: data.title,
       titleEn: data.titleEn,
       description: data.description,
@@ -239,7 +268,7 @@ export class ProgramPage {
       speakerEn: data.speakerEn,
       startTime: startIso,
       endTime: endIso,
-      location: data.location,
+      exhibitionId: data.exhibitionId || null,
       published: data.published,
       sortOrder: data.sortOrder,
     };
@@ -266,7 +295,5 @@ export class ProgramPage {
       error: handleApiError(this.toast, '프로그램 삭제 실패'),
     });
   }
-
-
 
 }

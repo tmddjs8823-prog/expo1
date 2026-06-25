@@ -3,13 +3,15 @@
 // ============================================================
 
 model Banner {
-  id          Int      @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   title       String
   subtitle    String?
   imageUrl    String
   linkUrl     String?
-  published   Boolean  @default(false)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  published   Boolean      @default(false)
+  sortOrder   Int          @default(0)
+  exhibitionId Int?
+  exhibition   Exhibition?  @relation(fields: [exhibitionId], references: [id], onDelete: Restrict)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }

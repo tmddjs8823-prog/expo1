@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { handleApiError } from '../../shared/utils/api-error.utils';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Exhibition } from '../exhibition/exhibition.page';
@@ -44,6 +44,11 @@ export class ExhibitorPage {
   exhibitors = signal<Exhibitor[]>([]);
   exhibitions = signal<Exhibition[]>([]);
 
+  // 행사 옵션 (동적)
+  exhibitionOptions = computed(() =>
+    this.exhibitions().map(e => ({ label: e.title, value: String(e.id) }))
+  );
+
   // 검색 + 페이지네이션 (공통 유틸리티)
   pg = useClientPagination({
     items: this.exhibitors,
@@ -52,6 +57,14 @@ export class ExhibitorPage {
       (e.boothNumber ?? '').toLowerCase().includes(kw) ||
       (e.contactEmail ?? '').toLowerCase().includes(kw) ||
       (e.exhibition?.title ?? '').toLowerCase().includes(kw),
+    filterDefs: [
+      {
+        key: 'exhibitionId', label: '행사',
+        options: this.exhibitionOptions,
+        filterFn: (e, v) => String(e.exhibitionId) === v,
+      },
+    ],
+    manualSearch: true,
     pageSize: 3,
   });
 

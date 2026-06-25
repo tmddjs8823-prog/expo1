@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateExhibitionDto, UpdateExhibitionDto } from './dto/exhibition.dto';
 
@@ -55,6 +55,29 @@ export class ExhibitionService {
     // 전시 삭제
     async remove(id: number) {
         await this.findOne(id);
+
+        // 연결된 항목 체크
+        const [galleryCount, bannerCount, preRegCount, exhibitorCount, programCount] = await Promise.all([
+            this.prisma.gallery.count({ where: { exhibitionId: id } }),
+            this.prisma.banner.count({ where: { exhibitionId: id } }),
+            this.prisma.preRegistration.count({ where: { exhibitionId: id } }),
+            this.prisma.exhibitor.count({ where: { exhibitionId: id } }),
+            this.prisma.program.count({ where: { exhibitionId: id } }),
+        ]);
+
+        const linked: string[] = [];
+        if (galleryCount) linked.push(`갤러리 ${galleryCount}건`);
+        if (bannerCount) linked.push(`배너 ${bannerCount}건`);
+        if (preRegCount) linked.push(`사전등록 ${preRegCount}건`);
+        if (exhibitorCount) linked.push(`참가업체 ${exhibitorCount}건`);
+        if (programCount) linked.push(`프로그램 ${programCount}건`);
+
+        if (linked.length > 0) {
+            throw new BadRequestException(
+                `연결된 항목이 있어 삭제할 수 없습니다.\n${linked.join(', ')}이(가) 연결되어 있습니다. 먼저 정리해주세요.`
+            );
+        }
+
         return this.prisma.exhibition.delete({ where: { id } });
     }
 }

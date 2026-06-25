@@ -1,32 +1,44 @@
-﻿<div class="flex flex-col gap-4">
+﻿<div class="flex flex-col gap-5">
   <app-page-header title="사전등록 상세" backLabel="목록" (backClick)="goBack()" />
 
   @if (registration()) {
-    <div class="bg-white p-6 rounded shadow flex flex-col gap-4">
-      <app-detail-fields [fields]="detailFields()" />
-
-      <div class="border-t pt-4 flex gap-3 text-sm">
-        <span class="px-2.5 py-1 rounded-full"
-              [class.bg-green-100]="registration()!.agreeTerms"
-              [class.text-green-700]="registration()!.agreeTerms"
-              [class.bg-red-100]="!registration()!.agreeTerms"
-              [class.text-red-600]="!registration()!.agreeTerms">
-          이용약관 {{ registration()!.agreeTerms ? '동의' : '미동의' }}
-        </span>
-        <span class="px-2.5 py-1 rounded-full"
-              [class.bg-green-100]="registration()!.agreeMarketing"
-              [class.text-green-700]="registration()!.agreeMarketing"
-              [class.bg-gray-100]="!registration()!.agreeMarketing"
-              [class.text-gray-600]="!registration()!.agreeMarketing">
-          마케팅 {{ registration()!.agreeMarketing ? '동의' : '미동의' }}
-        </span>
+    <div class="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 bg-primary-50 border-b-2 border-primary-200 text-primary-800">
+        <h3 class="text-sm font-semibold tracking-wide">📋 사전등록 정보</h3>
       </div>
 
-      <div class="flex gap-2 border-t pt-4">
-        <button (click)="deleteRegistration()"
-          class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">삭제</button>
-        <button (click)="goBack()"
-          class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">목록으로</button>
+      <div class="p-6 flex flex-col gap-5">
+        <app-detail-fields [fields]="detailFields()" />
+
+        <div class="border-t-2 border-slate-100 pt-4 flex gap-3 text-sm">
+          <span class="px-3.5 py-1.5 rounded-full text-xs font-bold border"
+                [class.bg-emerald-50]="registration()!.agreeTerms"
+                [class.text-emerald-700]="registration()!.agreeTerms"
+                [class.border-emerald-200]="registration()!.agreeTerms"
+                [class.bg-red-50]="!registration()!.agreeTerms"
+                [class.text-red-600]="!registration()!.agreeTerms"
+                [class.border-red-200]="!registration()!.agreeTerms">
+            {{ registration()!.agreeTerms ? '✓' : '✕' }} 이용약관 {{ registration()!.agreeTerms ? '동의' : '미동의' }}
+          </span>
+          <span class="px-3.5 py-1.5 rounded-full text-xs font-bold border"
+                [class.bg-emerald-50]="registration()!.agreeMarketing"
+                [class.text-emerald-700]="registration()!.agreeMarketing"
+                [class.border-emerald-200]="registration()!.agreeMarketing"
+                [class.bg-slate-100]="!registration()!.agreeMarketing"
+                [class.text-slate-500]="!registration()!.agreeMarketing"
+                [class.border-slate-200]="!registration()!.agreeMarketing">
+            {{ registration()!.agreeMarketing ? '✓' : '—' }} 마케팅 {{ registration()!.agreeMarketing ? '동의' : '미동의' }}
+          </span>
+        </div>
+
+        <hr class="border-slate-200" />
+
+        <div class="flex gap-2.5">
+          <button (click)="deleteRegistration()"
+            class="px-5 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 border border-red-200 transition-colors">삭제</button>
+          <button (click)="goBack()"
+            class="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-200 border border-slate-200 transition-colors">목록으로</button>
+        </div>
       </div>
     </div>
   }

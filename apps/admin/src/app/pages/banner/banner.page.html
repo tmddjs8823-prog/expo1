@@ -14,6 +14,18 @@
     <input type="text" [ngModel]="linkUrl()" (ngModelChange)="linkUrl.set($event)"
       name="linkUrl" placeholder="클릭 시 이동할 링크 (선택)" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
 
+    <!-- 행사 선택 -->
+    <div class="flex flex-col gap-1.5">
+      <span class="text-sm font-medium text-slate-700">행사 선택</span>
+      <select [ngModel]="exhibitionId()" (ngModelChange)="exhibitionId.set($event ? +$event : null)"
+        name="exhibitionId" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+        <option [ngValue]="null">행사 없음</option>
+        @for (ex of exhibitions(); track ex.id) {
+          <option [ngValue]="ex.id">{{ ex.title }}</option>
+        }
+      </select>
+    </div>
+
     <!-- 이미지 업로드 -->
     <div class="flex flex-col gap-2">
       <span class="text-sm font-medium text-slate-700">배너 이미지</span>
@@ -60,5 +72,6 @@
   </form>
 
   <!-- 배너 목록 -->
-  <app-data-grid [option]="gridOption" />
+  <app-data-grid [option]="gridOption"
+    (rowClick)="router.navigate(['/banner', $event.id])" />
 </div>

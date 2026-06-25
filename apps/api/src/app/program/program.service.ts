@@ -18,33 +18,38 @@ export class ProgramService {
 
     async findAll(includeAll = false) {
         return this.prisma.program.findMany({
-            orderBy: { updatedAt: 'desc'},
-            ...(includeAll ? {} : { where: { published: true } }),
+            orderBy: { updatedAt: 'desc' },
+            include: { exhibition: true },
+            where: includeAll ? undefined : { published: true },
         });
     }
-    async findOne(id : number) {
+
+    async findOne(id: number) {
         const program = await this.prisma.program.findUnique({
-            where : {id},
+            where: { id },
+            include: { exhibition: true },
         });
-        if(!program) {
+        if (!program) {
             throw new NotFoundException('프로그램을 찾을 수 없습니다.');
         }
         return program;
     }
-    async update(id : number, dto : UpdateProgramDto) {
+
+    async update(id: number, dto: UpdateProgramDto) {
         await this.findOne(id);
         const data: Record<string, unknown> = { ...dto };
         if (dto.startTime) data.startTime = new Date(dto.startTime);
         if (dto.endTime) data.endTime = new Date(dto.endTime);
         return this.prisma.program.update({
-            where : {id},
+            where: { id },
             data,
         });
     }
-    async remove(id : number) {
+
+    async remove(id: number) {
         await this.findOne(id);
         return this.prisma.program.delete({
-            where : {id},
+            where: { id },
         });
     }
 }

@@ -33,6 +33,12 @@ export class CreateBannerDto {
   @Type(() => Number)
   @IsInt({ message: '정렬 순서는 정수여야 합니다.' })
   sortOrder?: number;
+
+  @ApiPropertyOptional({ description: '전시회 ID' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: '전시회 ID는 정수여야 합니다.' })
+  exhibitionId?: number;
 }
 
 export class UpdateBannerDto extends PartialType(CreateBannerDto) {}

@@ -1,16 +1,19 @@
 import { Route } from '@angular/router';
+import { authGuard, loginGuard } from './shared/guards/auth.guard';
 
 export const appRoutes: Route[] = [
   // ── 로그인 (레이아웃 없음) ──
   {
     path: 'login',
+    canActivate: [loginGuard],
     loadComponent: () =>
       import('./pages/login/login.page').then(m => m.LoginPage),
   },
 
-  // ── 관리자 페이지 (레이아웃 포함) ──
+  // ── 관리자 페이지 (레이아웃 포함, 인증 필수) ──
   {
     path: '',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/layout.component').then(m => m.LayoutComponent),
     children: [
@@ -103,6 +106,11 @@ export const appRoutes: Route[] = [
         path: 'banner',
         loadComponent: () =>
           import('./pages/banner/banner.page').then(m => m.BannerPage),
+      },
+      {
+        path: 'banner/:id',
+        loadComponent: () =>
+          import('./pages/banner/banner-detail.page').then(m => m.BannerDetailPage),
       },
       {
         path: 'exhibitor/:id',

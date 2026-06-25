@@ -6,6 +6,8 @@ export interface ConfirmDialogConfig {
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: 'danger' | 'warning' | 'info';
+  /** true면 확인 버튼만 표시 (alert 모드) */
+  alertOnly?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -38,5 +40,14 @@ export class ConfirmDialogService {
     this._resolver?.(result);
     this._resolver = null;
     this._config.set(null);
+  }
+
+  /** 알림 다이얼로그 (확인 버튼만) */
+  alert(config: Omit<ConfirmDialogConfig, 'alertOnly'>): Promise<boolean> {
+    return this.open({
+      ...config,
+      confirmLabel: config.confirmLabel ?? '확인',
+      alertOnly: true,
+    });
   }
 }

@@ -15,7 +15,8 @@ export class GalleryService {
     async findAll(includeAll = false) {
         return this.prisma.gallery.findMany({
             orderBy: { updatedAt: 'desc' },
-            ...(includeAll ? {} : { where: { published: true } }),
+            include: { exhibition: true },
+            where: includeAll ? undefined : { published: true },
         });
     }
 
@@ -23,6 +24,7 @@ export class GalleryService {
     async findOne(id: number) {
         const gallery = await this.prisma.gallery.findUnique({
             where: { id },
+            include: { exhibition: true },
         });
 
         if (!gallery) {

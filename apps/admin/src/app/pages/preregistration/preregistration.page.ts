@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { handleApiError } from '../../shared/utils/api-error.utils';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminDataGridComponent, ColumnDef, DataGridOption } from '../../shared/data-grid/data-grid.component';
@@ -39,7 +39,13 @@ export class PreregistrationPage {
 
   //시그널 초기 상태 정의
   preRegistrations = signal<PreRegistration[]>([]);
+  exhibitions = signal<{ id: number; title: string }[]>([]);
   selectedPreRegistrationId = signal<number | null>(null);
+
+  // 행사 옵션 (동적)
+  exhibitionOptions = computed(() =>
+    this.exhibitions().map(e => ({ label: e.title, value: String(e.id) }))
+  );
 
   // 검색 + 페이지네이션 (공통 유틸리티)
   pg = useClientPagination({
@@ -49,6 +55,14 @@ export class PreregistrationPage {
       r.email.toLowerCase().includes(kw) ||
       (r.company ?? '').toLowerCase().includes(kw) ||
       (r.phone ?? '').toLowerCase().includes(kw),
+    filterDefs: [
+      {
+        key: 'exhibitionId', label: '행사',
+        options: this.exhibitionOptions,
+        filterFn: (r, v) => String(r.exhibitionId) === v,
+      },
+    ],
+    manualSearch: true,
     pageSize: 3,
   });
 
@@ -61,7 +75,6 @@ export class PreregistrationPage {
     { header: '회사', field: 'company', truncate: true, title: (r) => r.company },
     { header: '직책', field: 'jobTitle' },
     { header: '전시회', render: (r) => r.exhibition?.title ?? '-', truncate: true, title: (r) => r.exhibition?.title ?? '-' },
-    { header: '등록일', field: 'createdAt', type: 'date' },
     {
       header: '관리',
       actions: [
@@ -82,6 +95,14 @@ export class PreregistrationPage {
   //상태 목록 초기화
   constructor() {
     this.loadPreregistrations();
+    this.loadExhibitions();
+  }
+
+  loadExhibitions() {
+    this.http.get<{ id: number; title: string }[]>('/api/exhibition?all=true').subscribe({
+      next: (res) => this.exhibitions.set(res),
+      error: handleApiError(this.toast, '전시회 목록 조회 실패'),
+    });
   }
 
   //전체 조회

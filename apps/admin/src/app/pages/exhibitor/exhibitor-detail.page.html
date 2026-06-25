@@ -1,74 +1,84 @@
-﻿<div class="flex flex-col gap-4">
+﻿<div class="flex flex-col gap-5">
   <app-page-header title="참가업체 상세" backLabel="목록" (backClick)="goBack()" />
 
-  <form class="bg-white p-6 rounded shadow flex flex-col gap-4" (ngSubmit)="updateExhibitor()">
-    <div class="flex flex-col md:flex-row gap-4">
-      <label class="flex flex-col gap-1 flex-1">
-        업체명
-        <input [ngModel]="exhibitorForm().companyName"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, companyName: $event}))"
-          name="companyName" class="w-full p-2 border rounded" />
-      </label>
-      <label class="flex flex-col gap-1 flex-1">
-        업체명 (EN)
-        <input [ngModel]="exhibitorForm().companyNameEn"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, companyNameEn: $event}))"
-          name="companyNameEn" class="w-full p-2 border rounded" />
-      </label>
+  <form class="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden" (ngSubmit)="updateExhibitor()">
+    <div class="px-6 py-4 bg-primary-50 border-b-2 border-primary-200 text-primary-800">
+      <h3 class="text-sm font-semibold tracking-wide">✏️ 참가업체 수정</h3>
     </div>
 
-    <label class="flex flex-col gap-1">
-      설명
-      <textarea [ngModel]="exhibitorForm().description"
-        (ngModelChange)="exhibitorForm.update(f => ({...f, description: $event}))"
-        name="description" rows="4" class="w-full p-2 border rounded"></textarea>
-    </label>
+    <div class="p-6 flex flex-col gap-5">
+      <div class="flex flex-col md:flex-row gap-4">
+        <label class="flex flex-col gap-2 flex-1">
+          <span class="text-sm font-bold text-slate-800">업체명</span>
+          <input [ngModel]="exhibitorForm().companyName"
+            (ngModelChange)="exhibitorForm.update(f => ({...f, companyName: $event}))"
+            name="companyName" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+        </label>
+        <label class="flex flex-col gap-2 flex-1">
+          <span class="text-sm font-bold text-slate-800">업체명 (EN)</span>
+          <input [ngModel]="exhibitorForm().companyNameEn"
+            (ngModelChange)="exhibitorForm.update(f => ({...f, companyNameEn: $event}))"
+            name="companyNameEn" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+        </label>
+      </div>
 
-    <div class="flex flex-col md:flex-row gap-4">
-      <label class="flex flex-col gap-1 flex-1">
-        전시회
-        <select [ngModel]="exhibitorForm().exhibitionId"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, exhibitionId: $event}))"
-          name="exhibitionId" class="w-full p-2 border rounded">
-          @for (ex of exhibitions(); track ex.id) {
-            <option [ngValue]="ex.id">{{ ex.title }}</option>
-          }
-        </select>
+      <label class="flex flex-col gap-2">
+        <span class="text-sm font-bold text-slate-800">설명</span>
+        <textarea [ngModel]="exhibitorForm().description"
+          (ngModelChange)="exhibitorForm.update(f => ({...f, description: $event}))"
+          name="description" rows="4" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all resize-none"></textarea>
       </label>
-      <label class="flex flex-col gap-1 flex-1">
-        부스번호
-        <input [ngModel]="exhibitorForm().boothNumber"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, boothNumber: $event}))"
-          name="boothNumber" class="w-full p-2 border rounded" />
-      </label>
-    </div>
 
-    <div class="flex flex-col md:flex-row gap-4">
-      <label class="flex flex-col gap-1 flex-1">
-        이메일
-        <input type="email" [ngModel]="exhibitorForm().contactEmail"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, contactEmail: $event}))"
-          name="contactEmail" class="w-full p-2 border rounded" />
-      </label>
-      <label class="flex flex-col gap-1 flex-1">
-        전화번호
-        <input [ngModel]="exhibitorForm().contactPhone"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, contactPhone: $event}))"
-          name="contactPhone" class="w-full p-2 border rounded" />
-      </label>
-    </div>
+      <hr class="border-slate-200" />
 
-    <label class="flex flex-col gap-1">
-      웹사이트
-      <input [ngModel]="exhibitorForm().website"
-        (ngModelChange)="exhibitorForm.update(f => ({...f, website: $event}))"
-        name="website" class="w-full p-2 border rounded" />
-    </label>
+      <div class="flex flex-col md:flex-row gap-4">
+        <label class="flex flex-col gap-2 flex-1">
+          <span class="text-sm font-bold text-slate-800">전시회</span>
+          <select [ngModel]="exhibitorForm().exhibitionId"
+            (ngModelChange)="exhibitorForm.update(f => ({...f, exhibitionId: $event}))"
+            name="exhibitionId" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all">
+            @for (ex of exhibitions(); track ex.id) {
+              <option [ngValue]="ex.id">{{ ex.title }}</option>
+            }
+          </select>
+        </label>
+        <label class="flex flex-col gap-2 flex-1">
+          <span class="text-sm font-bold text-slate-800">부스번호</span>
+          <input [ngModel]="exhibitorForm().boothNumber"
+            (ngModelChange)="exhibitorForm.update(f => ({...f, boothNumber: $event}))"
+            name="boothNumber" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+        </label>
+      </div>
 
-    <div class="flex gap-2">
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">수정</button>
-      <button type="button" (click)="deleteExhibitor()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">삭제</button>
-      <button type="button" (click)="goBack()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">취소</button>
+      <div class="flex flex-col md:flex-row gap-4">
+        <label class="flex flex-col gap-2 flex-1">
+          <span class="text-sm font-bold text-slate-800">이메일</span>
+          <input type="email" [ngModel]="exhibitorForm().contactEmail"
+            (ngModelChange)="exhibitorForm.update(f => ({...f, contactEmail: $event}))"
+            name="contactEmail" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+        </label>
+        <label class="flex flex-col gap-2 flex-1">
+          <span class="text-sm font-bold text-slate-800">전화번호</span>
+          <input [ngModel]="exhibitorForm().contactPhone"
+            (ngModelChange)="exhibitorForm.update(f => ({...f, contactPhone: $event}))"
+            name="contactPhone" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+        </label>
+      </div>
+
+      <label class="flex flex-col gap-2">
+        <span class="text-sm font-bold text-slate-800">웹사이트</span>
+        <input [ngModel]="exhibitorForm().website"
+          (ngModelChange)="exhibitorForm.update(f => ({...f, website: $event}))"
+          name="website" placeholder="https://example.com" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+      </label>
+
+      <hr class="border-slate-200" />
+
+      <div class="flex gap-2.5">
+        <button type="submit" class="px-6 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 shadow-md shadow-primary-600/20 transition-all active:scale-[0.98]">수정하기</button>
+        <button type="button" (click)="deleteExhibitor()" class="px-5 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 border border-red-200 transition-colors">삭제</button>
+        <button type="button" (click)="goBack()" class="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-200 border border-slate-200 transition-colors">취소</button>
+      </div>
     </div>
   </form>
 </div>

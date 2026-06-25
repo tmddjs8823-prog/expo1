@@ -12,7 +12,7 @@ model PreRegistration {
   agreeTerms     Boolean      @default(false)
   agreeMarketing Boolean      @default(false)
   exhibitionId   Int?
-  exhibition     Exhibition?  @relation(fields: [exhibitionId], references: [id], onDelete: SetNull)
+  exhibition     Exhibition?  @relation(fields: [exhibitionId], references: [id], onDelete: Restrict)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }

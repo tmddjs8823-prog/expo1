@@ -48,6 +48,14 @@ pg = useClientPagination({
   filterFn: (n, kw) =>
     n.title.toLowerCase().includes(kw) ||
     n.content.toLowerCase().includes(kw),
+  filterDefs: [
+    {
+      key: 'published', label: '공개여부',
+      options: [{ label: '공개', value: 'true' }, { label: '비공개', value: 'false' }],
+      filterFn: (n, v) => String(n.published) === v,
+    },
+  ],
+  manualSearch: true,
   pageSize: 3,
 });
 

@@ -31,10 +31,12 @@ export class ProgramDetailPage {
     speakerEn: '',
     startTime: '',
     endTime: '',
-    location: '',
+    exhibitionId: undefined,
     published: false,
     sortOrder: 0,
   });
+
+  exhibitions = signal<{ id: number; title: string }[]>([]);
 
   startDate = signal('');
   startHour = signal('09');
@@ -48,6 +50,14 @@ export class ProgramDetailPage {
 
   constructor() {
     this.loadProgram();
+    this.loadExhibitions();
+  }
+
+  loadExhibitions() {
+    this.http.get<{ id: number; title: string }[]>('/api/exhibition?all=true').subscribe({
+      next: (res) => this.exhibitions.set(res),
+      error: handleApiError(this.toast, '전시회 목록 조회 실패'),
+    });
   }
 
   assembleDateTime(date: string, hour: string, minute: string): string {
@@ -93,7 +103,7 @@ export class ProgramDetailPage {
       return;
     }
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       title: data.title,
       titleEn: data.titleEn,
       description: data.description,
@@ -102,7 +112,7 @@ export class ProgramDetailPage {
       speakerEn: data.speakerEn,
       startTime: startIso,
       endTime: endIso,
-      location: data.location,
+      exhibitionId: data.exhibitionId || null,
       published: data.published,
       sortOrder: data.sortOrder,
     };

@@ -11,6 +11,8 @@ import {
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { FilterDef, FilterOption, DateRangeFilterDef } from '../utils/pagination.utils';
+import { isSignal } from '@angular/core';
 
 // 컬럼 정의
 
@@ -41,7 +43,21 @@ export interface DataGridPagination<T = unknown> {
   currentPage: Signal<number>;
   totalPages: Signal<number>;
   paged: Signal<T[]>;
+  filtered: Signal<T[]>;
   onPageChange: (page: number) => void;
+  // 필터 관련 (선택)
+  filterDefs?: FilterDef<T>[];
+  filters?: WritableSignal<Record<string, string>>;
+  setFilter?: (key: string, value: string) => void;
+  resetFilters?: () => void;
+  hasActiveFilters?: Signal<boolean>;
+  // 날짜 범위 필터 (선택)
+  dateRangeFilter?: DateRangeFilterDef<T> | null;
+  dateFrom?: WritableSignal<string>;
+  dateTo?: WritableSignal<string>;
+  // 수동 검색 (선택)
+  manualSearch?: boolean;
+  applySearch?: () => void;
 }
 
 // Option 인터페이스
@@ -67,6 +83,8 @@ export interface DataGridOption<T = unknown> {
   trackByFn?: (item: T) => unknown;
   // useClientPagination 반환 객체 — 검색 · 페이지네이션 자동 처리
   pagination?: DataGridPagination<T>;
+  // 로딩 상태 — true면 스켈레톤 표시
+  loading?: boolean;
 }
 
 // 날짜 포맷 파이프 (컴포넌트 내부용)
@@ -115,9 +133,24 @@ export class AdminDataGridComponent<T = unknown> {
   emptyMessage = computed(() => this.option().emptyMessage ?? '데이터가 없습니다.');
   rowClickable = computed(() => this.option().rowClickable ?? false);
   searchPlaceholder = computed(() => this.option().searchPlaceholder ?? '');
+  loading = computed(() => this.option().loading ?? false);
+
+  // 필터 관련 computed
+  filterDefs = computed(() => this.option().pagination?.filterDefs ?? []);
+  filters = computed(() => this.option().pagination?.filters?.() ?? {});
+  hasActiveFilters = computed(() => this.option().pagination?.hasActiveFilters?.() ?? false);
+
+  // 날짜 범위 필터 computed
+  displayDateRangeFilter = computed(() => this.option().pagination?.dateRangeFilter?.label ?? '');
+  displayDateFrom = computed(() => this.option().pagination?.dateFrom?.() ?? '');
+  displayDateTo = computed(() => this.option().pagination?.dateTo?.() ?? '');
+
+  // 수동 검색 모드
+  isManualSearch = computed(() => this.option().pagination?.manualSearch ?? false);
 
   // Pagination-aware computed
   displayItems = computed(() => this.option().pagination?.paged() ?? this.items());
+  displayFilteredCount = computed(() => this.option().pagination?.filtered()?.length ?? this.items().length);
   displaySearchKeyword = computed(() => this.option().pagination?.searchKeyword() ?? this.searchKeyword());
   displayCurrentPage = computed(() => this.option().pagination?.currentPage() ?? this.currentPage());
   displayTotalPages = computed(() => this.option().pagination?.totalPages() ?? this.totalPages());
@@ -146,5 +179,33 @@ export class AdminDataGridComponent<T = unknown> {
     const pg = this.option().pagination;
     if (pg) pg.onPageChange(page);
     else this.pageChange.emit(page);
+  }
+
+  // 필터 이벤트
+  onFilterChange(key: string, value: string) {
+    this.option().pagination?.setFilter?.(key, value);
+  }
+
+  onResetFilters() {
+    this.option().pagination?.resetFilters?.();
+  }
+
+  // 날짜 범위 필터 이벤트
+  onDateFromChange(value: string) {
+    this.option().pagination?.dateFrom?.set(value);
+  }
+
+  onDateToChange(value: string) {
+    this.option().pagination?.dateTo?.set(value);
+  }
+
+  // 수동 검색 실행
+  onApplySearch() {
+    this.option().pagination?.applySearch?.();
+  }
+
+  // FilterDef.options가 Signal일 수 있으므로 resolve
+  resolveOptions(options: FilterOption[] | Signal<FilterOption[]>): FilterOption[] {
+    return isSignal(options) ? options() : options;
   }
 }

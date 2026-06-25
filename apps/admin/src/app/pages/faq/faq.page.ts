@@ -73,6 +73,14 @@ pg = useClientPagination({
     f.question.toLowerCase().includes(kw) ||
     f.answer.toLowerCase().includes(kw) ||
     (f.category?.name ?? '').toLowerCase().includes(kw),
+  filterDefs: [
+    {
+      key: 'published', label: '공개여부',
+      options: [{ label: '공개', value: 'true' }, { label: '비공개', value: 'false' }],
+      filterFn: (f, v) => String(f.published) === v,
+    },
+  ],
+  manualSearch: true,
   pageSize: 3,
 });
 

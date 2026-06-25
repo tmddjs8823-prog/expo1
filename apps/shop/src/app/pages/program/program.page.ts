@@ -9,7 +9,7 @@ interface Program {
   speaker?: string;
   startTime: string;
   endTime: string;
-  location?: string;
+  exhibition?: { id: number; title: string; venue?: string };
   published: boolean;
   sortOrder: number;
 }

@@ -41,11 +41,11 @@ export class CreateProgramDto {
   @IsDateString({}, { message: '올바른 종료 시간을 입력해주세요.' })
   endTime: string;
 
-  @ApiPropertyOptional({ description: '장소' })
+  @ApiPropertyOptional({ description: '전시회 ID' })
   @IsOptional()
-  @IsString({ message: '장소는 문자열이어야 합니다.' })
-  location?: string;
-
+  @Type(() => Number)
+  @IsInt({ message: '전시회 ID는 정수여야 합니다.' })
+  exhibitionId?: number;
   @ApiPropertyOptional({ description: '공개 여부', default: false })
   @IsOptional()
   @IsBoolean({ message: '공개 여부는 참/거짓 값이어야 합니다.' })

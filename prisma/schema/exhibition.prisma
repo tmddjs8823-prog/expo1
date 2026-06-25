@@ -17,6 +17,9 @@ model Exhibition {
   published   Boolean          @default(false)
   exhibitors  Exhibitor[]
   preRegistrations PreRegistration[]
+  galleries   Gallery[]
+  banners     Banner[]
+  programs    Program[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 }

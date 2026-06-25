@@ -58,10 +58,18 @@
       </div>
     </div>
 
-    <input [ngModel]="programForm().location"
-      (ngModelChange)="programForm.update(f => ({...f, location: $event}))"
-      name="location" placeholder="장소" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
-
+    <!-- 행사 선택 -->
+    <div class="flex flex-col gap-1.5">
+      <span class="text-sm font-medium text-slate-700">행사 선택</span>
+      <select [ngModel]="programForm().exhibitionId"
+        (ngModelChange)="programForm.update(f => ({...f, exhibitionId: $event ? +$event : undefined}))"
+        name="exhibitionId" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
+        <option [ngValue]="undefined">행사 없음</option>
+        @for (ex of exhibitions(); track ex.id) {
+          <option [ngValue]="ex.id">{{ ex.title }}</option>
+        }
+      </select>
+    </div>
     <label class="flex items-center gap-2 text-sm select-none cursor-pointer text-slate-700">
       <input type="checkbox" [ngModel]="programForm().published"
         (ngModelChange)="programForm.update(f => ({...f, published: $event}))"

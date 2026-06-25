@@ -1,29 +1,37 @@
-<div class="flex flex-col gap-4">
+﻿<div class="flex flex-col gap-5">
   <app-page-header title="공지사항 상세" backLabel="목록" (backClick)="goBack()" />
 
-  <form class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4" (ngSubmit)="updateNotice()">
-    <label class="flex flex-col gap-1">
-      <span class="text-sm font-medium text-slate-700">제목</span>
-      <input [ngModel]="title()" (ngModelChange)="title.set($event)"
-        name="title" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
-    </label>
+  <form class="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden" (ngSubmit)="updateNotice()">
+    <div class="px-6 py-4 bg-primary-50 border-b-2 border-primary-200 text-primary-800">
+      <h3 class="text-sm font-semibold tracking-wide">✏️ 공지사항 수정</h3>
+    </div>
 
-    <label class="flex flex-col gap-1">
-      <span class="text-sm font-medium text-slate-700">내용</span>
-      <textarea [ngModel]="content()" (ngModelChange)="content.set($event)"
-        name="content" rows="8" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all resize-none"></textarea>
-    </label>
+    <div class="p-6 flex flex-col gap-5">
+      <label class="flex flex-col gap-2">
+        <span class="text-sm font-bold text-slate-800">제목</span>
+        <input [ngModel]="title()" (ngModelChange)="title.set($event)"
+          name="title" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+      </label>
 
-    <label class="flex items-center gap-2 text-sm select-none cursor-pointer text-slate-700">
-      <input type="checkbox" [ngModel]="published()" (ngModelChange)="published.set($event)"
-        name="published" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-      공개
-    </label>
+      <label class="flex flex-col gap-2">
+        <span class="text-sm font-bold text-slate-800">내용</span>
+        <textarea [ngModel]="content()" (ngModelChange)="content.set($event)"
+          name="content" rows="8" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all resize-none"></textarea>
+      </label>
 
-    <div class="flex gap-2">
-      <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm transition-colors">수정</button>
-      <button type="button" (click)="deleteNotice()" class="px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors">삭제</button>
-      <button type="button" (click)="goBack()" class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">취소</button>
+      <label class="inline-flex items-center gap-2.5 text-sm font-medium select-none cursor-pointer text-slate-700 w-fit">
+        <input type="checkbox" [ngModel]="published()" (ngModelChange)="published.set($event)"
+          name="published" class="w-5 h-5 rounded border-2 border-slate-300 text-primary-600 focus:ring-primary-500" />
+        공개
+      </label>
+
+      <hr class="border-slate-200" />
+
+      <div class="flex gap-2.5">
+        <button type="submit" class="px-6 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 shadow-md shadow-primary-600/20 transition-all active:scale-[0.98]">수정하기</button>
+        <button type="button" (click)="deleteNotice()" class="px-5 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 border border-red-200 transition-colors">삭제</button>
+        <button type="button" (click)="goBack()" class="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-200 border border-slate-200 transition-colors">취소</button>
+      </div>
     </div>
   </form>
 </div>

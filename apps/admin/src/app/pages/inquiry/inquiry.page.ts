@@ -46,6 +46,18 @@ export class InquiryPage {
       i.name.toLowerCase().includes(kw) ||
       i.subject.toLowerCase().includes(kw) ||
       i.email.toLowerCase().includes(kw),
+    filterDefs: [
+      {
+        key: 'status', label: '상태',
+        options: [
+          { label: '대기', value: 'PENDING' },
+          { label: '답변완료', value: 'ANSWERED' },
+          { label: '종료', value: 'CLOSED' },
+        ],
+        filterFn: (i, v) => i.status === v,
+      },
+    ],
+    manualSearch: true,
     pageSize: 3,
   });
 

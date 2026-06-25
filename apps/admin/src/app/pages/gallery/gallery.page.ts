@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { handleApiError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +9,7 @@ import { ToastService } from '../../shared/toast/toast.service';
 import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
+import { useImageUpload } from '../../shared/utils/image-upload.utils';
 
 export interface Gallery {
   id: number;
@@ -19,6 +20,8 @@ export interface Gallery {
   thumbnailUrl?: string;
   published: boolean;
   sortOrder: number;
+  exhibitionId?: number;
+  exhibition?: { id: number; title: string; startDate: string; endDate: string };
   createdAt: string;
   updatedAt: string;
 }
@@ -38,14 +41,25 @@ export class GalleryPage {
 
   // 시그널 초기상태
   galleries = signal<Gallery[]>([]);
+  exhibitions = signal<{ id: number; title: string }[]>([]);
   title = signal('');
   description = signal('');
-  imageUrl = signal('');
   selectedGalleryId = signal<number | null>(null);
   isEditing = signal(false);
-  uploading = signal(false);
-  selectedFile = signal<File | null>(null);
   published = signal(true);
+  exhibitionId = signal<number | null>(null);
+
+  // 행사 옵션 (동적)
+  exhibitionOptions = computed(() =>
+    this.exhibitions().map(e => ({ label: e.title, value: String(e.id) }))
+  );
+
+  // 이미지 업로드 (공통 유틸)
+  private imgUpload = useImageUpload(this.supabase, 'LSG');
+  imageUrl = this.imgUpload.imageUrl;
+  uploading = this.imgUpload.uploading;
+  selectedFile = this.imgUpload.selectedFile;
+  onFileSelected = this.imgUpload.onFileSelected.bind(this.imgUpload);
 
   // 검색 + 페이지네이션 (공통 유틸리티)
   pg = useClientPagination({
@@ -53,6 +67,19 @@ export class GalleryPage {
     filterFn: (g, kw) =>
       g.title.toLowerCase().includes(kw) ||
       (g.description ?? '').toLowerCase().includes(kw),
+    filterDefs: [
+      {
+        key: 'exhibitionId', label: '행사',
+        options: this.exhibitionOptions,
+        filterFn: (g, v) => String(g.exhibitionId) === v,
+      },
+      {
+        key: 'published', label: '공개여부',
+        options: [{ label: '공개', value: 'true' }, { label: '비공개', value: 'false' }],
+        filterFn: (g, v) => String(g.published) === v,
+      },
+    ],
+    manualSearch: true,
     pageSize: 3,
   });
 
@@ -67,7 +94,7 @@ export class GalleryPage {
       render: (g) => g.published ? '공개' : '비공개',
       badgeClass: (g) => g.published ? 'text-green-600' : 'text-red-500',
     },
-    { header: '작성일', field: 'createdAt', type: 'date' },
+    { header: '행사', render: (g) => g.exhibition?.title ?? '-', truncate: true, title: (g) => g.exhibition?.title ?? '-' },
     {
       header: '관리',
       actions: [
@@ -86,43 +113,24 @@ export class GalleryPage {
 
   constructor() {
     this.loadGalleries();
+    this.loadExhibitions();
+  }
+
+  loadExhibitions() {
+    this.http.get<{ id: number; title: string }[]>('/api/exhibition?all=true').subscribe({
+      next: (res) => this.exhibitions.set(res),
+      error: handleApiError(this.toast, '전시회 목록 조회 실패'),
+    });
   }
 
   resetForm() {
     this.title.set('');
     this.description.set('');
-    this.imageUrl.set('');
     this.selectedGalleryId.set(null);
     this.isEditing.set(false);
-    this.selectedFile.set(null);
     this.published.set(true);
-  }
-
-  // 파일 선택
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      this.selectedFile.set(input.files[0]);
-      this.imageUrl.set(URL.createObjectURL(input.files[0]));
-    }
-  }
-
-  // 이미지 업로드
-  async uploadImage(): Promise<string | null> {
-    const file = this.selectedFile();
-    if (!file) return this.imageUrl() || null;
-
-    this.uploading.set(true);
-    try {
-      const url = await this.supabase.uploadImage('LSG', file);
-      this.imageUrl.set(url);
-      return url;
-    } catch (err) {
-      console.error('이미지 업로드 실패:', err);
-      return null;
-    } finally {
-      this.uploading.set(false);
-    }
+    this.exhibitionId.set(null);
+    this.imgUpload.reset();
   }
 
   loadGalleries() {
@@ -142,7 +150,7 @@ export class GalleryPage {
       return;
     }
 
-    const url = await this.uploadImage();
+    const url = await this.imgUpload.upload();
     if (!url) return;
 
     this.http.post('/api/gallery', {
@@ -150,6 +158,7 @@ export class GalleryPage {
       description: this.description(),
       imageUrl: url,
       published: this.published(),
+      exhibitionId: this.exhibitionId() || undefined,
     }).subscribe({
       next: () => {
         this.toast.success('갤러리이(가) 생성되었습니다.');
@@ -166,17 +175,19 @@ export class GalleryPage {
     this.description.set(gallery.description ?? '');
     this.imageUrl.set(gallery.imageUrl);
     this.published.set(gallery.published);
+    this.exhibitionId.set(gallery.exhibitionId ?? null);
     this.isEditing.set(true);
   }
 
   async updateGallery() {
-    const url = await this.uploadImage();
+    const url = await this.imgUpload.upload();
 
     this.http.patch(`/api/gallery/${this.selectedGalleryId()}`, {
       title: this.title(),
       description: this.description(),
       imageUrl: url || this.imageUrl(),
       published: this.published(),
+      exhibitionId: this.exhibitionId() || undefined,
     }).subscribe({
       next: () => {
         this.toast.success('갤러리이(가) 수정되었습니다.');

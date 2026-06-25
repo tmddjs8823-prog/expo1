@@ -9,6 +9,7 @@ import { ToastService } from '../../shared/toast/toast.service';
 import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { useClientPagination } from '../../shared/utils/pagination.utils';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
+import { useImageUpload } from '../../shared/utils/image-upload.utils';
 
 export interface Exhibition {
   id: number;
@@ -65,6 +66,23 @@ export class ExhibitionPage {
       (e.venue ?? '').toLowerCase().includes(kw) ||
       e.status.toLowerCase().includes(kw) ||
       (this.statusKo[e.status] ?? []).some(label => label.includes(kw)),
+    filterDefs: [
+      {
+        key: 'status', label: '상태',
+        options: [
+          { label: '예정', value: 'DRAFT' },
+          { label: '진행중', value: 'PUBLISHED' },
+          { label: '종료', value: 'CLOSED' },
+        ],
+        filterFn: (e, v) => e.status === v,
+      },
+    ],
+    dateRangeFilter: {
+      label: '행사일정',
+      getStartDate: (e) => e.startDate,
+      getEndDate: (e) => e.endDate,
+    },
+    manualSearch: true,
     pageSize: 3,
   });
 
@@ -117,21 +135,14 @@ export class ExhibitionPage {
   };
 
   exhibitionForm = signal<Exhibition>({
-    id: 0,
-    title: '',
-    titleEn: '',
-    description: '',
-    descriptionEn: '',
-    startDate: '',
-    endDate: '',
-    venue: '',
-    imageUrl: '',
-    linkUrl: '',
-    status: 'DRAFT',
-    published: true,
+    id: 0, title: '', titleEn: '', description: '', descriptionEn: '',
+    startDate: '', endDate: '', venue: '', imageUrl: '', linkUrl: '',
+    status: 'DRAFT', published: true,
   });
-  selectedFile = signal<File | null>(null);
-  uploading = signal(false);
+
+  // 이미지 업로드 (공통 유틸)
+  private imgUpload = useImageUpload(this.supabase, 'LSG');
+  uploading = this.imgUpload.uploading;
 
   // 시간 선택용 시그널
   startDate = signal('');
@@ -151,35 +162,20 @@ export class ExhibitionPage {
 
   resetForm() {
     this.exhibitionForm.set({
-      id: 0,
-      title: '',
-      titleEn: '',
-      description: '',
-      descriptionEn: '',
-      startDate: '',
-      endDate: '',
-      venue: '',
-      imageUrl: '',
-      linkUrl: '',
-      status: 'DRAFT',
-      published: false,
+      id: 0, title: '', titleEn: '', description: '', descriptionEn: '',
+      startDate: '', endDate: '', venue: '', imageUrl: '', linkUrl: '',
+      status: 'DRAFT', published: false,
     });
-    this.selectedFile.set(null);
-    this.startDate.set('');
-    this.startHour.set('00');
-    this.startMinute.set('00');
-    this.endDate.set('');
-    this.endHour.set('00');
-    this.endMinute.set('00');
+    this.imgUpload.reset();
+    this.startDate.set(''); this.startHour.set('00'); this.startMinute.set('00');
+    this.endDate.set(''); this.endHour.set('00'); this.endMinute.set('00');
   }
 
-  // 날짜 + 시/분 → ISO 문자열 조합
   assembleDateTime(date: string, hour: string, minute: string): string {
     if (!date) return '';
     return new Date(`${date}T${hour}:${minute}:00`).toISOString();
   }
 
-  // Date → yyyy-MM-dd (로컬 시간 기준)
   toLocalDateStr(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -191,23 +187,15 @@ export class ExhibitionPage {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      this.selectedFile.set(file);
+      this.imgUpload.selectedFile.set(file);
       this.exhibitionForm.update(f => ({ ...f, imageUrl: URL.createObjectURL(file) }));
     }
   }
 
   async uploadImage(): Promise<string | null> {
-    const file = this.selectedFile();
+    const file = this.imgUpload.selectedFile();
     if (!file) return this.exhibitionForm().imageUrl || null;
-    this.uploading.set(true);
-    try {
-      return await this.supabase.uploadImage('LSG', file);
-    } catch (err) {
-      console.error('이미지 업로드 실패:', err);
-      return null;
-    } finally {
-      this.uploading.set(false);
-    }
+    return await this.imgUpload.upload();
   }
 
   loadExhibitions() {
@@ -232,7 +220,7 @@ export class ExhibitionPage {
     }
 
     const imageUrl = await this.uploadImage();
-    
+
     const payload: Record<string, unknown> = {
       title: data.title,
       startDate: startIso,
@@ -264,7 +252,14 @@ export class ExhibitionPage {
     if (!ok) return;
     this.http.delete(`/api/exhibition/${id}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.loadExhibitions(); },
-      error: handleApiError(this.toast, '전시회 삭제 실패'),
+      error: (err) => {
+        const msg = err?.error?.message || '전시회 삭제 실패';
+        this.confirmDialog.alert({
+          title: '삭제 불가',
+          message: msg,
+          variant: 'warning',
+        });
+      },
     });
   }
 }

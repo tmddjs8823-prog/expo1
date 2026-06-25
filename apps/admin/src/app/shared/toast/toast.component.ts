@@ -8,13 +8,51 @@ import { ToastService } from './toast.service';
     <div class="fixed top-4 right-4 z-50 flex flex-col gap-2">
       @for (toast of toastService.toasts(); track toast.id) {
         <div
-          class="px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium animate-slide-in min-w-[240px] flex items-center justify-between gap-3"
-          [class.bg-green-600]="toast.type === 'success'"
+          class="relative overflow-hidden px-4 py-3 rounded-xl shadow-lg text-white text-sm font-medium animate-slide-in min-w-[280px] max-w-[400px] flex items-start gap-3"
+          [class.bg-emerald-600]="toast.type === 'success'"
           [class.bg-red-500]="toast.type === 'error'"
           [class.bg-blue-500]="toast.type === 'info'"
-          [class.bg-rose-600]="toast.type === 'warning'">
-          <span>{{ toast.message }}</span>
-          <button (click)="toastService.dismiss(toast.id)" class="opacity-70 hover:opacity-100">&times;</button>
+          [class.bg-amber-500]="toast.type === 'warning'">
+
+          <!-- 아이콘 -->
+          <span class="shrink-0 mt-0.5">
+            @switch (toast.type) {
+              @case ('success') {
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+              @case ('error') {
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+              @case ('warning') {
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              }
+              @default {
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+              }
+            }
+          </span>
+
+          <!-- 메시지 -->
+          <span class="flex-1 leading-snug">{{ toast.message }}</span>
+
+          <!-- 닫기 -->
+          <button (click)="toastService.dismiss(toast.id)"
+            class="shrink-0 opacity-60 hover:opacity-100 transition-opacity mt-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <!-- 프로그레스 바 -->
+          <div class="absolute bottom-0 left-0 h-0.5 bg-white/30 animate-progress"></div>
         </div>
       }
     </div>
@@ -24,8 +62,15 @@ import { ToastService } from './toast.service';
       from { transform: translateX(100%); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
     }
+    @keyframes progress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
     .animate-slide-in {
       animation: slideIn 0.3s ease-out;
+    }
+    .animate-progress {
+      animation: progress 3s linear forwards;
     }
   `]
 })
