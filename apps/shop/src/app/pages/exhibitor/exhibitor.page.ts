@@ -6,7 +6,6 @@ import { RouterModule } from '@angular/router';
 interface Exhibition {
   id: number;
   title: string;
-  status: string;
 }
 
 @Component({
@@ -38,10 +37,8 @@ export class ExhibitorPage {
   }
 
   loadExhibitions() {
-    this.http.get<Exhibition[]>('/api/exhibition').subscribe({
-      next: (res) => this.exhibitions.set(
-        res.filter(e => e.status !== 'CLOSED')
-      ),
+    this.http.get<Exhibition[]>('/api/exhibition/slim').subscribe({
+      next: (res) => this.exhibitions.set(res),
     });
   }
 

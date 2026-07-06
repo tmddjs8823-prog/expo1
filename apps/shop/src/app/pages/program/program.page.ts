@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
+import { FadeUpDirective } from '../../shared/fade-up.directive';
 
 interface Program {
   id: number;
@@ -10,13 +11,11 @@ interface Program {
   startTime: string;
   endTime: string;
   exhibition?: { id: number; title: string; venue?: string };
-  published: boolean;
-  sortOrder: number;
 }
 
 @Component({
   selector: 'app-program',
-  imports: [DatePipe],
+  imports: [DatePipe, FadeUpDirective],
   templateUrl: './program.page.html'
 })
 export class ProgramPage {
@@ -24,15 +23,10 @@ export class ProgramPage {
   programs = signal<Program[]>([]);
   selectedDate = signal<string | null>(null);
 
-  // 공개된 프로그램만 필터
-  publishedPrograms = computed(() =>
-    this.programs().filter(p => p.published)
-  );
-
   // 날짜별 그룹핑
   groupedByDate = computed(() => {
     const groups = new Map<string, Program[]>();
-    for (const p of this.publishedPrograms()) {
+    for (const p of this.programs()) {
       const dateKey = new Date(p.startTime).toLocaleDateString('ko-KR', {
         year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
       });

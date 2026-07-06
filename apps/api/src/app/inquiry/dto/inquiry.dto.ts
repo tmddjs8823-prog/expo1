@@ -1,20 +1,17 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 export class CreateInquiryDto {
-  @ApiProperty({ description: '문의자 이름' })
-  @IsString({ message: '이름은 문자열이어야 합니다.' })
-  @IsNotEmpty({ message: '이름을 입력해주세요.' })
-  name: string;
-
-  @ApiProperty({ description: '문의자 이메일', example: 'user@example.com' })
-  @IsEmail({}, { message: '올바른 이메일 형식을 입력해주세요.' })
-  email: string;
-
-  @ApiPropertyOptional({ description: '문의자 전화번호' })
+  @ApiPropertyOptional({ description: '문의자 이름 (로그인 시 자동)' })
   @IsOptional()
-  @IsString({ message: '전화번호는 문자열이어야 합니다.' })
-  phone?: string;
+  @IsString({ message: '이름은 문자열이어야 합니다.' })
+  name?: string;
+
+  @ApiPropertyOptional({ description: '문의자 이메일 (로그인 시 자동)' })
+  @IsOptional()
+  @IsEmail({}, { message: '올바른 이메일 형식을 입력해주세요.' })
+  email?: string;
 
   @ApiProperty({ description: '문의 제목' })
   @IsString({ message: '제목은 문자열이어야 합니다.' })
@@ -32,4 +29,30 @@ export class AnswerInquiryDto {
   @IsString({ message: '답변은 문자열이어야 합니다.' })
   @IsNotEmpty({ message: '답변 내용을 입력해주세요.' })
   answer: string;
+}
+
+@Exclude()
+export class MyInquiryResponseDto {
+  @Expose() id: number;
+  @Expose() subject: string;
+  @Expose() content: string;
+  @Expose() answer?: string;
+  @Expose() answeredAt?: string;
+  @Expose() createdAt: string;
+}
+
+@Exclude()
+export class AdminInquiryUserDto {
+  @Expose() id: number;
+  @Expose() username: string;
+  @Expose() name: string;
+}
+
+@Exclude()
+export class AdminInquiryListDto {
+  @Expose() id: number;
+  @Expose() subject: string;
+  @Expose() status: string;
+  @Expose() createdAt: string;
+  @Expose() @Type(() => AdminInquiryUserDto) user?: AdminInquiryUserDto;
 }

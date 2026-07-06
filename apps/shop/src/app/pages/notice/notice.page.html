@@ -1,13 +1,16 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
   <!-- 헤더 -->
-  <div class="text-center flex flex-col gap-2 mb-8">
-    <h1 class="text-3xl font-bold text-slate-900">공지사항</h1>
-    <p class="text-slate-500">광주 밀리언쇼의 주요 소식을 확인하세요.</p>
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8" appFadeUp>
+    <div>
+      <p class="text-sm text-amber-600 font-semibold uppercase tracking-wider mb-1">NOTICE</p>
+      <h1 class="text-3xl font-bold text-slate-900">공지사항</h1>
+      <p class="text-slate-500 mt-1">광주 밀리언쇼의 주요 소식을 확인하세요.</p>
+    </div>
   </div>
 
   <!-- 검색 -->
-  <div class="flex justify-center mb-6">
+  <div class="flex justify-center mb-6" appFadeUp="100ms">
     <div class="relative w-full max-w-md">
       <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
              name="search" placeholder="검색어를 입력하세요"
@@ -18,8 +21,8 @@
     </div>
   </div>
 
-  <!-- 공지사항 목록 테이블 -->
-  <div class="border-t-2 border-slate-900">
+  <!-- 공지사항 목록 -->
+  <div class="border-t-2 border-slate-900" appFadeUp="200ms">
     <table class="w-full">
       <thead>
         <tr class="border-b border-slate-200">
@@ -30,9 +33,19 @@
       </thead>
       <tbody>
         @for (notice of pagedNotices(); track notice.id) {
-          <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-            <td class="py-3.5 px-4 text-sm text-slate-400 text-center">{{ notice.id }}</td>
-            <td class="py-3.5 px-4 text-sm text-slate-900">
+          <tr class="border-b border-slate-100 transition-colors"
+              [class.bg-slate-100]="notice.isPinned"
+              [class.hover:bg-slate-50]="!notice.isPinned">
+            <td class="py-3.5 px-4 text-sm text-center"
+                [class.text-slate-600]="notice.isPinned"
+                [class.font-bold]="notice.isPinned"
+                [class.text-slate-400]="!notice.isPinned">
+              @if (notice.isPinned) { 고정 } @else { {{ getNoticeNumber(notice) }} }
+            </td>
+            <td class="py-3.5 px-4 text-sm"
+                [class.text-slate-900]="!notice.isPinned"
+                [class.text-slate-800]="notice.isPinned"
+                [class.font-semibold]="notice.isPinned">
               <a [routerLink]="['/notice', notice.id]"
                  class="hover:text-primary-600 hover:underline transition-colors">
                 {{ notice.title }}

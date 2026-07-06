@@ -41,15 +41,15 @@
       }
 
       <form (ngSubmit)="login()" class="flex flex-col gap-4">
-        <!-- 이메일 -->
+        <!-- 아이디 -->
         <label class="flex flex-col gap-1.5">
-          <span class="text-sm font-medium text-slate-700">이메일</span>
+          <span class="text-sm font-medium text-slate-700">아이디</span>
           <div class="relative">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
             </svg>
-            <input type="email" [ngModel]="email()" (ngModelChange)="email.set($event)"
-              name="email" placeholder="admin@expo.com" autocomplete="email"
+            <input type="text" [ngModel]="username()" (ngModelChange)="username.set($event)"
+              name="username" placeholder="아이디를 입력하세요" autocomplete="username"
               class="w-full pl-10 pr-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
           </div>
         </label>

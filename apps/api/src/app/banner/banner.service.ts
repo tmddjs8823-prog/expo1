@@ -61,4 +61,9 @@ export class BannerService {
         await this.findOne(id);
         return this.prisma.banner.delete({ where: { id } });
     }
+
+    // 일괄 삭제
+    async removeMany(ids: number[]) {
+        return this.prisma.banner.deleteMany({ where: { id: { in: ids } } });
+    }
 }

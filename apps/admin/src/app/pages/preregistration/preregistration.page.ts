@@ -42,7 +42,7 @@ export class PreregistrationPage {
   exhibitions = signal<{ id: number; title: string }[]>([]);
   selectedPreRegistrationId = signal<number | null>(null);
 
-  // 행사 옵션 (동적)
+  // 전시회 옵션 (동적)
   exhibitionOptions = computed(() =>
     this.exhibitions().map(e => ({ label: e.title, value: String(e.id) }))
   );
@@ -57,7 +57,7 @@ export class PreregistrationPage {
       (r.phone ?? '').toLowerCase().includes(kw),
     filterDefs: [
       {
-        key: 'exhibitionId', label: '행사',
+        key: 'exhibitionId', label: '전시회',
         options: this.exhibitionOptions,
         filterFn: (r, v) => String(r.exhibitionId) === v,
       },
@@ -69,12 +69,12 @@ export class PreregistrationPage {
   searchKeyword = this.pg.searchKeyword;
 
   private readonly columnDefs: ColumnDef<PreRegistration>[] = [
+    { header: '전시회', render: (r) => r.exhibition?.title ?? '-', truncate: true, title: (r) => r.exhibition?.title ?? '-' },
     { header: '이름', field: 'name' },
     { header: '이메일', field: 'email', truncate: true, title: (r) => r.email },
     { header: '전화번호', field: 'phone', truncate: true, title: (r) => r.phone },
     { header: '회사', field: 'company', truncate: true, title: (r) => r.company },
     { header: '직책', field: 'jobTitle' },
-    { header: '전시회', render: (r) => r.exhibition?.title ?? '-', truncate: true, title: (r) => r.exhibition?.title ?? '-' },
     {
       header: '관리',
       actions: [
@@ -90,6 +90,10 @@ export class PreregistrationPage {
     minWidth: '800px',
     rowClickable: true,
     pagination: this.pg,
+    bulkActions: {
+      label: '선택 삭제',
+      onClick: (ids) => this.bulkDelete(ids as number[]),
+    },
   };
   
   //상태 목록 초기화
@@ -99,7 +103,7 @@ export class PreregistrationPage {
   }
 
   loadExhibitions() {
-    this.http.get<{ id: number; title: string }[]>('/api/exhibition?all=true').subscribe({
+    this.http.get<{ id: number; title: string }[]>('/api/exhibition/slim').subscribe({
       next: (res) => this.exhibitions.set(res),
       error: handleApiError(this.toast, '전시회 목록 조회 실패'),
     });
@@ -128,6 +132,15 @@ export class PreregistrationPage {
         this.loadPreregistrations();
       },
       error: handleApiError(this.toast, '사전등록 삭제 실패')
+    });
+  }
+
+  async bulkDelete(ids: number[]) {
+    const ok = await this.confirmDialog.open({ message: `선택한 ${ids.length}개 항목을 삭제하면 되돌릴 수 없습니다.` });
+    if (!ok) return;
+    this.http.delete('/api/preregistration/bulk', { body: { ids } }).subscribe({
+      next: () => { this.toast.warning(`${ids.length}개 항목이 삭제되었습니다.`); this.loadPreregistrations(); },
+      error: handleApiError(this.toast, '일괄 삭제 실패'),
     });
   }
 

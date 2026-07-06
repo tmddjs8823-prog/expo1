@@ -18,3 +18,9 @@ enum InquiryStatus {
   ANSWERED
   CLOSED
 }
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}

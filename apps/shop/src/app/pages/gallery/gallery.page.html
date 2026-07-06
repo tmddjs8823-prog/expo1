@@ -1,91 +1,101 @@
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-10">
-
-  <!-- 헤더 -->
-  <div class="text-center flex flex-col gap-2">
-    <h1 class="text-3xl font-bold text-slate-900">갤러리</h1>
-    <p class="text-slate-500">광주 밀리언쇼의 다양한 순간들을 사진으로 만나보세요.</p>
-  </div>
-
-  <!-- 사진 그리드 -->
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-    @for (gallery of pagedGalleries(); track gallery.id; let i = $index) {
-      <div class="group relative aspect-square overflow-hidden rounded-xl bg-slate-100 cursor-pointer"
-           role="button" tabindex="0"
-           (click)="openLightbox(i)"
-           (keydown.enter)="openLightbox(i)">
-        <img [src]="gallery.imageUrl" [alt]="gallery.title"
-             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-        <!-- 호버 오버레이 -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-          <h3 class="text-white font-semibold text-sm truncate">{{ gallery.title }}</h3>
-          @if (gallery.description) {
-            <p class="text-white/70 text-xs line-clamp-1 mt-0.5">{{ gallery.description }}</p>
-          }
-        </div>
-      </div>
-    } @empty {
-      <div class="col-span-full py-20 text-center">
-        <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a2.25 2.25 0 002.25-2.25V5.25a2.25 2.25 0 00-2.25-2.25H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
-        </svg>
-        <p class="text-slate-400 text-lg">등록된 갤러리 사진이 없습니다.</p>
-      </div>
-    }
-  </div>
-
-  <!-- 페이지네이션 -->
-  <app-pagination
-    [currentPage]="currentPage()"
-    [totalPages]="totalPages()"
-    (pageChange)="onPageChange($event)" />
-</div>
-
-<!-- 라이트박스 -->
-@if (selectedIndex() !== null) {
-  <div class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center"
-       role="dialog" aria-modal="true"
-       (click)="closeLightbox()"
-       (keydown.escape)="closeLightbox()">
-
-    <!-- 닫기 버튼 -->
-    <button (click)="closeLightbox()"
-            class="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors z-10">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </button>
-
-    <!-- 좌우 화살표 -->
-    @if (pagedGalleries().length > 1) {
-      <button (click)="prevImage($event)"
-              class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white backdrop-blur-sm transition-colors z-10">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      <button (click)="nextImage($event)"
-              class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white backdrop-blur-sm transition-colors z-10">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-    }
-
-    <!-- 이미지 -->
-    <div class="max-w-5xl max-h-[85vh] flex flex-col items-center gap-4"
-         tabindex="-1"
-         (click)="$event.stopPropagation()"
-         (keydown)="$event.stopPropagation()">
-      <img [src]="pagedGalleries()[selectedIndex()!].imageUrl"
-           [alt]="pagedGalleries()[selectedIndex()!].title"
-           class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl" />
-      <div class="text-center">
-        <h3 class="text-white font-semibold text-lg">{{ pagedGalleries()[selectedIndex()!].title }}</h3>
-        @if (pagedGalleries()[selectedIndex()!].description) {
-          <p class="text-white/60 text-sm mt-1">{{ pagedGalleries()[selectedIndex()!].description }}</p>
-        }
-        <p class="text-white/40 text-xs mt-2">{{ selectedIndex()! + 1 }} / {{ pagedGalleries().length }}</p>
-      </div>
+<!-- ① 페이지 헤더 배너 -->
+<section class="relative pt-12 md:pt-[72px] pb-8 md:pb-12 bg-white overflow-hidden">
+  <div class="max-w-[1200px] mx-auto px-5 md:px-10">
+    <div class="max-w-[520px]" appFadeUp>
+      <p class="text-[0.8rem] font-semibold tracking-[0.12em] text-blue-600 uppercase mb-2.5">Facility Guide</p>
+      <h1 class="text-2xl md:text-[2.5rem] font-extrabold text-slate-900 tracking-tight mb-3">시설 안내</h1>
+      <p class="text-[1.05rem] text-slate-500 leading-relaxed">보이는 것 <em class="not-italic font-bold text-blue-900">그 이상의 가치</em>가 있습니다</p>
     </div>
   </div>
-}
+  <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-blue-600 to-slate-200"></div>
+</section>
+
+<!-- ② 메인 콘텐츠 영역 -->
+<section class="bg-slate-50 min-h-[70vh] pt-8 pb-12 md:pt-[60px] md:pb-20">
+  <div class="max-w-[1200px] mx-auto px-5 md:px-10 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8 md:gap-[60px] items-start">
+
+    <!-- 좌측: 카테고리 사이드바 -->
+    <aside class="pt-2" appFadeUp>
+      <nav class="flex flex-row flex-wrap gap-2 border-b-2 border-slate-200 pb-3
+                  md:flex-col md:gap-0 md:border-b-0 md:border-l md:border-slate-200 md:pl-5 md:pb-0"
+           aria-label="시설 카테고리">
+        @if (categories().length === 0) {
+          <div class="text-slate-400 text-sm py-3">
+            <span>등록된 시설이 없습니다.</span>
+          </div>
+        }
+        @for (cat of categories(); track cat) {
+          <button
+            [class]="'relative cursor-pointer text-left transition-colors '
+              + (selectedCategory() === cat
+                ? 'py-2 px-4 text-sm bg-blue-900 text-white rounded-full font-bold md:py-3.5 md:px-0 md:text-[1.05rem] md:bg-transparent md:text-blue-900 md:border-b md:border-slate-200 md:rounded-none'
+                : 'py-2 px-4 text-sm bg-slate-100 text-slate-500 rounded-full hover:text-slate-800 md:py-3.5 md:px-0 md:text-[1.05rem] md:bg-transparent md:border-b md:border-slate-200 md:rounded-none')"
+            (click)="selectCategory(cat)"
+            [attr.aria-current]="selectedCategory() === cat ? 'true' : null">
+            {{ cat }}
+            @if (selectedCategory() === cat) {
+              <span class="hidden md:block absolute left-[-20px] top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-900 rounded-sm"></span>
+            }
+          </button>
+        }
+      </nav>
+    </aside>
+
+    <!-- 우측: 시설 상세 패널 -->
+    <div>
+      @if (selectedFacility(); as f) {
+        <!-- 정보 카드 + 배경 이미지 -->
+        <div class="grid grid-cols-1 grid-rows-[auto_260px] md:grid-cols-[340px_1fr] md:grid-rows-none min-h-[420px] rounded overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.08)]" appFadeUp>
+
+          <!-- 카드 -->
+          <div class="bg-white p-7 md:p-10 flex flex-col gap-3 relative z-[1]">
+            <span class="text-xs font-semibold tracking-[0.1em] text-blue-600 uppercase">{{ getCategoryEn(f.category ?? '기타') }}</span>
+            <h2 class="text-[1.4rem] md:text-[1.75rem] font-extrabold text-slate-900 tracking-tight leading-tight">{{ f.title }}</h2>
+            <div class="w-8 h-[3px] bg-blue-600 rounded-sm my-1"></div>
+            <p class="text-[0.93rem] text-slate-600 leading-[1.8] flex-1 whitespace-pre-line">
+              {{ f.description ?? '시설 설명이 등록되지 않았습니다.' }}
+            </p>
+
+          </div>
+
+          <!-- 배경 이미지 -->
+          <div class="relative overflow-hidden bg-slate-900">
+            <img
+              class="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04]"
+              [src]="f.imageUrl"
+              [alt]="f.title"
+              loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-br from-black/15 to-transparent pointer-events-none"></div>
+          </div>
+        </div>
+
+        <!-- 하단: 같은 카테고리 내 다른 시설 선택 탭 -->
+        @if (filteredFacilities().length > 1) {
+          <div class="flex mt-6 border-b-2 border-slate-200 overflow-x-auto scrollbar-hide" style="-ms-overflow-style: none; scrollbar-width: none;">
+            @for (item of filteredFacilities(); track item.id) {
+              <button
+                [class]="'border-b-2 -mb-[2px] px-5 py-2.5 text-[0.9rem] cursor-pointer transition-colors whitespace-nowrap bg-transparent '
+                  + (selectedFacility()?.id === item.id
+                    ? 'text-blue-600 font-bold border-blue-600'
+                    : 'text-slate-500 border-transparent hover:text-slate-900')"
+                (click)="selectFacility(item)">
+                {{ item.title }}
+              </button>
+            }
+          </div>
+        }
+
+      } @else if (facilities().length === 0) {
+        <!-- 빈 상태 -->
+        <div class="flex flex-col items-center justify-center py-20 px-5 gap-4 text-slate-400">
+          <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+          <p class="text-base">등록된 시설 안내가 없습니다.</p>
+        </div>
+      }
+
+    </div>
+  </div>
+</section>

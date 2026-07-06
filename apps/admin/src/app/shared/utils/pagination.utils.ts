@@ -113,7 +113,7 @@ export function useClientPagination<T>(options: {
           if (!startRaw) return false;
           const startMs = new Date(startRaw).getTime();
           const endMs = endRaw ? new Date(endRaw).getTime() : startMs;
-          // 행사 기간이 검색 범위와 겹치면 표시
+          // 전시회 기간이 검색 범위와 겹치면 표시
           return endMs >= fromMs && startMs <= toMs;
         });
       }

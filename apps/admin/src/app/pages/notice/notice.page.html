@@ -1,38 +1,5 @@
 <div class="flex flex-col gap-4">
-  <app-page-header title="공지사항 관리" />
-
-  <!-- 생성/수정 폼 -->
-  <form (ngSubmit)="isEditing() ? updateNotice() : createNotice()"
-    class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4">
-
-    <input type="text" [ngModel]="title()" (ngModelChange)="title.set($event)"
-      name="title" placeholder="제목"
-      class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
-
-    <textarea [ngModel]="content()" (ngModelChange)="content.set($event)"
-      name="content" placeholder="내용" rows="4"
-      class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all resize-none"></textarea>
-
-    <label class="flex items-center gap-2 text-sm select-none cursor-pointer text-slate-700">
-      <input type="checkbox" [ngModel]="published()" (ngModelChange)="published.set($event)"
-        name="published" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-      공개
-    </label>
-
-    <div class="flex gap-2">
-      <button type="submit"
-        class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm transition-colors">
-        {{ isEditing() ? '수정' : '생성' }}
-      </button>
-
-      @if (isEditing()) {
-        <button type="button" (click)="resetForm()"
-          class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">
-          취소
-        </button>
-      }
-    </div>
-  </form>
+  <app-page-header title="공지사항 관리" actionLabel="새로 만들기" (actionClick)="router.navigate(['/notice', 'new'])" />
 
   <!-- 공지사항 목록 -->
   <app-data-grid

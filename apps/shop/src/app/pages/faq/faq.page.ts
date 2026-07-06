@@ -1,8 +1,8 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { FadeUpDirective } from '../../shared/fade-up.directive';
 
 export interface FaqCategory {
   id: number;
@@ -13,15 +13,13 @@ export interface Faq {
   id: number;
   question: string;
   answer: string;
-  published: boolean;
   categoryId: number;
   category?: FaqCategory;
-  createdAt: string;
 }
 
 @Component({
   selector: 'app-faq',
-  imports: [FormsModule, DatePipe, PaginationComponent],
+  imports: [FormsModule, PaginationComponent, FadeUpDirective],
   templateUrl: './faq.page.html'
 })
 export class FaqPage {
@@ -34,7 +32,7 @@ export class FaqPage {
   expandedId = signal<number | null>(null);
 
   filteredFaqs = computed(() => {
-    let list = this.faqs().filter(f => f.published);
+    let list = this.faqs();
     const catId = this.selectedCategoryId();
     if (catId) {
       list = list.filter(f => f.categoryId === catId);

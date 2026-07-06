@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-layout',
@@ -8,7 +9,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
     
 })
 export class LayoutComponent {
-  private router = inject(Router);
+  private authService = inject(AuthService);
   isMobileMenuOpen = signal(false);
   menuItems = [
     {
@@ -36,7 +37,7 @@ export class LayoutComponent {
       icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
     },
     {
-      label: '갤러리', path: '/gallery',
+      label: '시설안내', path: '/gallery',
       icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z',
     },
     {
@@ -51,11 +52,13 @@ export class LayoutComponent {
       label: '배너', path: '/banner',
       icon: 'M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z M15 13a3 3 0 11-6 0 3 3 0 016 0z',
     },
+    {
+      label: '계정 관리', path: '/user',
+      icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+    },
   ];
 
   logout() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    this.router.navigate(['/login']);
+    this.authService.logout();
   }
 }

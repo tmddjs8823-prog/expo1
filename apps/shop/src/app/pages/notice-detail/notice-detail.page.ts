@@ -19,13 +19,7 @@ export class NoticeDetailPage {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.http.get<Notice>(`/api/notice/${id}`).subscribe({
-        next: (res) => {
-          if (!res.published) {
-            this.notice.set(null);
-          } else {
-            this.notice.set(res);
-          }
-        },
+        next: (res) => this.notice.set(res),
         error: (err) => console.error('공지사항 조회 실패:', err),
       });
     }

@@ -14,6 +14,7 @@ async function main() {
         where: { email: 'admin@expo.com' },
         update: {},
         create: {
+            username: 'admin',
             email: 'admin@expo.com',
             password: hashedPassword,
             name: '관리자',
@@ -27,6 +28,7 @@ async function main() {
         where: { email: 'user@expo.com' },
         update: {},
         create: {
+            username: 'user',
             email: 'user@expo.com',
             password: userPassword,
             name: '일반사용자',

@@ -1,6 +1,6 @@
 import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 // FaqCategory
 export class CreateFaqCategoryDto {
@@ -58,3 +58,27 @@ export class CreateFaqDto {
 }
 
 export class UpdateFaqDto extends PartialType(CreateFaqDto) {}
+
+@Exclude()
+export class ShopFaqCategoryResponseDto {
+  @Expose() id: number;
+  @Expose() name: string;
+}
+
+@Exclude()
+export class ShopFaqResponseDto {
+  @Expose() id: number;
+  @Expose() question: string;
+  @Expose() answer: string;
+  @Expose() categoryId: number;
+  @Expose() @Type(() => ShopFaqCategoryResponseDto) category?: ShopFaqCategoryResponseDto;
+}
+
+@Exclude()
+export class AdminFaqListDto {
+  @Expose() id: number;
+  @Expose() question: string;
+  @Expose() published: boolean;
+  @Expose() createdAt: string;
+  @Expose() @Type(() => ShopFaqCategoryResponseDto) category?: ShopFaqCategoryResponseDto;
+}

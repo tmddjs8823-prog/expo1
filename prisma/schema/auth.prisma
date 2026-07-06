@@ -4,14 +4,23 @@
 
 model User {
   id           Int            @id @default(autoincrement())
+  username     String         @unique
   email        String         @unique
-  password     String
+  password     String?
   name         String
+  phone        String?
+  birthdate    String?
+  provider     String?
+  providerId   String?
   role         Role           @default(USER)
+  status       UserStatus     @default(ACTIVE)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   notices      Notice[]
   refreshTokens RefreshToken[]
+  inquiries    Inquiry[]
+
+  @@unique([provider, providerId])
 }
 
 model RefreshToken {
@@ -21,4 +30,16 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model EmailVerification {
+  id        Int      @id @default(autoincrement())
+  email     String
+  code      String
+  type      String   // REGISTER | RESET_PASSWORD | FIND_EMAIL
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, type])
 }

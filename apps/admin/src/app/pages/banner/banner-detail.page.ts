@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error.utils';
+import { handleApiError, handleDeleteError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -24,11 +24,12 @@ export class BannerDetailPage {
   private confirmDialog = inject(ConfirmDialogService);
   private supabase = inject(SupabaseService);
 
-  bannerId = Number(this.route.snapshot.paramMap.get('id'));
+  isCreateMode = this.route.snapshot.paramMap.get('id') === 'new';
+  bannerId = this.isCreateMode ? 0 : Number(this.route.snapshot.paramMap.get('id'));
   title = signal('');
   subtitle = signal('');
   linkUrl = signal('');
-  published = signal(false);
+  published = signal(true);
   sortOrder = signal(1);
   exhibitionId = signal<number | null>(null);
   exhibitions = signal<{ id: number; title: string }[]>([]);
@@ -40,12 +41,14 @@ export class BannerDetailPage {
   onFileSelected = this.imgUpload.onFileSelected.bind(this.imgUpload);
 
   constructor() {
-    this.loadBanner();
+    if (!this.isCreateMode) {
+      this.loadBanner();
+    }
     this.loadExhibitions();
   }
 
   loadExhibitions() {
-    this.http.get<{ id: number; title: string }[]>('/api/exhibition?all=true').subscribe({
+    this.http.get<{ id: number; title: string }[]>('/api/exhibition/slim').subscribe({
       next: (res) => this.exhibitions.set(res),
       error: handleApiError(this.toast, '전시회 목록 조회 실패'),
     });
@@ -66,9 +69,9 @@ export class BannerDetailPage {
     });
   }
 
-  async updateBanner() {
+  async save() {
     const url = await this.imgUpload.upload();
-    this.http.patch(`/api/banner/${this.bannerId}`, {
+    const payload = {
       title: this.title(),
       subtitle: this.subtitle()?.trim() || null,
       imageUrl: url || this.imageUrl(),
@@ -76,21 +79,44 @@ export class BannerDetailPage {
       published: this.published(),
       sortOrder: this.sortOrder(),
       exhibitionId: this.exhibitionId() || undefined,
-    }).subscribe({
-      next: () => { this.toast.success('수정되었습니다.'); this.router.navigate(['/banner']); },
-      error: handleApiError(this.toast, '배너 수정 실패'),
-    });
+    };
+
+    if (this.isCreateMode) {
+      this.http.post('/api/banner', payload).subscribe({
+        next: () => { this.toast.success('생성되었습니다.'); this.router.navigate(['/banner']); },
+        error: handleApiError(this.toast, '배너 생성 실패'),
+      });
+    } else {
+      this.http.patch(`/api/banner/${this.bannerId}`, payload).subscribe({
+        next: () => { this.toast.success('수정되었습니다.'); this.router.navigate(['/banner']); },
+        error: handleApiError(this.toast, '배너 수정 실패'),
+      });
+    }
   }
 
   async deleteBanner() {
     const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/banner/${this.bannerId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/banner']); },
-      error: handleApiError(this.toast, '배너 삭제 실패'),
+      error: handleDeleteError(this.confirmDialog, '배너 삭제 실패'),
     });
   }
 
   goBack() {
     this.router.navigate(['/banner']);
+  }
+
+  async resetForm() {
+    const ok = await this.confirmDialog.open({ message: '입력한 내용을 초기화하시겠습니까?' });
+    if (!ok) return;
+    if (this.isCreateMode) {
+      this.title.set('');
+      this.subtitle.set('');
+      this.linkUrl.set('');
+      this.published.set(true);
+      this.sortOrder.set(1);
+      this.exhibitionId.set(null);
+      this.imgUpload.selectedFile.set(null);
+    }
   }
 }

@@ -13,6 +13,8 @@ import { InquiryModule } from './inquiry/inquiry.module';
 import { PreregistrationModule } from './preregistration/preregistration.module';
 import { ExhibitorModule } from './exhibitor/exhibitor.module';
 import { BannerModule } from './banner/banner.module';
+import { SearchModule } from './search/search.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -28,8 +30,10 @@ import { BannerModule } from './banner/banner.module';
     PreregistrationModule,
     ExhibitorModule,
     BannerModule,
+    SearchModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {} // search module registered

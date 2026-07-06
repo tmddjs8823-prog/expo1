@@ -1,6 +1,6 @@
 import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 export class CreateExhibitorDto {
   @ApiProperty({ description: '업체명' })
@@ -45,3 +45,19 @@ export class CreateExhibitorDto {
 }
 
 export class UpdateExhibitorDto extends PartialType(CreateExhibitorDto) {}
+
+@Exclude()
+export class AdminExhibitorExhibitionDto {
+  @Expose() id: number;
+  @Expose() title: string;
+}
+
+@Exclude()
+export class AdminExhibitorListDto {
+  @Expose() id: number;
+  @Expose() companyName: string;
+  @Expose() boothNumber?: string;
+  @Expose() contactEmail?: string;
+  @Expose() exhibitionId: number;
+  @Expose() @Type(() => AdminExhibitorExhibitionDto) exhibition?: AdminExhibitorExhibitionDto;
+}

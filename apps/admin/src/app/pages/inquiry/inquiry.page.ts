@@ -13,11 +13,12 @@ export interface Inquiry {
   id: number;
   name: string;
   email: string;
-  phone?: string;
   subject: string;
   content: string;
   answer?: string;
   status: 'PENDING' | 'ANSWERED' | 'CLOSED';
+  userId?: number;
+  user?: { id: number; username: string; email: string; name: string; provider?: string };
   createdAt: string;
   updatedAt: string;
 }
@@ -43,9 +44,9 @@ export class InquiryPage {
   pg = useClientPagination({
     items: this.inquiries,
     filterFn: (i, kw) =>
-      i.name.toLowerCase().includes(kw) ||
+      (i.user?.username ?? '').toLowerCase().includes(kw) ||
       i.subject.toLowerCase().includes(kw) ||
-      i.email.toLowerCase().includes(kw),
+      i.name.toLowerCase().includes(kw),
     filterDefs: [
       {
         key: 'status', label: '상태',
@@ -80,7 +81,7 @@ export class InquiryPage {
   }
 
   private readonly columnDefs: ColumnDef<Inquiry>[] = [
-    { header: '이름', field: 'name' },
+    { header: '아이디', render: (i) => i.user?.username ?? '(비회원)' },
     { header: '제목', field: 'subject' },
     {
       header: '상태',
@@ -99,10 +100,14 @@ export class InquiryPage {
 
   readonly gridOption: DataGridOption<Inquiry> = {
     columnDefs: this.columnDefs,
-    searchPlaceholder: '이름, 제목, 이메일로 검색',
+    searchPlaceholder: '아이디, 제목으로 검색',
     emptyMessage: '등록된 문의가 없습니다.',
     rowClickable: true,
     pagination: this.pg,
+    bulkActions: {
+      label: '선택 삭제',
+      onClick: (ids) => this.bulkDelete(ids as number[]),
+    },
   };
 
   constructor() {
@@ -119,8 +124,13 @@ export class InquiryPage {
 
   // 문의 선택 (상세 보기 + 답변 입력)
   selectInquiry(inquiry: Inquiry) {
-    this.selectedInquiry.set(inquiry);
-    this.answerText.set(inquiry.answer ?? '');
+    this.http.get<Inquiry>(`/api/inquiry/${inquiry.id}`).subscribe({
+      next: (detail) => {
+        this.selectedInquiry.set(detail);
+        this.answerText.set(detail.answer ?? '');
+      },
+      error: handleApiError(this.toast, '문의 상세 조회 실패'),
+    });
   }
 
   // 답변 작성
@@ -153,6 +163,15 @@ export class InquiryPage {
         }
       },
       error: handleApiError(this.toast, '문의 삭제 실패'),
+    });
+  }
+
+  async bulkDelete(ids: number[]) {
+    const ok = await this.confirmDialog.open({ message: `선택한 ${ids.length}개 항목을 삭제하면 되돌릴 수 없습니다.` });
+    if (!ok) return;
+    this.http.delete('/api/inquiry/bulk', { body: { ids } }).subscribe({
+      next: () => { this.toast.warning(`${ids.length}개 항목이 삭제되었습니다.`); this.loadInquiries(); },
+      error: handleApiError(this.toast, '일괄 삭제 실패'),
     });
   }
 

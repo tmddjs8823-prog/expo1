@@ -14,7 +14,7 @@ export class GalleryService {
     // 전체 조회
     async findAll(includeAll = false) {
         return this.prisma.gallery.findMany({
-            orderBy: { updatedAt: 'desc' },
+            orderBy: [{ sortOrder: 'asc' }, { updatedAt: 'desc' }],
             include: { exhibition: true },
             where: includeAll ? undefined : { published: true },
         });
@@ -54,5 +54,10 @@ export class GalleryService {
         return this.prisma.gallery.delete({
             where: { id },
         });
+    }
+
+    // 일괄 삭제
+    async removeMany(ids: number[]) {
+        return this.prisma.gallery.deleteMany({ where: { id: { in: ids } } });
     }
 }

@@ -11,10 +11,7 @@ import { RouterModule } from '@angular/router';
 export class InquiryPage {
   private http = inject(HttpClient);
 
-  // 폼 필드
-  name = '';
-  email = '';
-  phone = '';
+  // 폼 필드 (제목 + 내용만)
   subject = '';
   content = '';
 
@@ -24,23 +21,6 @@ export class InquiryPage {
   errorMessage = signal('');
 
   onSubmit() {
-    // 유효성 검사
-    if (!this.name.trim()) {
-      this.errorMessage.set('이름을 입력해주세요.');
-      return;
-    }
-    if (/\d/.test(this.name)) {
-      this.errorMessage.set('이름에 숫자를 입력할 수 없습니다.');
-      return;
-    }
-    if (!this.email.trim() || !this.email.includes('@')) {
-      this.errorMessage.set('올바른 이메일을 입력해주세요.');
-      return;
-    }
-    if (!this.phone.trim() || !/^[\d-]+$/.test(this.phone.trim())) {
-      this.errorMessage.set('올바른 전화번호를 입력해주세요.');
-      return;
-    }
     if (!this.subject.trim()) {
       this.errorMessage.set('제목을 입력해주세요.');
       return;
@@ -54,9 +34,6 @@ export class InquiryPage {
     this.submitting.set(true);
 
     this.http.post('/api/inquiry', {
-      name: this.name.trim(),
-      email: this.email.trim(),
-      phone: this.phone.trim() || undefined,
       subject: this.subject.trim(),
       content: this.content.trim(),
     }).subscribe({

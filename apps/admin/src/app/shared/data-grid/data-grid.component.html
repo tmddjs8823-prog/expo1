@@ -79,18 +79,34 @@
   </div>
 }
 
-<!-- 검색결과 건수 -->
-@if (searchPlaceholder() || filterDefs().length || displayDateRangeFilter()) {
-  <div class="flex justify-end mb-2">
-    <span class="text-xs text-slate-500 font-medium">검색결과 : <span class="text-primary-600 font-bold">{{ displayFilteredCount() }}</span>건</span>
+<!-- 일괄 작업 바 + 검색결과 건수 -->
+<div class="flex justify-between items-center mb-2">
+  <div>
+    @if (hasBulkActions() && selectedCount() > 0) {
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-600 font-semibold">{{ selectedCount() }}개 선택</span>
+        <button type="button" (click)="onBulkAction()"
+          [class]="option().bulkActions?.class ?? 'px-3.5 py-1.5 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-sm transition-colors'"
+        >{{ option().bulkActions?.label ?? '선택 삭제' }}</button>
+      </div>
+    }
   </div>
-}
+  @if (searchPlaceholder() || filterDefs().length || displayDateRangeFilter()) {
+    <span class="text-xs text-slate-500 font-medium">검색결과 : <span class="text-primary-600 font-bold">{{ displayFilteredCount() }}</span>건</span>
+  }
+</div>
 
 <!-- 테이블 -->
 <div class="overflow-x-auto w-full rounded-xl border-2 border-slate-200 bg-white shadow-sm">
   <table [style.min-width]="minWidth()" [class]="tableFixed() ? 'w-full table-fixed' : 'w-full'">
     <thead>
       <tr class="bg-primary-50 border-b-2 border-primary-200">
+        @if (hasBulkActions()) {
+          <th class="w-10 px-3 py-3.5 text-center">
+            <input type="checkbox" [checked]="allSelected()" (change)="toggleAll()"
+              class="w-4 h-4 rounded border-2 border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer" />
+          </th>
+        }
         @for (col of columns(); track col) {
           <th class="px-5 py-3.5 text-left text-primary-700 font-semibold text-xs uppercase tracking-wider">{{ col }}</th>
         }
@@ -113,9 +129,16 @@
           <tr
             class="border-b border-slate-100 last:border-b-0 hover:bg-primary-50 transition-colors duration-150 text-slate-700 text-sm [&>td]:px-5 [&>td]:py-3.5 [&>td]:align-middle"
             [class.bg-slate-50/60]="idx % 2 === 1"
+            [class.bg-primary-50/40]="hasBulkActions() && isSelected(item)"
             [class.cursor-pointer]="rowClickable()"
             (click)="rowClickable() && rowClick.emit(item)"
           >
+            @if (hasBulkActions()) {
+              <td class="w-10 px-3 text-center" (click)="$event.stopPropagation()">
+                <input type="checkbox" [checked]="isSelected(item)" (change)="toggleSelect(item)"
+                  class="w-4 h-4 rounded border-2 border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer" />
+              </td>
+            }
             @for (col of columnDefs(); track col.header) {
               <td [class.truncate]="col.truncate" [attr.title]="col.title ? col.title(item) : null">
 
@@ -165,7 +188,7 @@
         } @empty {
           <tr>
             <td
-              [attr.colspan]="colCount()"
+              [attr.colspan]="hasBulkActions() ? colCount() + 1 : colCount()"
               class="py-20 text-center"
             >
               <div class="flex flex-col items-center gap-4">

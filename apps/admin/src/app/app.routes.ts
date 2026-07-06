@@ -117,6 +117,16 @@ export const appRoutes: Route[] = [
         loadComponent: () =>
           import('./pages/exhibitor/exhibitor-detail.page').then(m => m.ExhibitorDetailPage),
       },
+      {
+        path: 'user',
+        loadComponent: () =>
+          import('./pages/user/user.page').then(m => m.UserPage),
+      },
+      {
+        path: 'user/:id',
+        loadComponent: () =>
+          import('./pages/user/user-detail.page').then(m => m.UserDetailPage),
+      },
     ],
   },
 

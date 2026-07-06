@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error.utils';
+import { handleApiError, handleDeleteError } from '../../shared/utils/api-error.utils';
 import { FormsModule } from '@angular/forms';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -36,7 +36,10 @@ export class InquiryDetailPage {
       { label: '이름', value: inq.name },
       { label: '이메일', value: inq.email },
     ];
-    if (inq.phone) fields.push({ label: '전화번호', value: inq.phone });
+    if (inq.user) {
+      const providerTag = inq.user.provider ? ` (${inq.user.provider})` : '';
+      fields.push({ label: '문의 계정', value: `${inq.user.name} (${inq.user.email})${providerTag}` });
+    }
     fields.push({ label: '접수일', value: this.datePipe.transform(inq.createdAt, 'yyyy-MM-dd HH:mm') ?? '' });
     return fields;
   });
@@ -68,7 +71,7 @@ export class InquiryDetailPage {
     const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/inquiry/${this.inquiryId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/inquiry']); },
-      error: handleApiError(this.toast, '문의 삭제 실패'),
+      error: handleDeleteError(this.confirmDialog, '문의 삭제 실패'),
     });
   }
 
@@ -83,5 +86,11 @@ export class InquiryDetailPage {
 
   goBack() {
     this.router.navigate(['/inquiry']);
+  }
+
+  async resetForm() {
+    const ok = await this.confirmDialog.open({ message: '입력한 내용을 초기화하시겠습니까?' });
+    if (!ok) return;
+    this.answerText.set('');
   }
 }

@@ -52,4 +52,9 @@ export class ProgramService {
             where: { id },
         });
     }
+
+    // 일괄 삭제
+    async removeMany(ids: number[]) {
+        return this.prisma.program.deleteMany({ where: { id: { in: ids } } });
+    }
 }

@@ -1,6 +1,6 @@
 import { IsBoolean, IsEmail, IsInt, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 export class PreregistrationDto {
   @ApiProperty({ description: '이름' })
@@ -41,4 +41,21 @@ export class PreregistrationDto {
   @Type(() => Number)
   @IsInt({ message: '전시회를 선택해주세요.' })
   exhibitionId?: number;
+}
+
+@Exclude()
+export class AdminPreregExhibitionDto {
+  @Expose() id: number;
+  @Expose() title: string;
+}
+
+@Exclude()
+export class AdminPreregListDto {
+  @Expose() id: number;
+  @Expose() name: string;
+  @Expose() email: string;
+  @Expose() phone?: string;
+  @Expose() company?: string;
+  @Expose() jobTitle?: string;
+  @Expose() @Type(() => AdminPreregExhibitionDto) exhibition?: AdminPreregExhibitionDto;
 }

@@ -29,7 +29,10 @@ import { CreateFaqDto, UpdateFaqDto, CreateFaqCategoryDto } from './dto/faq.dto'
 
         // 카테고리 전체 조회
         async findAllCategories() {
-            return this.prisma.faqCategory.findMany({ orderBy: { sortOrder: 'asc' } });
+            return this.prisma.faqCategory.findMany({
+                select: { id: true, name: true },
+                orderBy: { sortOrder: 'asc' },
+            });
         }
 
         // 카테고리 삭제 (소속 FAQ도 함께 삭제)
@@ -80,6 +83,11 @@ import { CreateFaqDto, UpdateFaqDto, CreateFaqCategoryDto } from './dto/faq.dto'
             return this.prisma.faq.delete({
                 where: { id },
             });
+        }
+
+        // 일괄 삭제
+        async removeMany(ids: number[]) {
+            return this.prisma.faq.deleteMany({ where: { id: { in: ids } } });
         }
     }
     

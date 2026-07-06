@@ -1,0 +1,318 @@
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-lg">
+
+    <!-- 헤더 -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xl font-bold shadow-lg shadow-primary-500/25 mb-4">
+        E
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900">회원가입</h1>
+      <p class="mt-1 text-sm text-slate-500">광주 밀리언쇼 계정을 만들어보세요.</p>
+    </div>
+
+    <!-- 스텝 인디케이터 -->
+    <div class="flex items-center justify-center gap-2 mb-8">
+      @for (s of [1,2,3]; track s) {
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300"
+               [class]="(step() === 'terms' && s === 1) || (step() === 'info' && s === 2) || (step() === 'verify' && s === 3)
+                         ? 'bg-primary-600 text-white shadow-md shadow-primary-500/30'
+                         : (step() === 'info' && s === 1) || (step() === 'verify' && s <= 2)
+                           ? 'bg-primary-100 text-primary-600'
+                           : 'bg-slate-100 text-slate-400'">
+            @if ((step() === 'info' && s === 1) || (step() === 'verify' && s <= 2)) {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+            } @else {
+              {{ s }}
+            }
+          </div>
+          @if (s < 3) {
+            <div class="w-12 h-0.5 transition-all duration-300"
+                 [class]="(step() === 'info' && s === 1) || step() === 'verify' ? 'bg-primary-400' : 'bg-slate-200'"></div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- 스텝 라벨 -->
+    <div class="flex justify-center gap-8 text-xs mb-6 text-slate-400">
+      <span [class.text-primary-600]="step() === 'terms'" [class.font-semibold]="step() === 'terms'">약관 동의</span>
+      <span [class.text-primary-600]="step() === 'info'" [class.font-semibold]="step() === 'info'">정보 입력</span>
+      <span [class.text-primary-600]="step() === 'verify'" [class.font-semibold]="step() === 'verify'">이메일 인증</span>
+    </div>
+
+    <!-- 카드 -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+
+
+      <!-- ════ Step 1: 약관 동의 ════ -->
+      @if (step() === 'terms') {
+        <div class="p-6 sm:p-8 flex flex-col gap-5">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 mb-1">서비스 이용 약관</h2>
+            <p class="text-sm text-slate-400">필수 항목에 동의하셔야 회원가입이 가능합니다.</p>
+          </div>
+
+          <!-- 전체 동의 -->
+          <label class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-primary-50 transition-colors border border-slate-200 hover:border-primary-200">
+            <input type="checkbox" [checked]="agreeAll()" (change)="toggleAll($any($event.target).checked)"
+              class="w-5 h-5 rounded accent-primary-600 cursor-pointer" />
+            <span class="text-sm font-bold text-slate-900">전체 동의</span>
+          </label>
+
+          <div class="flex flex-col gap-3 pl-2">
+            <!-- 필수: 이용약관 -->
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="checkbox" [checked]="agreeTerms()" (change)="agreeTerms.set($any($event.target).checked); onItemChange()"
+                class="w-4 h-4 rounded accent-primary-600 cursor-pointer" />
+              <div class="flex-1 flex items-center justify-between">
+                <span class="text-sm text-slate-700 group-hover:text-slate-900">
+                  <span class="text-primary-600 font-semibold text-xs mr-1">[필수]</span>이용약관 동의
+                </span>
+                <a href="#" class="text-xs text-slate-400 hover:text-primary-600 underline ml-2" (click)="$event.preventDefault()">보기</a>
+              </div>
+            </label>
+
+            <!-- 필수: 개인정보 처리방침 -->
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="checkbox" [checked]="agreePrivacy()" (change)="agreePrivacy.set($any($event.target).checked); onItemChange()"
+                class="w-4 h-4 rounded accent-primary-600 cursor-pointer" />
+              <div class="flex-1 flex items-center justify-between">
+                <span class="text-sm text-slate-700 group-hover:text-slate-900">
+                  <span class="text-primary-600 font-semibold text-xs mr-1">[필수]</span>개인정보 처리방침 동의
+                </span>
+                <a href="#" class="text-xs text-slate-400 hover:text-primary-600 underline ml-2" (click)="$event.preventDefault()">보기</a>
+              </div>
+            </label>
+
+            <!-- 선택: 마케팅 -->
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="checkbox" [checked]="agreeMarketing()" (change)="agreeMarketing.set($any($event.target).checked); onItemChange()"
+                class="w-4 h-4 rounded accent-primary-600 cursor-pointer" />
+              <div class="flex-1 flex items-center justify-between">
+                <span class="text-sm text-slate-700 group-hover:text-slate-900">
+                  <span class="text-slate-400 font-semibold text-xs mr-1">[선택]</span>마케팅 및 광고성 정보 수신 동의
+                </span>
+              </div>
+            </label>
+          </div>
+
+          <button type="button" (click)="nextFromTerms()"
+            [disabled]="!requiredAgreed"
+            class="w-full py-3 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-2">
+            다음 단계
+          </button>
+
+          <!-- 카카오 -->
+          <div class="flex items-center gap-3">
+            <div class="flex-1 h-px bg-slate-200"></div>
+            <span class="text-xs text-slate-400">또는 소셜 계정으로</span>
+            <div class="flex-1 h-px bg-slate-200"></div>
+          </div>
+          <button (click)="kakaoLogin()" type="button"
+            class="w-full py-2.5 bg-[#FEE500] text-[#191919] text-sm font-semibold rounded-xl hover:bg-[#FADA0A] transition-all flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3C6.48 3 2 6.36 2 10.44c0 2.62 1.75 4.93 4.38 6.24l-1.12 4.12c-.1.36.27.65.58.46l4.88-3.22c.42.04.84.06 1.28.06 5.52 0 10-3.36 10-7.66C22 6.36 17.52 3 12 3z"/>
+            </svg>
+            카카오로 시작하기
+          </button>
+        </div>
+      }
+
+      <!-- ════ Step 2: 정보 입력 ════ -->
+      @if (step() === 'info') {
+        <form (ngSubmit)="sendVerification()" class="p-6 sm:p-8 flex flex-col gap-10">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 mb-1">회원 정보 입력</h2>
+            <p class="text-sm text-slate-400">정보를 입력하고 이메일 인증을 요청하세요.</p>
+          </div>
+
+          <!-- 아이디 -->
+          <label class="flex flex-col gap-1.5">
+            <span class="text-sm font-medium text-slate-700">아이디 <span class="text-red-400">*</span></span>
+            <div class="relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              <input type="text" [ngModel]="username()" (ngModelChange)="username.set($event)"
+                name="username" autocomplete="username"
+                class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+            </div>
+            <span class="text-xs text-slate-700 mt-2">영문으로 시작, 영문·숫자·밑줄(_) 4~20자</span>
+          </label>
+
+          <!-- 이메일 -->
+          <label class="flex flex-col gap-1.5">
+            <span class="text-sm font-medium text-slate-700">이메일 <span class="text-red-400">*</span></span>
+            <div class="relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+              <input type="email" [ngModel]="email()" (ngModelChange)="email.set($event)"
+                name="email" autocomplete="email"
+                class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+            </div>
+            <div class="flex flex-col gap-0.5 text-xs text-slate-700 mt-2">
+              <span>* <span class="text-primary-600 font-semibold">naver.com</span> 메일 주소로만 가입 가능합니다.</span>
+              <span>이메일 주소는 이메일 인증 후 비밀번호 변경이나 찾기 등에 사용됩니다.</span>
+              <span>인증 이메일이 보이지 않으면 스팸함을 확인해 주세요.</span>
+            </div>
+          </label>
+
+          <!-- 비밀번호 -->
+          <label class="flex flex-col gap-1.5">
+            <span class="text-sm font-medium text-slate-700">비밀번호 <span class="text-red-400">*</span></span>
+            <div class="relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              <input type="password" [ngModel]="password()" (ngModelChange)="password.set($event)"
+                name="password" autocomplete="new-password"
+                class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+            </div>
+            <span class="text-xs text-slate-700 mt-2">영문, 숫자 조합 6자리 이상</span>
+          </label>
+
+          <!-- 비밀번호 확인 -->
+          <label class="flex flex-col gap-1.5">
+            <span class="text-sm font-medium text-slate-700">비밀번호 확인 <span class="text-red-400">*</span></span>
+            <div class="relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+              </svg>
+              <input type="password" [ngModel]="passwordConfirm()" (ngModelChange)="passwordConfirm.set($event)"
+                name="passwordConfirm" autocomplete="new-password"
+                class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+            </div>
+            <span class="text-xs text-slate-700 mt-2">비밀번호를 한 번 더 입력하세요</span>
+          </label>
+
+          <!-- 이름 -->
+          <label class="flex flex-col gap-1.5">
+            <span class="text-sm font-medium text-slate-700">이름 <span class="text-red-400">*</span></span>
+            <input type="text" [ngModel]="name()" (ngModelChange)="name.set($event)"
+              name="name" autocomplete="name"
+              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+            <span class="text-xs text-slate-700 mt-2">실명을 입력하세요</span>
+          </label>
+
+          <!-- 생년월일 -->
+          <label class="flex flex-col gap-1.5">
+            <span class="text-sm font-medium text-slate-700">생년월일 <span class="text-red-400">*</span></span>
+            <input type="text" [ngModel]="birthdate()" (ngModelChange)="birthdate.set($event)"
+              name="birthdate" maxlength="8"
+              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+            <span class="text-xs text-slate-700 mt-2">숫자 8자리 (예: 19900101)</span>
+          </label>
+
+          <!-- 전화번호 -->
+          <label class="flex flex-col gap-1.5">
+            <span class="text-sm font-medium text-slate-700">전화번호 <span class="text-slate-400 font-normal text-xs">(선택)</span></span>
+            <div class="relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+              </svg>
+              <input type="tel" [ngModel]="phone()" (ngModelChange)="phone.set($event)"
+                name="phone" autocomplete="tel"
+                class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all" />
+            </div>
+            <span class="text-xs text-slate-700 mt-2">하이픈(-) 포함 입력 (예: 010-1234-5678)</span>
+          </label>
+
+          <!-- 안내 사항 -->
+
+
+          <!-- 에러 메시지 -->
+          @if (error()) {
+            <div class="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">
+              <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              </svg>
+              <span class="whitespace-pre-line">{{ error() }}</span>
+            </div>
+          }
+
+          <!-- 인증 요청 버튼 -->
+          <button type="submit" [disabled]="loading()"
+            class="w-full py-3 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 active:bg-primary-800 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (loading()) {
+              <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"/></svg>
+              발송 중...
+            } @else {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+              이메일 인증 요청
+            }
+          </button>
+        </form>
+      }
+
+      <!-- ════ Step 3: OTP 인증 ════ -->
+      @if (step() === 'verify') {
+        <div class="p-6 sm:p-8 flex flex-col gap-5">
+          <div class="text-center">
+            <div class="w-14 h-14 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <svg class="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+            </div>
+            <h2 class="text-base font-bold text-slate-900 mb-1">이메일 인증 코드 입력</h2>
+            <p class="text-sm text-slate-400">
+              <strong class="text-slate-600">{{ email() }}</strong><br/>
+              위 주소로 발송된 6자리 코드를 입력해주세요.
+            </p>
+          </div>
+
+          <!-- OTP 입력 -->
+          <input type="text" [ngModel]="verifyCode()" (ngModelChange)="verifyCode.set($event)"
+            name="code" placeholder="• • • • • •" maxlength="6" autocomplete="one-time-code"
+            [disabled]="codeTimer() <= 0"
+            class="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-center text-3xl font-bold tracking-[0.6em] text-slate-900 focus:outline-none focus:border-primary-500 focus:bg-white transition-all disabled:opacity-40 disabled:cursor-not-allowed" />
+
+          <!-- 남은 시간 -->
+          @if (codeTimer() > 0) {
+            <p class="text-center text-sm font-medium"
+               [class.text-primary-600]="codeTimer() > 60"
+               [class.text-red-500]="codeTimer() <= 60">
+              인증 코드 유효 시간: {{ Math.floor(codeTimer() / 60) }}:{{ (codeTimer() % 60).toString().padStart(2, '0') }}
+            </p>
+          } @else {
+            <p class="text-center text-sm font-medium text-red-500">인증 코드가 만료되었습니다. 재발송해주세요.</p>
+          }
+
+          <!-- 인증 완료 버튼 -->
+          <button type="button" (click)="verifyAndRegister()" [disabled]="loading() || codeTimer() <= 0"
+            class="w-full py-3 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (loading()) {
+              <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"/></svg>
+              처리 중...
+            } @else {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              인증 완료 및 가입
+            }
+          </button>
+
+          <!-- 재발송 -->
+          <div class="text-center text-sm text-slate-400">
+            코드를 받지 못했나요?
+            @if (resendTimer() > 0) {
+              <span class="text-slate-500 font-medium ml-1">{{ resendTimer() }}초 후 재발송 가능</span>
+            } @else {
+              <button type="button" (click)="resend()" class="text-primary-600 font-semibold hover:underline ml-1">재발송</button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- 로그인 링크 -->
+    <div class="text-center mt-6">
+      <p class="text-sm text-slate-500">
+        이미 계정이 있으신가요?
+        <a routerLink="/auth/login" class="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
+          로그인
+        </a>
+      </p>
+    </div>
+
+  </div>
+</div>

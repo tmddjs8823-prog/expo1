@@ -1,71 +1,77 @@
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-8">
 
   <!-- 헤더 -->
-  <div class="text-center flex flex-col gap-2">
-    <h1 class="text-3xl font-bold text-slate-900">FAQ</h1>
+  <div class="text-center flex flex-col gap-2" appFadeUp>
+    <p class="text-sm text-emerald-600 font-semibold uppercase tracking-wider">FAQ</p>
+    <h1 class="text-3xl font-bold text-slate-900">자주 묻는 질문</h1>
     <p class="text-slate-500">궁금한 점이 있으시면 아래에서 확인해보세요.</p>
   </div>
 
+  <!-- 검색 (상단으로 이동) -->
+  <div class="flex justify-center" appFadeUp="100ms">
+    <div class="relative w-full max-w-md">
+      <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
+             name="search" placeholder="질문을 검색하세요..."
+             class="w-full pl-4 pr-10 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+      <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </div>
+  </div>
+
   <!-- 카테고리 탭 -->
-  <div class="flex items-center justify-center gap-2 flex-wrap">
+  <div class="flex items-center justify-center gap-2 flex-wrap" appFadeUp="150ms">
     <button (click)="selectCategory(null)"
+            class="px-4 py-2 text-sm font-medium rounded-full transition-all"
             [class]="selectedCategoryId() === null
-              ? 'px-4 py-2 text-sm font-medium rounded-full bg-slate-900 text-white'
-              : 'px-4 py-2 text-sm font-medium rounded-full border border-slate-300 text-slate-600 hover:bg-slate-50'">
+              ? 'bg-emerald-600 text-white shadow-md'
+              : 'border border-slate-200 text-slate-600 hover:bg-slate-50'">
       전체
     </button>
     @for (cat of categories(); track cat.id) {
       <button (click)="selectCategory(cat.id)"
+              class="px-4 py-2 text-sm font-medium rounded-full transition-all"
               [class]="selectedCategoryId() === cat.id
-                ? 'px-4 py-2 text-sm font-medium rounded-full bg-slate-900 text-white'
-                : 'px-4 py-2 text-sm font-medium rounded-full border border-slate-300 text-slate-600 hover:bg-slate-50'">
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'border border-slate-200 text-slate-600 hover:bg-slate-50'">
         {{ cat.name }}
       </button>
     }
   </div>
 
-  <!-- FAQ 목록 테이블 -->
-  <div class="border-t-2 border-slate-900">
-    <table class="w-full">
-      <thead>
-        <tr class="border-b border-slate-200">
-          <th class="py-3 px-4 text-left text-sm font-semibold text-slate-700 w-32">카테고리</th>
-          <th class="py-3 px-4 text-left text-sm font-semibold text-slate-700">제목</th>
-          <th class="py-3 px-4 text-right text-sm font-semibold text-slate-700 w-32">작성일</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (faq of pagedFaqs(); track faq.id) {
-          <!-- 질문 행 -->
-          <tr class="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
-              (click)="toggleExpand(faq.id)">
-            <td class="py-3.5 px-4 text-sm text-slate-500">{{ faq.category?.name ?? '-' }}</td>
-            <td class="py-3.5 px-4 text-sm text-slate-900 flex items-center gap-2">
-              <svg class="w-4 h-4 text-slate-400 shrink-0 transition-transform"
-                   [class.rotate-180]="expandedId() === faq.id"
-                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              {{ faq.question }}
-            </td>
-            <td class="py-3.5 px-4 text-sm text-slate-400 text-right">{{ faq.createdAt | date:'yyyy-MM-dd' }}</td>
-          </tr>
-          <!-- 답변 행 (아코디언) -->
-          @if (expandedId() === faq.id) {
-            <tr class="bg-slate-50">
-              <td></td>
-              <td colspan="2" class="py-4 px-4 text-sm text-slate-600 leading-relaxed whitespace-pre-line">
-                {{ faq.answer }}
-              </td>
-            </tr>
-          }
-        } @empty {
-          <tr>
-            <td colspan="3" class="py-12 text-center text-slate-400">등록된 FAQ가 없습니다.</td>
-          </tr>
+  <!-- FAQ 아코디언 목록 -->
+  <div class="flex flex-col gap-3" appFadeUp="200ms">
+    @for (faq of pagedFaqs(); track faq.id) {
+      <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all">
+        <!-- 질문 -->
+        <button (click)="toggleExpand(faq.id)"
+                class="w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-slate-50 transition-colors">
+          <span class="shrink-0 w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center font-bold text-sm">Q</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-slate-900 line-clamp-2">{{ faq.question }}</p>
+            @if (faq.category) {
+              <span class="text-xs text-slate-400">{{ faq.category.name }}</span>
+            }
+          </div>
+          <svg class="w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300"
+               [class.rotate-180]="expandedId() === faq.id"
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <!-- 답변 -->
+        @if (expandedId() === faq.id) {
+          <div class="px-6 pb-5 pt-0 ml-12 border-t border-slate-100">
+            <div class="flex items-start gap-3 pt-4">
+              <span class="shrink-0 w-8 h-8 bg-primary-50 text-primary-600 rounded-lg flex items-center justify-center font-bold text-sm">A</span>
+              <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line flex-1">{{ faq.answer }}</p>
+            </div>
+          </div>
         }
-      </tbody>
-    </table>
+      </div>
+    } @empty {
+      <div class="py-12 text-center text-slate-400">등록된 FAQ가 없습니다.</div>
+    }
   </div>
 
   <!-- 페이지네이션 -->
@@ -73,17 +79,5 @@
     [currentPage]="currentPage()"
     [totalPages]="totalPages()"
     (pageChange)="onPageChange($event)" />
-
-  <!-- 검색 -->
-  <div class="flex justify-center">
-    <div class="relative w-full max-w-md">
-      <input type="text" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
-             name="search" placeholder="검색어를 입력하세요"
-             class="w-full pl-4 pr-10 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
-      <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-    </div>
-  </div>
 
 </div>

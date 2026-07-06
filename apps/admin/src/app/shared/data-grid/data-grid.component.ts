@@ -3,6 +3,8 @@ import {
   input,
   output,
   computed,
+  signal,
+  effect,
   Signal,
   WritableSignal,
   Pipe,
@@ -85,6 +87,12 @@ export interface DataGridOption<T = unknown> {
   pagination?: DataGridPagination<T>;
   // 로딩 상태 — true면 스켈레톤 표시
   loading?: boolean;
+  // 일괄 작업 (체크박스 선택 활성화)
+  bulkActions?: {
+    label: string;
+    class?: string;
+    onClick: (selectedIds: unknown[]) => void;
+  };
 }
 
 // 날짜 포맷 파이프 (컴포넌트 내부용)
@@ -171,8 +179,15 @@ export class AdminDataGridComponent<T = unknown> {
   // 검색/페이지 이벤트
   onSearchChange(value: string) {
     const pg = this.option().pagination;
-    if (pg) pg.searchKeyword.set(value);
-    else this.searchChange.emit(value);
+    if (pg) {
+      pg.searchKeyword.set(value);
+      // 수동 검색 모드에서 검색어가 비면 자동으로 검색 적용 (1페이지 초기화)
+      if (pg.manualSearch && value === '') {
+        pg.applySearch?.();
+      }
+    } else {
+      this.searchChange.emit(value);
+    }
   }
 
   onPageChanged(page: number) {
@@ -207,5 +222,58 @@ export class AdminDataGridComponent<T = unknown> {
   // FilterDef.options가 Signal일 수 있으므로 resolve
   resolveOptions(options: FilterOption[] | Signal<FilterOption[]>): FilterOption[] {
     return isSignal(options) ? options() : options;
+  }
+
+  // ── 체크박스 선택 (일괄 작업) ──
+
+  hasBulkActions = computed(() => !!this.option().bulkActions);
+  selectedIds = signal<Set<unknown>>(new Set());
+  selectedCount = computed(() => this.selectedIds().size);
+
+  allSelected = computed(() => {
+    const items = this.displayItems();
+    if (items.length === 0) return false;
+    const sel = this.selectedIds();
+    return items.every(item => sel.has(this.trackByFn()(item)));
+  });
+
+  constructor() {
+    // 페이지 변경 시 선택 초기화
+    effect(() => {
+      this.displayCurrentPage(); // 페이지 변경 추적
+      this.selectedIds.set(new Set());
+    });
+  }
+
+  toggleSelect(item: T) {
+    const id = this.trackByFn()(item);
+    this.selectedIds.update(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  isSelected(item: T): boolean {
+    return this.selectedIds().has(this.trackByFn()(item));
+  }
+
+  toggleAll() {
+    const items = this.displayItems();
+    if (this.allSelected()) {
+      this.selectedIds.set(new Set());
+    } else {
+      const ids = new Set(items.map(item => this.trackByFn()(item)));
+      this.selectedIds.set(ids);
+    }
+  }
+
+  onBulkAction() {
+    const bulk = this.option().bulkActions;
+    if (bulk) {
+      bulk.onClick([...this.selectedIds()]);
+      this.selectedIds.set(new Set());
+    }
   }
 }

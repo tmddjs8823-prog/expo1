@@ -1,48 +1,5 @@
 <div class="flex flex-col gap-4">
-  <app-page-header title="참가업체 관리" />
-
-  <!-- 생성 폼 -->
-  <form (ngSubmit)="createExhibitor()" class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4">
-    <div class="flex flex-col md:flex-row gap-4">
-      <label class="flex flex-col gap-1 flex-1">
-        <span class="text-sm font-medium text-slate-700">업체명</span>
-        <input [ngModel]="exhibitorForm().companyName"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, companyName: $event}))"
-          name="companyName" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
-      </label>
-      <label class="flex flex-col gap-1 flex-1">
-        <span class="text-sm font-medium text-slate-700">이메일</span>
-        <input [ngModel]="exhibitorForm().contactEmail"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, contactEmail: $event}))"
-          name="contactEmail" type="email" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
-      </label>
-    </div>
-
-    <div class="flex flex-col md:flex-row gap-4">
-      <label class="flex flex-col gap-1 flex-1">
-        <span class="text-sm font-medium text-slate-700">전시회</span>
-        <select [ngModel]="exhibitorForm().exhibitionId"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, exhibitionId: $event}))"
-          name="exhibitionId" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500">
-          <option [ngValue]="0" disabled>전시회 선택</option>
-          @for (ex of exhibitions(); track ex.id) {
-            <option [ngValue]="ex.id">{{ ex.title }}</option>
-          }
-        </select>
-      </label>
-      <label class="flex flex-col gap-1 flex-1">
-        <span class="text-sm font-medium text-slate-700">부스번호</span>
-        <input [ngModel]="exhibitorForm().boothNumber"
-          (ngModelChange)="exhibitorForm.update(f => ({...f, boothNumber: $event}))"
-          name="boothNumber" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
-      </label>
-    </div>
-
-    <div class="flex gap-2">
-      <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm transition-colors">생성</button>
-      <button type="button" (click)="resetForm()" class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">초기화</button>
-    </div>
-  </form>
+  <app-page-header title="참가업체 관리" actionLabel="새로 만들기" (actionClick)="router.navigate(['/exhibitor', 'new'])" />
 
   <!-- 참가업체 목록 -->
   <app-data-grid

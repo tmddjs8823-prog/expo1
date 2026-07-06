@@ -1,70 +1,242 @@
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-10">
+<div class="min-h-screen bg-slate-50">
 
-  <!-- 헤더 -->
-  <div class="text-center flex flex-col gap-2">
-    <h1 class="text-3xl font-bold text-slate-900">전시안내</h1>
-    <p class="text-slate-500">광주 밀리언쇼의 전시 일정을 확인하세요.</p>
+  <!-- ── 상단 헤더 ── -->
+  <div class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4" appFadeUp>
+      <div>
+        <p class="text-xs text-primary-600 font-bold uppercase tracking-widest mb-1.5">EXHIBITION</p>
+        <h1 class="text-3xl font-bold text-slate-900">전시 안내</h1>
+        <p class="text-slate-400 mt-1 text-sm">광주 밀리언쇼의 전시 일정을 확인하세요</p>
+      </div>
+
+      <!-- 뷰 전환 + 총 건수 -->
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-slate-400">총 <strong class="text-slate-700">{{ exhibitions().length }}</strong>건</span>
+        <div class="flex rounded-xl border border-slate-200 overflow-hidden bg-white">
+          <button id="btn-calendar-view"
+                  (click)="viewMode.set('calendar')"
+                  [class.bg-slate-900]="viewMode() === 'calendar'"
+                  [class.text-white]="viewMode() === 'calendar'"
+                  [class.text-slate-500]="viewMode() !== 'calendar'"
+                  class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            캘린더
+          </button>
+          <button id="btn-list-view"
+                  (click)="viewMode.set('list')"
+                  [class.bg-slate-900]="viewMode() === 'list'"
+                  [class.text-white]="viewMode() === 'list'"
+                  [class.text-slate-500]="viewMode() !== 'list'"
+                  class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors border-l border-slate-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            목록
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- 전시회 카드 목록 -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    @for (ex of pagedExhibitions(); track ex.id) {
-      <a [routerLink]="['/exhibition', ex.id]"
-         class="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-slate-100">
+  <!-- ════════════════════════════════════════ -->
+  <!-- 캘린더 뷰 -->
+  <!-- ════════════════════════════════════════ -->
+  @if (viewMode() === 'calendar') {
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" appFadeUp>
 
-        <!-- 이미지 -->
-        <div class="relative h-52 overflow-hidden bg-slate-100">
-          @if (ex.imageUrl) {
-            <img [src]="ex.imageUrl" [alt]="ex.title"
-                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-          } @else {
-            <div class="w-full h-full flex items-center justify-center">
-              <svg class="w-16 h-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5" />
-              </svg>
+    <!-- 월 네비게이션 -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <button id="btn-prev-month" (click)="prevMonth()"
+                class="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h2 class="text-xl font-bold text-slate-900 min-w-[9rem] text-center">{{ monthLabel() }}</h2>
+        <button id="btn-next-month" (click)="nextMonth()"
+                class="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <button id="btn-today" (click)="goToToday()"
+                class="px-3 py-1.5 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 transition-colors">
+          오늘
+        </button>
+      </div>
+    </div>
+
+    <!-- 캘린더 그리드 -->
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+
+      <!-- 요일 헤더 -->
+      <div class="grid grid-cols-7 border-b border-slate-100">
+        @for (day of WEEKDAYS; track day; let i = $index) {
+          <div class="py-3 text-center text-xs font-bold tracking-wide"
+               [class.text-red-500]="i === 0"
+               [class.text-blue-500]="i === 6"
+               [class.text-slate-400]="i > 0 && i < 6">
+            {{ day }}
+          </div>
+        }
+      </div>
+
+      <!-- 주(week) 행들 -->
+      @for (week of calendarWeeks(); track $index) {
+        <div class="grid grid-cols-7 border-b border-slate-100 last:border-b-0">
+          @for (cell of week; track $index; let col = $index) {
+            <div class="group/cell border-r border-slate-100 last:border-r-0 min-h-[5rem] p-1.5 cursor-pointer transition-colors hover:bg-slate-50 relative"
+                 [class.bg-slate-50]="!cell.date"
+                 [class.bg-primary-50]="isSelected(cell.date)"
+                 (click)="selectDate(cell.date)"
+                 (keydown.enter)="selectDate(cell.date)"
+                 [attr.tabindex]="cell.date ? 0 : -1">
+
+              <!-- 날짜 숫자 -->
+              @if (cell.date) {
+                <div class="flex justify-center mb-1.5">
+                  <span class="text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full transition-colors"
+                        [class.bg-slate-900]="cell.isToday"
+                        [class.text-white]="cell.isToday"
+                        [class.text-red-500]="!cell.isToday && col === 0"
+                        [class.text-blue-500]="!cell.isToday && col === 6"
+                        [class.text-slate-700]="!cell.isToday && col > 0 && col < 6">
+                    {{ cell.date.getDate() }}
+                  </span>
+                </div>
+
+                <!-- 행사 점(dot) -->
+                @if (cell.exhibitions.length > 0) {
+                  <div class="flex flex-wrap justify-center gap-1">
+                    @for (ex of cell.exhibitions; track ex.id) {
+                      <span class="w-2 h-2 rounded-full" [class]="getExhibitionDot(ex.id)"></span>
+                    }
+                  </div>
+
+                  <!-- 호버 툴팁 -->
+                  <div class="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-30
+                              bg-slate-900 text-white text-[11px] rounded-lg shadow-lg py-2 px-3 min-w-[10rem] max-w-[14rem]
+                              opacity-0 invisible group-hover/cell:opacity-100 group-hover/cell:visible
+                              transition-all duration-150 pointer-events-none">
+                    <div class="flex flex-col gap-1.5">
+                      @for (ex of cell.exhibitions; track ex.id) {
+                        <div class="flex items-center gap-1.5">
+                          <span class="w-2 h-2 rounded-full shrink-0" [class]="getExhibitionDot(ex.id)"></span>
+                          <span class="truncate">{{ ex.title }}</span>
+                        </div>
+                      }
+                    </div>
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-900"></div>
+                  </div>
+                }
+              }
             </div>
           }
-          <!-- 상태 뱃지 -->
-          <span class="absolute top-3 right-3 text-xs font-medium px-2.5 py-1 rounded-full"
-                [class]="getStatusColor(ex.status)">
-            {{ getStatusLabel(ex.status) }}
-          </span>
         </div>
+      }
+    </div>
 
-        <!-- 정보 -->
-        <div class="p-5 flex flex-col gap-2">
-          <h3 class="text-lg font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
-            {{ ex.title }}
+    <!-- 선택된 날짜의 행사 목록 -->
+    @if (selectedDate() && selectedExhibitions().length > 0) {
+      <div class="mt-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-3 bg-slate-50 border-b border-slate-100">
+          <h3 class="text-sm font-bold text-slate-900">
+            {{ selectedDate()!.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) }} 행사
           </h3>
-          <div class="flex flex-col gap-1 text-sm text-slate-400">
-            <div class="flex items-center gap-1.5">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              {{ ex.startDate | date:'yyyy.MM.dd' }} ~ {{ ex.endDate | date:'yyyy.MM.dd' }}
-            </div>
-            @if (ex.venue) {
-              <div class="flex items-center gap-1.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {{ ex.venue }}
-              </div>
-            }
-          </div>
         </div>
-      </a>
-    } @empty {
-      <div class="col-span-full py-16 text-center text-slate-400">
-        등록된 전시회가 없습니다.
+        <div class="divide-y divide-slate-100">
+          @for (ex of selectedExhibitions(); track ex.id) {
+            <a [routerLink]="['/exhibition', ex.id]"
+               class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-colors">
+              <span class="w-3 h-3 rounded-full shrink-0" [class]="getExhibitionDot(ex.id)"></span>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-900 truncate">{{ ex.title }}</p>
+                <p class="text-xs text-slate-400">{{ ex.startDate | date:'MM.dd' }} ~ {{ ex.endDate | date:'MM.dd' }}
+                  @if (ex.venue) { · {{ ex.venue }} }
+                </p>
+              </div>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ring-1 ring-inset"
+                    [class]="statusLight(ex.status)">
+                {{ getStatusLabel(ex.status) }}
+              </span>
+            </a>
+          }
+        </div>
       </div>
     }
-  </div>
 
-  <!-- 페이지네이션 -->
-  <app-pagination
-    [currentPage]="currentPage()"
-    [totalPages]="totalPages()"
-    (pageChange)="onPageChange($event)" />
+    @if (selectedDate() && selectedExhibitions().length === 0) {
+      <div class="mt-6 text-center text-sm text-slate-400 py-4">
+        선택한 날짜에 등록된 행사가 없습니다.
+      </div>
+    }
+
+    <!-- 이번 달 행사 없을 때 -->
+    @if (exhibitions().length === 0) {
+      <div class="mt-8 text-center text-slate-400 text-sm">등록된 전시 행사가 없습니다.</div>
+    }
+  </div>
+  }
+
+  <!-- 목록 뷰 (갤러리 스타일 그리드) -->
+  @if (viewMode() === 'list') {
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" appFadeUp>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      @for (ex of sortedExhibitions(); track ex.id) {
+        <a [routerLink]="['/exhibition', ex.id]"
+           class="group flex flex-col cursor-pointer hover:-translate-y-1 transition-transform duration-300">
+
+          <!-- 포스터 이미지 -->
+          <div class="relative overflow-hidden rounded-lg bg-slate-100 aspect-[3/4]">
+            @if (ex.imageUrl) {
+              <img [src]="ex.imageUrl" [alt]="ex.title"
+                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            } @else {
+              <div class="w-full h-full flex flex-col items-center justify-center gap-3 bg-slate-100">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center" [class]="getExhibitionDot(ex.id)">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p class="text-xs text-slate-400">이미지 없음</p>
+              </div>
+            }
+            <!-- 상태 뱃지 -->
+            <span class="absolute top-2.5 left-2.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                  [class]="getExhibitionBadge()">
+              {{ getStatusLabel(ex.status) }}
+            </span>
+          </div>
+
+          <!-- 텍스트 정보 -->
+          <div class="pt-4 pb-1 flex flex-col gap-1.5">
+            <h3 class="text-base font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-primary-600 transition-colors">
+              {{ ex.title }}
+            </h3>
+            <div class="flex flex-col gap-0.5 text-[13px] text-slate-400 mt-1">
+              @if (ex.venue) {
+                <span>{{ ex.venue }}</span>
+              }
+              <span>{{ ex.startDate | date:'yyyy.MM.dd' }}~{{ ex.endDate | date:'yyyy.MM.dd' }}</span>
+            </div>
+          </div>
+        </a>
+      } @empty {
+        <div class="col-span-full py-20 text-center">
+          <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="text-slate-400 text-lg">등록된 전시회가 없습니다.</p>
+        </div>
+      }
+    </div>
+  </div>
+  }
+
 </div>

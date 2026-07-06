@@ -4,21 +4,19 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { FadeUpDirective } from '../../shared/fade-up.directive';
 
 export interface Notice {
   id: number;
   title: string;
   content: string;
-  published: boolean;
-  sortOrder: number;
+  isPinned: boolean;
   createdAt: string;
-  updatedAt: string;
-  authorId: number;
 }
 
 @Component({
   selector: 'app-notice',
-  imports: [RouterModule, FormsModule, DatePipe, PaginationComponent],
+  imports: [RouterModule, FormsModule, DatePipe, PaginationComponent, FadeUpDirective],
   templateUrl: './notice.page.html',
 })
 export class NoticePage {
@@ -28,7 +26,7 @@ export class NoticePage {
   searchKeyword = signal('');
 
   filteredNotices = computed(() => {
-    let list = this.notices().filter(n => n.published);
+    let list = this.notices();
     const keyword = this.searchKeyword().toLowerCase();
     if (keyword) {
       list = list.filter(n =>
@@ -48,6 +46,7 @@ export class NoticePage {
     return this.filteredNotices().slice(start, start + this.pageSize);
   });
 
+
   constructor() {
     this.loadNotices();
   }
@@ -62,5 +61,12 @@ export class NoticePage {
   onPageChange(page: number) {
     this.currentPage.set(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // 고정 공지 제외 역순 번호
+  getNoticeNumber(notice: Notice): number {
+    const nonPinned = this.filteredNotices().filter(n => !n.isPinned);
+    const idx = nonPinned.indexOf(notice);
+    return nonPinned.length - idx;
   }
 }

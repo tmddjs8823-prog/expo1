@@ -9,6 +9,7 @@ model Gallery {
   description String?
   imageUrl    String
   thumbnailUrl String?
+  category    String?
   published   Boolean      @default(false)
   sortOrder   Int          @default(0)
   exhibitionId Int?

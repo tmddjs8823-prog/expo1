@@ -1,0 +1,97 @@
+<div class="flex flex-col gap-5">
+  <app-page-header title="계정 상세" backLabel="목록" (backClick)="goBack()" />
+
+  @if (user()) {
+    <!-- 계정 정보 -->
+    <div class="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 border-b-2 border-slate-200 text-slate-800">
+        <h3 class="text-sm font-semibold tracking-wide">👤 계정 정보</h3>
+      </div>
+
+      <div class="p-6 flex flex-col gap-5">
+        <app-detail-fields [fields]="detailFields()" />
+      </div>
+    </div>
+
+    <!-- 계정 관리 -->
+    <div class="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 bg-primary-50 border-b-2 border-primary-200 text-primary-800">
+        <h3 class="text-sm font-semibold tracking-wide">🔑 계정 관리</h3>
+      </div>
+
+      <div class="p-6 flex flex-col gap-5">
+        <div class="flex flex-wrap items-center gap-4">
+          <!-- 역할 -->
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-slate-600">역할</span>
+            <select [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)"
+              class="px-4 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all">
+              <option value="USER">일반 사용자</option>
+              <option value="ADMIN">관리자</option>
+            </select>
+            <button (click)="changeRole()"
+              class="px-5 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 shadow-md shadow-primary-600/20 transition-all active:scale-[0.98]">변경</button>
+          </div>
+
+          <!-- 상태 -->
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-slate-600">상태</span>
+            <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)"
+              class="px-4 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all">
+              <option value="ACTIVE">활성</option>
+              <option value="SUSPENDED">정지</option>
+              <option value="DELETED">삭제</option>
+            </select>
+            <button (click)="changeStatus()"
+              class="px-5 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 shadow-md shadow-primary-600/20 transition-all active:scale-[0.98]">변경</button>
+          </div>
+        </div>
+
+        <div class="flex gap-2.5">
+          <button (click)="deleteUser()"
+            class="px-5 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 border border-red-200 transition-colors">계정 삭제</button>
+          <button (click)="goBack()"
+            class="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-200 border border-slate-200 transition-colors">목록으로</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 문의 내역 -->
+    @if (user()!.inquiries.length > 0) {
+      <div class="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 bg-slate-50 border-b-2 border-slate-200 text-slate-800">
+          <h3 class="text-sm font-semibold tracking-wide">📨 문의 내역 (최근 10건)</h3>
+        </div>
+
+        <div class="p-6">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b-2 border-slate-100 text-left text-slate-500">
+                <th class="pb-3 font-semibold">제목</th>
+                <th class="pb-3 font-semibold">상태</th>
+                <th class="pb-3 font-semibold">접수일</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (inq of user()!.inquiries; track inq.id) {
+                <tr class="border-b border-slate-50 hover:bg-slate-50 cursor-pointer"
+                  routerLink="/inquiry/{{inq.id}}">
+                  <td class="py-3 text-slate-800">{{ inq.subject }}</td>
+                  <td class="py-3">
+                    <span class="text-xs font-bold"
+                      [class.text-blue-600]="inq.status === 'PENDING'"
+                      [class.text-green-600]="inq.status === 'ANSWERED'"
+                      [class.text-red-500]="inq.status === 'CLOSED'">
+                      {{ statusLabel(inq.status) }}
+                    </span>
+                  </td>
+                  <td class="py-3 text-slate-500">{{ inq.createdAt | date:'yyyy-MM-dd' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</div>

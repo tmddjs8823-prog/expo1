@@ -1,184 +1,307 @@
-<!-- ① 히어로 배너 슬라이더 -->
-<section class="relative w-full h-[280px] sm:h-[350px] bg-slate-900 overflow-hidden">
+<!-- ① 풀스크린 히어로 배너 -->
+<section class="relative w-full h-[calc(100vh-6rem)] bg-slate-900 overflow-hidden snap-start">
   @if (banners().length > 0) {
     @for (banner of banners(); track banner.id; let i = $index) {
-      <div class="absolute inset-0 transition-opacity duration-700"
+      <div class="absolute inset-0 transition-opacity duration-1000"
            [class.opacity-100]="i === currentBannerIndex()"
            [class.opacity-0]="i !== currentBannerIndex()"
            [class.pointer-events-auto]="i === currentBannerIndex()"
            [class.pointer-events-none]="i !== currentBannerIndex()">
-        @if (banner.linkUrl) {
-          <div (click)="onBannerClick(banner.linkUrl)" (keyup.enter)="onBannerClick(banner.linkUrl)"
-               tabindex="0" role="link" class="absolute inset-0 cursor-pointer">
-            <img [src]="banner.imageUrl" [alt]="banner.title"
-                 class="w-full h-full object-cover" />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-            <div class="absolute bottom-12 left-0 right-0">
-              <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-2">
-                <h2 class="text-3xl sm:text-4xl font-bold text-white">{{ banner.title }}</h2>
-                @if (banner.subtitle) {
-                  <p class="text-lg text-white/80">{{ banner.subtitle }}</p>
-                }
-              </div>
-            </div>
-          </div>
-        } @else {
-          <img [src]="banner.imageUrl" [alt]="banner.title"
-               class="w-full h-full object-cover" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-          <div class="absolute bottom-12 left-0 right-0">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-2">
-              <h2 class="text-3xl sm:text-4xl font-bold text-white">{{ banner.title }}</h2>
-              @if (banner.subtitle) {
-                <p class="text-lg text-white/80">{{ banner.subtitle }}</p>
-              }
-            </div>
-          </div>
-        }
+          <img [src]="banner.imageUrl" alt="배너" class="w-full h-full object-cover" />
       </div>
     }
 
-    <!-- 좌우 화살표 -->
-    @if (banners().length > 1) {
-      <button (click)="prevBanner()"
-        class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white backdrop-blur-sm transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      <button (click)="nextBanner()"
-        class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white backdrop-blur-sm transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+    <!-- 그라데이션 오버레이 -->
+    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10"></div>
 
+    <!-- 중앙 텍스트 -->
+
+
+    <!-- 하단 컨트롤 -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4">
       <!-- 인디케이터 -->
-      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+      <div class="flex gap-2">
         @for (banner of banners(); track banner.id; let i = $index) {
           <button (click)="goToBanner(i)"
-            class="w-2.5 h-2.5 rounded-full transition-colors"
+            class="h-1 rounded-full transition-all duration-300"
+            [class.w-8]="i === currentBannerIndex()"
             [class.bg-white]="i === currentBannerIndex()"
+            [class.w-2]="i !== currentBannerIndex()"
             [class.bg-white/40]="i !== currentBannerIndex()">
           </button>
         }
       </div>
+      <!-- 자동재생 토글 -->
+      <button (click)="toggleAutoplay()" class="text-white/60 hover:text-white transition-colors" aria-label="자동재생 토글">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          @if (bannerAutoplay()) {
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          } @else {
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          }
+        </svg>
+      </button>
+    </div>
+
+    <!-- 스크롤 다운 인디케이터 -->
+    <button (click)="scrollToContent()" class="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-3 text-white/60 hover:text-white/90 transition-colors animate-bounce" aria-label="아래로 스크롤">
+      <span class="text-[0.65rem] font-medium tracking-[0.25em] ">스크롤</span>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      </svg>
+    </button>
+
+    <!-- 좌우 화살표 -->
+    @if (banners().length > 1) {
+      <button (click)="prevBanner()" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/25 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+      </button>
+      <button (click)="nextBanner()" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/25 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+      </button>
     }
   } @else {
-    <!-- 배너 없을 때 기본 -->
-    <div class="flex items-center justify-center h-full">
-      <div class="text-center flex flex-col gap-2">
-        <h2 class="text-3xl sm:text-4xl font-bold text-white">광주 밀리언쇼</h2>
-        <p class="text-lg text-white/70">행사 준비 중입니다</p>
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-primary-900 flex items-center justify-center">
+      <div class="text-center">
+        <p class="text-sm text-white/50 uppercase tracking-[0.3em] mb-4">GWANGJU MILLION SHOW</p>
+        <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4">광주 밀리언쇼</h1>
+        <p class="text-lg text-white/60">행사 준비 중입니다</p>
       </div>
     </div>
   }
 </section>
 
-<!-- ② 전시회 개요 -->
-<section class="bg-white py-10">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col gap-4 items-center">
-    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">전시회 안내</h2>
-    <p class="text-slate-500 max-w-2xl">
-      광주 밀리언쇼는 다양한 분야의 전시회와 프로그램을 제공합니다.<br />
-      새로운 트렌드를 발견하고 비즈니스 기회를 만나보세요.
-    </p>
-
-    <div class="grid grid-cols-3 gap-3 sm:gap-6 w-full">
-      <div class="p-3 sm:p-6 bg-slate-50 rounded-xl text-center">
-        <div class="text-2xl sm:text-3xl font-bold text-primary-600">{{ exhibitions().length }}+</div>
-        <div class="text-xs sm:text-sm text-slate-500">진행 전시회</div>
+<!-- ② 일정 안내 (스크롤 캐러셀) -->
+@if (exhibitions().length > 0) {
+<section class="bg-slate-50 h-screen flex flex-col justify-center overflow-hidden">
+  <!-- 제목 영역 -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mb-12" appFadeUp>
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div>
+        <p class="text-sm text-primary-600 font-semibold uppercase tracking-widest mb-2">SCHEDULE</p>
+        <h2 class="text-4xl sm:text-5xl font-bold text-slate-900">일정 안내</h2>
+        <p class="text-slate-400 mt-3 text-base">광주 밀리언쇼의 행사를 안내합니다</p>
       </div>
-      <div class="p-3 sm:p-6 bg-slate-50 rounded-xl text-center">
-        <div class="text-2xl sm:text-3xl font-bold text-primary-600">{{ galleries().length }}+</div>
-        <div class="text-xs sm:text-sm text-slate-500">갤러리 사진</div>
-      </div>
-      <div class="p-3 sm:p-6 bg-slate-50 rounded-xl text-center">
-        <a routerLink="/preregistration" class="block">
-          <div class="text-2xl sm:text-3xl font-bold text-primary-600">참여하기</div>
-          <div class="text-xs sm:text-sm text-slate-500">사전등록 →</div>
-        </a>
-      </div>
+      <a routerLink="/exhibition"
+         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-300 text-sm font-semibold text-slate-600 hover:border-slate-900 hover:bg-slate-900 hover:text-white transition-all duration-300 shrink-0">
+        전체보기
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+      </a>
     </div>
   </div>
-</section>
 
-<!-- ③ 진행 중인 전시회 -->
-@if (exhibitions().length > 0) {
-  <section class="bg-slate-50 py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-      <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-bold text-slate-900">진행 중인 전시회</h2>
-        <a routerLink="/exhibition" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
-          전체보기 →
-        </a>
-      </div>
+  <!-- 스크롤 캐러셀 -->
+  <div class="relative w-full" appFadeUp="200ms">
+    <!-- 왼쪽 화살표 -->
+    <button (click)="scrollCarousel('left')"
+            class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-white shadow-xl rounded-full flex items-center justify-center text-slate-700 hover:bg-slate-900 hover:text-white transition-all duration-300 border border-slate-100">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+    </button>
+    <!-- 오른쪽 화살표 -->
+    <button (click)="scrollCarousel('right')"
+            class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-white shadow-xl rounded-full flex items-center justify-center text-slate-700 hover:bg-slate-900 hover:text-white transition-all duration-300 border border-slate-100">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+    </button>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (ex of exhibitions(); track ex.id) {
-          <div (click)="ex.linkUrl ? onBannerClick(ex.linkUrl) : router.navigate(['/exhibition', ex.id])"
-               (keyup.enter)="ex.linkUrl ? onBannerClick(ex.linkUrl) : router.navigate(['/exhibition', ex.id])"
-               tabindex="0" role="link"
-             class="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+    <!-- 카드 트랙 (원본 + 복제본 = 무한 벨트) -->
+    <div #carouselTrack class="exhibition-carousel flex gap-4 sm:gap-5 lg:gap-6 px-8 sm:px-12 lg:px-16 overflow-x-scroll scrollbar-hide">
+      @for (ex of exhibitions(); track 'a-' + ex.id) {
+        <div (click)="router.navigate(['/exhibition', ex.id])" (keyup.enter)="router.navigate(['/exhibition', ex.id])" tabindex="0" role="link"
+             class="group flex-shrink-0 w-60 sm:w-72 md:w-80 lg:w-[22rem] xl:w-96 cursor-pointer">
+          <div class="aspect-[3/4] rounded-2xl overflow-hidden relative shadow-md group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
             @if (ex.imageUrl) {
-              <div class="h-64 overflow-hidden">
-                <img [src]="ex.imageUrl" [alt]="ex.title"
-                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-              </div>
+              <img [src]="ex.imageUrl" [alt]="ex.title" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
             } @else {
-              <div class="h-48 bg-slate-200 flex items-center justify-center">
-                <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5" />
-                </svg>
+              <div class="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                <svg class="w-16 h-16 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5" /></svg>
               </div>
             }
-            <div class="p-4 flex flex-col gap-1">
-              <h3 class="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">{{ ex.title }}</h3>
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 pt-28">
+              <span class="inline-block text-xs font-bold uppercase tracking-widest text-white/60 mb-2.5 border border-white/20 rounded-full px-3 py-0.5">
+                {{ ex.status === 'ongoing' ? 'EXHIBITION' : ex.status === 'upcoming' ? 'UPCOMING' : 'EXHIBITION' }}
+              </span>
+              <h3 class="font-bold text-white text-xl leading-snug line-clamp-2">{{ ex.title }}</h3>
               @if (ex.startDate) {
-                <p class="text-xs text-slate-400">{{ ex.startDate | date:'yyyy-MM-dd' }}</p>
+                <p class="text-sm text-white/60 mt-2 font-medium tracking-wide">{{ ex.startDate | date:'yyyy.MM.dd' }}@if (ex.endDate) { — {{ ex.endDate | date:'MM.dd' }}}</p>
+              }
+              @if (ex.venue) {
+                <p class="text-xs text-white/50 mt-1">{{ ex.venue }}</p>
               }
             </div>
           </div>
-        }
-      </div>
+        </div>
+      }
+      <!-- 복제본 1 (무한 루프용) -->
+      @for (ex of exhibitions(); track 'b-' + ex.id) {
+        <div (click)="router.navigate(['/exhibition', ex.id])" (keyup.enter)="router.navigate(['/exhibition', ex.id])" tabindex="0" role="link"
+             class="group flex-shrink-0 w-60 sm:w-72 md:w-80 lg:w-[22rem] xl:w-96 cursor-pointer">
+          <div class="aspect-[3/4] rounded-2xl overflow-hidden relative shadow-md group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
+            @if (ex.imageUrl) {
+              <img [src]="ex.imageUrl" [alt]="ex.title" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+            } @else {
+              <div class="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                <svg class="w-16 h-16 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5" /></svg>
+              </div>
+            }
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 pt-28">
+              <span class="inline-block text-xs font-bold uppercase tracking-widest text-white/60 mb-2.5 border border-white/20 rounded-full px-3 py-0.5">
+                {{ ex.status === 'ongoing' ? 'EXHIBITION' : ex.status === 'upcoming' ? 'UPCOMING' : 'EXHIBITION' }}
+              </span>
+              <h3 class="font-bold text-white text-xl leading-snug line-clamp-2">{{ ex.title }}</h3>
+              @if (ex.startDate) {
+                <p class="text-sm text-white/60 mt-2 font-medium tracking-wide">{{ ex.startDate | date:'yyyy.MM.dd' }}@if (ex.endDate) { — {{ ex.endDate | date:'MM.dd' }}}</p>
+              }
+              @if (ex.venue) {
+                <p class="text-xs text-white/50 mt-1">{{ ex.venue }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      }
+      <!-- 복제본 2 (무한 루프용) -->
+      @for (ex of exhibitions(); track 'c-' + ex.id) {
+        <div (click)="router.navigate(['/exhibition', ex.id])" (keyup.enter)="router.navigate(['/exhibition', ex.id])" tabindex="0" role="link"
+             class="group flex-shrink-0 w-60 sm:w-72 md:w-80 lg:w-[22rem] xl:w-96 cursor-pointer">
+          <div class="aspect-[3/4] rounded-2xl overflow-hidden relative shadow-md group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
+            @if (ex.imageUrl) {
+              <img [src]="ex.imageUrl" [alt]="ex.title" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+            } @else {
+              <div class="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                <svg class="w-16 h-16 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5" /></svg>
+              </div>
+            }
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 pt-28">
+              <span class="inline-block text-xs font-bold uppercase tracking-widest text-white/60 mb-2.5 border border-white/20 rounded-full px-3 py-0.5">
+                {{ ex.status === 'ongoing' ? 'EXHIBITION' : ex.status === 'upcoming' ? 'UPCOMING' : 'EXHIBITION' }}
+              </span>
+              <h3 class="font-bold text-white text-xl leading-snug line-clamp-2">{{ ex.title }}</h3>
+              @if (ex.startDate) {
+                <p class="text-sm text-white/60 mt-2 font-medium tracking-wide">{{ ex.startDate | date:'yyyy.MM.dd' }}@if (ex.endDate) { — {{ ex.endDate | date:'MM.dd' }}}</p>
+              }
+              @if (ex.venue) {
+                <p class="text-xs text-white/50 mt-1">{{ ex.venue }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      }
     </div>
-  </section>
+  </div>
+</section>
 }
 
-<!-- ⑤ 갤러리 미리보기 -->
+<!-- ④ 시설 안내  -->
 @if (galleries().length > 0) {
-  <section class="bg-white py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-      <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-bold text-slate-900">갤러리</h2>
-        <a routerLink="/gallery" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
-          전체보기 →
-        </a>
-      </div>
+<section class="bg-white h-screen overflow-hidden">
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (g of galleries(); track g.id) {
-          <div class="h-64 overflow-hidden rounded-xl cursor-pointer"
-               (click)="router.navigate(['/gallery', g.id])"
-               (keyup.enter)="router.navigate(['/gallery', g.id])"
-               tabindex="0" role="link">
-            <img [src]="g.imageUrl" [alt]="g.title"
-                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+  <div class="flex flex-col md:flex-row w-full h-auto md:h-screen relative">
+    <!-- 좌측: 타이틀 + 카테고리 -->
+    <div class="w-full md:w-[38%] shrink-0 flex flex-col justify-center px-6 py-10 md:px-[60px] md:py-0 bg-white relative z-[2]" appFadeUp>
+      <p class="text-[0.72rem] font-bold tracking-[0.12em] text-blue-600 uppercase mb-3">Facility Guide</p>
+      <h2 class="text-[1.8rem] md:text-[2.4rem] font-extrabold text-slate-900 tracking-tight leading-[1.15] mb-3">시설 안내</h2>
+      <p class="text-[0.9rem] text-slate-500 leading-[1.65] mb-10">보이는 것 <em class="not-italic font-bold text-blue-900">그 이상의 가치</em>가 있습니다</p>
+
+      <nav class="flex flex-row flex-wrap gap-2 md:flex-col md:gap-0">
+        @for (cat of facilityCategories(); track cat) {
+          <button
+            [class]="'text-left cursor-pointer transition-colors '
+              + (facilityCategory() === cat
+                ? 'py-1.5 px-3.5 text-[0.85rem] bg-blue-900 text-white rounded-full font-bold md:py-3.5 md:px-0 md:text-[1.15rem] md:bg-transparent md:text-blue-900 md:rounded-none md:border-b md:border-slate-200 md:last:border-b-0'
+                : 'py-1.5 px-3.5 text-[0.85rem] bg-slate-100 text-slate-500 rounded-full hover:text-slate-800 md:py-3.5 md:px-0 md:text-[1.05rem] md:bg-transparent md:rounded-none md:border-b md:border-slate-200 md:last:border-b-0')"
+            (click)="selectCategory(cat)">
+            {{ cat }}
+          </button>
+        }
+      </nav>
+    </div>
+
+    <!-- 우측: 이미지 -->
+    <div class="flex-1 relative min-h-[340px] md:min-h-0" appFadeUp="100ms">
+      @if (facilityItem(); as f) {
+        <div class="absolute inset-0 overflow-hidden">
+          <img class="w-full h-full object-cover block transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" [src]="f.imageUrl" [alt]="f.title" loading="lazy" />
+          <div class="absolute inset-0 bg-gradient-to-r from-black/[0.18] to-transparent pointer-events-none"></div>
+        </div>
+      }
+    </div>
+
+    <!-- 정보 카드 (wrap 위에 떠있음) -->
+    @if (facilityItem(); as f) {
+      <div class="absolute left-4 md:left-[28%] top-1/2 -translate-y-1/2 z-20 bg-white p-6 md:p-[36px_32px] w-[240px] md:w-[320px] shadow-[0_8px_40px_rgba(0,0,0,0.12)] flex flex-col gap-3" appFadeUp>
+        <span class="text-[0.7rem] font-bold tracking-[0.1em] text-blue-600 uppercase">{{ getCategoryEn(f.category ?? '기타') }}</span>
+        <h3 class="text-[1.4rem] md:text-[1.6rem] font-extrabold text-slate-900 tracking-tight leading-[1.2] m-0">{{ f.title }}</h3>
+        <div class="w-8 h-[3px] bg-blue-600 rounded-sm"></div>
+        <p class="text-[0.85rem] text-slate-600 leading-[1.8] line-clamp-6">{{ f.description ?? '시설 설명이 등록되지 않았습니다.' }}</p>
+        <a routerLink="/gallery" class="flex items-center gap-1.5 text-blue-600 text-[0.82rem] font-bold no-underline pt-3.5 border-t border-slate-200 mt-1 hover:gap-2.5 transition-all">
+          더보기
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+        </a>
+        @if (facilityFiltered().length > 1) {
+          <div class="flex items-center justify-between pt-3 border-t border-slate-200 mt-2">
+            <button (click)="facilityPrev()" class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <span class="text-xs text-slate-400 font-medium">{{ facilityIndex() + 1 }} / {{ facilityFiltered().length }}</span>
+            <button (click)="facilityNext()" class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            </button>
           </div>
         }
       </div>
-    </div>
-  </section>
+    }
+  </div>
+
+</section>
 }
 
-<!-- CTA -->
-<section class="bg-slate-900 py-10">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col gap-3 items-center">
-    <h2 class="text-2xl sm:text-3xl font-bold text-white">사전등록하고 광주 밀리언쇼를 만나보세요</h2>
-    <p class="text-slate-400">무료 사전등록으로 다양한 전시와 프로그램을 경험해보세요.</p>
-    <a routerLink="/preregistration"
-      class="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors">
-      사전등록 하기
-    </a>
+
+<!-- ⑥ 이용 안내 (하단, 푸터 포함 한 화면) -->
+<section class="bg-slate-50 h-[calc(100vh-19rem)] sm:h-[calc(100vh-13rem)] lg:h-[calc(100vh-12rem)] flex flex-col justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+    <div class="text-left mb-4 sm:mb-6 lg:mb-8 xl:mb-10" appFadeUp>
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900">이용 안내</h2>
+      <p class="text-slate-500 mt-2 text-sm lg:text-base">더욱 편리하게 <strong class="text-slate-700">밀리언쇼를 이용</strong>하세요</p>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-8" appFadeUp="200ms">
+      <a routerLink="/preregistration"
+         class="group bg-white rounded-2xl p-6 lg:p-10 text-center shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-slate-100">
+        <div class="w-16 h-16 lg:w-24 lg:h-24 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-4 lg:mb-6 group-hover:bg-primary-100 group-hover:scale-110 transition-all">
+          <svg class="w-8 h-8 lg:w-12 lg:h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg>
+        </div>
+        <h3 class="text-base lg:text-2xl font-bold text-slate-900 mb-1 lg:mb-2">사전등록</h3>
+        <p class="text-xs lg:text-base text-slate-400">무료 사전등록으로<br/>참가하세요</p>
+      </a>
+      <a routerLink="/faq"
+         class="group bg-white rounded-2xl p-6 lg:p-10 text-center shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-slate-100">
+        <div class="w-16 h-16 lg:w-24 lg:h-24 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4 lg:mb-6 group-hover:bg-emerald-100 group-hover:scale-110 transition-all">
+          <svg class="w-8 h-8 lg:w-12 lg:h-12 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" /></svg>
+        </div>
+        <h3 class="text-base lg:text-2xl font-bold text-slate-900 mb-1 lg:mb-2">FAQ</h3>
+        <p class="text-xs lg:text-base text-slate-400">자주 묻는 질문을<br/>확인하세요</p>
+      </a>
+      <a routerLink="/notice"
+         class="group bg-white rounded-2xl p-6 lg:p-10 text-center shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-slate-100">
+        <div class="w-16 h-16 lg:w-24 lg:h-24 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4 lg:mb-6 group-hover:bg-amber-100 group-hover:scale-110 transition-all">
+          <svg class="w-8 h-8 lg:w-12 lg:h-12 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+        </div>
+        <h3 class="text-base lg:text-2xl font-bold text-slate-900 mb-1 lg:mb-2">공지사항</h3>
+        <p class="text-xs lg:text-base text-slate-400">최신 소식을<br/>확인하세요</p>
+      </a>
+      <a routerLink="/inquiry"
+         class="group bg-white rounded-2xl p-6 lg:p-10 text-center shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-slate-100">
+        <div class="w-16 h-16 lg:w-24 lg:h-24 bg-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-4 lg:mb-6 group-hover:bg-violet-100 group-hover:scale-110 transition-all">
+          <svg class="w-8 h-8 lg:w-12 lg:h-12 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.8 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+        </div>
+        <h3 class="text-base lg:text-2xl font-bold text-slate-900 mb-1 lg:mb-2">문의하기</h3>
+        <p class="text-xs lg:text-base text-slate-400">궁금한 점을<br/>문의하세요</p>
+      </a>
+    </div>
   </div>
 </section>
+

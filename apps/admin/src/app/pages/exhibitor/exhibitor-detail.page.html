@@ -1,9 +1,9 @@
-﻿<div class="flex flex-col gap-5">
-  <app-page-header title="참가업체 상세" backLabel="목록" (backClick)="goBack()" />
+<div class="flex flex-col gap-5">
+  <app-page-header [title]="isCreateMode ? '참가업체 등록' : '참가업체 상세'" backLabel="목록" (backClick)="goBack()" />
 
-  <form class="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden" (ngSubmit)="updateExhibitor()">
+  <form class="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden" (ngSubmit)="save()">
     <div class="px-6 py-4 bg-primary-50 border-b-2 border-primary-200 text-primary-800">
-      <h3 class="text-sm font-semibold tracking-wide">✏️ 참가업체 수정</h3>
+      <h3 class="text-sm font-semibold tracking-wide">{{ isCreateMode ? '➕ 새 참가업체 등록' : '✏️ 참가업체 수정' }}</h3>
     </div>
 
     <div class="p-6 flex flex-col gap-5">
@@ -75,9 +75,12 @@
       <hr class="border-slate-200" />
 
       <div class="flex gap-2.5">
-        <button type="submit" class="px-6 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 shadow-md shadow-primary-600/20 transition-all active:scale-[0.98]">수정하기</button>
-        <button type="button" (click)="deleteExhibitor()" class="px-5 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 border border-red-200 transition-colors">삭제</button>
-        <button type="button" (click)="goBack()" class="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-200 border border-slate-200 transition-colors">취소</button>
+        <button type="submit" class="px-6 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 shadow-md shadow-primary-600/20 transition-all active:scale-[0.98]">{{ isCreateMode ? '등록하기' : '수정하기' }}</button>
+        @if (isCreateMode) {
+          <button type="button" (click)="resetForm()" class="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-200 border border-slate-200 transition-colors">초기화</button>
+        } @else {
+          <button type="button" (click)="deleteExhibitor()" class="px-5 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 border border-red-200 transition-colors">삭제</button>
+        }
       </div>
     </div>
   </form>

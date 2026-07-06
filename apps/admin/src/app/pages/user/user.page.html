@@ -1,0 +1,8 @@
+<div class="flex flex-col gap-4">
+  <app-page-header title="계정 관리" />
+
+  <!-- 계정 목록 -->
+  <app-data-grid
+    [option]="gridOption"
+    (rowClick)="router.navigate(['/user', $event.id])" />
+</div>

@@ -1,0 +1,98 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+
+// 중앙 인증 서비스
+// - Access Token: 메모리(변수)에만 보관
+// - Refresh Token: httpOnly 쿠키로 서버가 관리 (JS 접근 불가)
+// - 모든 요청은 프록시(/api)를 통해 same-origin으로 전송
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private http = inject(HttpClient);
+  private router = inject(Router);
+
+  // 앱 구분 헤더 (서버에서 쿠키 이름 분리에 사용)
+  private readonly authHeaders = { headers: { 'X-App-Type': 'admin' } };
+
+  // 메모리 전용 Access Token
+  private accessToken: string | null = null;
+
+  // refresh 진행 중인 Promise (중복 요청 방지)
+  private refreshPromise: Promise<string | null> | null = null;
+
+  // 현재 Access Token 반환
+  getToken(): string | null {
+    return this.accessToken;
+  }
+
+  // 인증 여부
+  isAuthenticated(): boolean {
+    return !!this.accessToken;
+  }
+
+  // JWT 토큰 디코딩
+  private decodeToken(token: string): { sub: number; role: string } | null {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const payload = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(payload);
+    } catch {
+      return null;
+    }
+  }
+
+  // 관리자 여부 확인
+  isAdmin(): boolean {
+    if (!this.accessToken) return false;
+    const decoded = this.decodeToken(this.accessToken);
+    return decoded?.role === 'ADMIN';
+  }
+
+  // 로그인
+  async login(username: string, password: string): Promise<void> {
+    const res = await firstValueFrom(
+      this.http.post<{ accessToken: string }>('/api/auth/login', { username, password }, this.authHeaders)
+    );
+    this.accessToken = res.accessToken;
+  }
+
+  // Access Token 갱신 (httpOnly 쿠키의 refresh token 사용)
+  async refresh(): Promise<string | null> {
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = this.doRefresh();
+    try {
+      return await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
+  }
+
+  private async doRefresh(): Promise<string | null> {
+    try {
+      const res = await firstValueFrom(
+        this.http.post<{ accessToken: string }>('/api/auth/refresh', {}, this.authHeaders)
+      );
+      this.accessToken = res.accessToken;
+      return this.accessToken;
+    } catch {
+      this.accessToken = null;
+      return null;
+    }
+  }
+
+  // 로그아웃
+  async logout(): Promise<void> {
+    try {
+      await firstValueFrom(this.http.post('/api/auth/logout', {}, this.authHeaders));
+    } catch {
+      // 로그아웃 API 실패해도 클라이언트 측은 정리
+    }
+    this.accessToken = null;
+    this.router.navigate(['/login']);
+  }
+}

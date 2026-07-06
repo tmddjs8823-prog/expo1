@@ -19,7 +19,7 @@ export class NoticeService {
     // 전체 조회 (Read All)
     async findAll(includeAll = false) {
         return this.prisma.notice.findMany({
-            orderBy: { updatedAt: 'desc' },
+            orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
             ...(includeAll ? {} : { where: { published: true } }),
         });
     }
@@ -57,5 +57,10 @@ export class NoticeService {
         return this.prisma.notice.delete({
             where: { id },
         });
+    }
+
+    // 일괄 삭제
+    async removeMany(ids: number[]) {
+        return this.prisma.notice.deleteMany({ where: { id: { in: ids } } });
     }
 }

@@ -14,6 +14,15 @@ export class ExhibitionService {
         });
     }
 
+    // 필터 드롭다운용 경량 조회 (종료된 전시회 제외)
+    async findSlim() {
+        return this.prisma.exhibition.findMany({
+            select: { id: true, title: true },
+            where: { status: { not: 'CLOSED' } },
+            orderBy: { updatedAt: 'desc' },
+        });
+    }
+
     async findOne(id: number) {
         const exhibition = await this.prisma.exhibition.findUnique({
             where: { id },
@@ -25,20 +34,25 @@ export class ExhibitionService {
 
     // 생성
     async create(dto: CreateExhibitionDto) {
+        const startDate = new Date(dto.startDate);
+        const endDate   = new Date(dto.endDate);
+
         console.log('[Exhibition] create dto:', JSON.stringify(dto));
         try {
             return await this.prisma.exhibition.create({
                 data: {
                     ...dto,
-                    startDate: new Date(dto.startDate),
-                    endDate: new Date(dto.endDate),
-                }
+                    startDate,
+                    endDate,
+                },
             });
         } catch (err) {
             console.error('[Exhibition] create error:', err);
             throw err;
         }
     }
+
+
 
     // 전시 수정
     async update(id: number, dto: UpdateExhibitionDto) {
@@ -79,5 +93,10 @@ export class ExhibitionService {
         }
 
         return this.prisma.exhibition.delete({ where: { id } });
+    }
+
+    // 일괄 삭제
+    async removeMany(ids: number[]) {
+        return this.prisma.exhibition.deleteMany({ where: { id: { in: ids } } });
     }
 }

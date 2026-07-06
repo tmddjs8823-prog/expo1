@@ -60,6 +60,11 @@ export class ExhibitorService {
         });
     }
 
+    // 일괄 삭제
+    async removeMany(ids: number[]) {
+        return this.prisma.exhibitor.deleteMany({ where: { id: { in: ids } } });
+    }
+
     
     
 }

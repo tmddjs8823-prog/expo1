@@ -40,7 +40,7 @@ export class PreregistrationPage {
   }
 
   loadExhibitions() {
-    this.http.get<ExhibitionOption[]>('/api/exhibition').subscribe({
+    this.http.get<ExhibitionOption[]>('/api/exhibition/slim').subscribe({
       next: (res) => this.exhibitions.set(res.filter(e => e.title)),
       error: (err) => console.error('전시회 목록 조회 실패:', err),
     });

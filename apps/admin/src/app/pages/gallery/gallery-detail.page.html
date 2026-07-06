@@ -1,12 +1,36 @@
 <div class="flex flex-col gap-5">
-  <app-page-header title="갤러리 상세" backLabel="목록" (backClick)="goBack()" />
+  <app-page-header [title]="isCreateMode ? '시설 안내 등록' : '시설 안내 상세'" backLabel="목록" (backClick)="goBack()" />
 
-  <form class="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden" (ngSubmit)="updateGallery()">
+  <form class="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden" (ngSubmit)="save()">
     <div class="px-6 py-4 bg-primary-50 border-b-2 border-primary-200 text-primary-800">
-      <h3 class="text-sm font-semibold tracking-wide">✏️ 갤러리 수정</h3>
+      <h3 class="text-sm font-semibold tracking-wide">{{ isCreateMode ? '➕ 새 시설 안내 등록' : '✏️ 시설 안내 수정' }}</h3>
     </div>
 
     <div class="p-6 flex flex-col gap-5">
+      <!-- 시설 카테고리 (필수) -->
+      <label class="flex flex-col gap-2">
+        <span class="text-sm font-bold text-slate-800">시설 카테고리 <span class="text-red-500">*</span></span>
+        <select [ngModel]="category()" (ngModelChange)="category.set($event)"
+          name="category" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all">
+          <option value="" disabled>카테고리를 선택하세요</option>
+          @for (cat of categoryOptions; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </label>
+
+      <!-- 전시회 선택 (선택 사항) -->
+      <label class="flex flex-col gap-2">
+        <span class="text-sm font-bold text-slate-800">연결 전시회 <span class="text-slate-400 font-normal">(선택)</span></span>
+        <select [ngModel]="exhibitionId()" (ngModelChange)="exhibitionId.set($event ? +$event : null)"
+          name="exhibitionId" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all">
+          <option [ngValue]="null">연결 안 함</option>
+          @for (ex of exhibitions(); track ex.id) {
+            <option [ngValue]="ex.id">{{ ex.title }}</option>
+          }
+        </select>
+      </label>
+
       <label class="flex flex-col gap-2">
         <span class="text-sm font-bold text-slate-800">제목</span>
         <input [ngModel]="title()" (ngModelChange)="title.set($event)"
@@ -34,17 +58,7 @@
         </button>
       </div>
 
-      <!-- 행사 선택 -->
-      <label class="flex flex-col gap-2">
-        <span class="text-sm font-bold text-slate-800">행사 선택</span>
-        <select [ngModel]="exhibitionId()" (ngModelChange)="exhibitionId.set($event ? +$event : null)"
-          name="exhibitionId" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white transition-all">
-          <option [ngValue]="null">행사 없음</option>
-          @for (ex of exhibitions(); track ex.id) {
-            <option [ngValue]="ex.id">{{ ex.title }}</option>
-          }
-        </select>
-      </label>
+
 
       <label class="inline-flex items-center gap-2.5 text-sm font-medium select-none cursor-pointer text-slate-700 w-fit">
         <input type="checkbox" [ngModel]="published()" (ngModelChange)="published.set($event)"
@@ -57,10 +71,13 @@
       <div class="flex gap-2.5">
         <button type="submit" [disabled]="uploading()"
           class="px-6 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 shadow-md shadow-primary-600/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
-          {{ uploading() ? '업로드 중...' : '수정하기' }}
+          {{ uploading() ? '업로드 중...' : (isCreateMode ? '등록하기' : '수정하기') }}
         </button>
-        <button type="button" (click)="deleteGallery()" class="px-5 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 border border-red-200 transition-colors">삭제</button>
-        <button type="button" (click)="goBack()" class="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-200 border border-slate-200 transition-colors">취소</button>
+        @if (isCreateMode) {
+          <button type="button" (click)="resetForm()" class="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-200 border border-slate-200 transition-colors">초기화</button>
+        } @else {
+          <button type="button" (click)="deleteGallery()" class="px-5 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 border border-red-200 transition-colors">삭제</button>
+        }
       </div>
     </div>
   </form>

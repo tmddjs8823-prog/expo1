@@ -1,87 +1,89 @@
-import { Component, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { FadeUpDirective } from '../../shared/fade-up.directive';
 
-interface Gallery {
+interface Facility {
   id: number;
   title: string;
-  titleEn?: string;
+
   description?: string;
   imageUrl: string;
-  thumbnailUrl?: string;
-  published: boolean;
-  sortOrder: number;
-  createdAt: string;
+
+  category?: string;
+
 }
 
 @Component({
   selector: 'app-gallery',
-  imports: [RouterModule, PaginationComponent],
+  imports: [RouterModule, FadeUpDirective],
   templateUrl: './gallery.page.html',
 })
 export class GalleryPage {
   private http = inject(HttpClient);
 
-  galleries = signal<Gallery[]>([]);
-  selectedIndex = signal<number | null>(null);
+  facilities = signal<Facility[]>([]);
+  selectedCategory = signal<string>('');
+  selectedFacility = signal<Facility | null>(null);
 
-  // 공개된 항목만 필터링
+  // 유니크 카테고리 목록 (순서 유지)
+  categories = computed<string[]>(() => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const f of this.facilities()) {
+      const cat = f.category ?? '기타';
+      if (!seen.has(cat)) { seen.add(cat); result.push(cat); }
+    }
+    return result;
+  });
 
-  // 페이지네이션
-  currentPage = signal(1);
-  pageSize = 3;
-  totalPages = computed(() => Math.ceil(this.galleries().length / this.pageSize));
-  pagedGalleries = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize;
-    return this.galleries().slice(start, start + this.pageSize);
+  // 현재 카테고리의 시설 목록
+  filteredFacilities = computed<Facility[]>(() => {
+    const cat = this.selectedCategory();
+    if (!cat) return this.facilities();
+    return this.facilities().filter(f => (f.category ?? '기타') === cat);
   });
 
   constructor() {
-    this.loadGalleries();
+    this.loadFacilities();
   }
 
-  loadGalleries() {
-    this.http.get<Gallery[]>('/api/gallery').subscribe({
-      next: (res) => this.galleries.set(res),
-      error: (err) => console.error('갤러리 조회 실패:', err),
+  loadFacilities() {
+    this.http.get<Facility[]>('/api/gallery').subscribe({
+      next: (res) => {
+        this.facilities.set(res);
+        // 첫 번째 카테고리 자동 선택
+        const cats = this.categories();
+        if (cats.length > 0) {
+          this.selectedCategory.set(cats[0]);
+          const first = this.filteredFacilities()[0];
+          if (first) this.selectedFacility.set(first);
+        }
+      },
+      error: (err) => console.error('시설 정보 조회 실패:', err),
     });
   }
 
-  onPageChange(page: number) {
-    this.currentPage.set(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  selectCategory(cat: string) {
+    if (this.selectedCategory() === cat) return;
+    this.selectedCategory.set(cat);
+    const first = this.filteredFacilities()[0];
+    this.selectedFacility.set(first ?? null);
   }
 
-  openLightbox(index: number) {
-    this.selectedIndex.set(index);
+  selectFacility(f: Facility) {
+    this.selectedFacility.set(f);
   }
 
-  closeLightbox() {
-    this.selectedIndex.set(null);
-  }
-
-  prevImage(event: Event) {
-    event.stopPropagation();
-    const current = this.selectedIndex();
-    if (current === null) return;
-    const total = this.pagedGalleries().length;
-    this.selectedIndex.set((current - 1 + total) % total);
-  }
-
-  nextImage(event: Event) {
-    event.stopPropagation();
-    const current = this.selectedIndex();
-    if (current === null) return;
-    const total = this.pagedGalleries().length;
-    this.selectedIndex.set((current + 1) % total);
-  }
-
-  @HostListener('document:keydown', ['$event'])
-  onKeydown(event: KeyboardEvent) {
-    if (this.selectedIndex() === null) return;
-    if (event.key === 'Escape') this.closeLightbox();
-    if (event.key === 'ArrowLeft') this.prevImage(event);
-    if (event.key === 'ArrowRight') this.nextImage(event);
+  // 카테고리 영문명 매핑
+  getCategoryEn(cat: string): string {
+    const map: Record<string, string> = {
+      '전시홀': 'Exhibition Hall',
+      '회의실': 'Conference Room',
+      '식음시설': 'Food & Beverage',
+      '지원시설': 'Support',
+      '기타': 'Others',
+    };
+    return map[cat] ?? cat;
   }
 }

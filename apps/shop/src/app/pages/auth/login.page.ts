@@ -1,12 +1,39 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
-  template: `
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 class="text-3xl font-bold text-slate-900">로그인</h1>
-      <p class="mt-2 text-slate-500">준비 중입니다.</p>
-    </div>
-  `,
+  imports: [FormsModule, RouterModule],
+  templateUrl: './login.page.html',
 })
-export class LoginPage {}
+export class LoginPage {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  username = signal('');
+  password = signal('');
+  error = signal('');
+  loading = signal(false);
+
+  async login() {
+    if (this.loading()) return;
+    this.loading.set(true);
+    this.error.set('');
+
+    try {
+      await this.authService.login(this.username(), this.password());
+      this.router.navigate(['/']);
+    } catch (err: unknown) {
+      const httpErr = err as { error?: { message?: string } };
+      const msg = httpErr?.error?.message;
+      this.error.set(msg || '아이디 또는 비밀번호가 올바르지 않습니다.');
+      this.loading.set(false);
+    }
+  }
+
+  kakaoLogin() {
+    window.location.href = this.authService.getKakaoAuthUrl();
+  }
+}

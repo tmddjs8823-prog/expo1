@@ -1,6 +1,7 @@
 import { IsBoolean, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { ExhibitionStatus } from '@prisma/client';
+import { Exclude, Expose } from 'class-transformer';
 
 export class CreateExhibitionDto {
   @ApiProperty({ description: '전시회 제목' })
@@ -58,3 +59,25 @@ export class CreateExhibitionDto {
 }
 
 export class UpdateExhibitionDto extends PartialType(CreateExhibitionDto) {}
+
+@Exclude()
+export class ShopExhibitionResponseDto {
+  @Expose() id: number;
+  @Expose() title: string;
+  @Expose() startDate: string;
+  @Expose() endDate: string;
+  @Expose() venue?: string;
+  @Expose() imageUrl?: string;
+  @Expose() status: string;
+}
+
+@Exclude()
+export class AdminExhibitionListDto {
+  @Expose() id: number;
+  @Expose() title: string;
+  @Expose() startDate: string;
+  @Expose() endDate: string;
+  @Expose() venue?: string;
+  @Expose() status: string;
+  @Expose() published: boolean;
+}

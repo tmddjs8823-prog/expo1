@@ -1,6 +1,6 @@
 import { IsBoolean, IsDateString, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 export class CreateProgramDto {
   @ApiProperty({ description: '프로그램 제목' })
@@ -59,3 +59,31 @@ export class CreateProgramDto {
 }
 
 export class UpdateProgramDto extends PartialType(CreateProgramDto) {}
+
+@Exclude()
+export class ShopProgramExhibitionDto {
+  @Expose() id: number;
+  @Expose() title: string;
+  @Expose() venue?: string;
+}
+
+@Exclude()
+export class ShopProgramResponseDto {
+  @Expose() id: number;
+  @Expose() title: string;
+  @Expose() description?: string;
+  @Expose() speaker?: string;
+  @Expose() startTime: string;
+  @Expose() endTime: string;
+  @Expose() @Type(() => ShopProgramExhibitionDto) exhibition?: ShopProgramExhibitionDto;
+}
+
+@Exclude()
+export class AdminProgramListDto {
+  @Expose() id: number;
+  @Expose() title: string;
+  @Expose() startTime: string;
+  @Expose() endTime: string;
+  @Expose() published: boolean;
+  @Expose() @Type(() => ShopProgramExhibitionDto) exhibition?: ShopProgramExhibitionDto;
+}

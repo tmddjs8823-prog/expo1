@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { handleApiError } from '../../shared/utils/api-error.utils';
+import { handleApiError, handleDeleteError } from '../../shared/utils/api-error.utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { PreRegistration } from './preregistration.page';
@@ -56,7 +56,7 @@ export class PreregistrationDetailPage {
     const ok = await this.confirmDialog.open({ message: '이 항목을 삭제하면 되돌릴 수 없습니다.' }); if (!ok) return;
     this.http.delete(`/api/preregistration/${this.regId}`).subscribe({
       next: () => { this.toast.warning('삭제되었습니다.'); this.router.navigate(['/preregistration']); },
-      error: handleApiError(this.toast, '사전등록 삭제 실패'),
+      error: handleDeleteError(this.confirmDialog, '사전등록 삭제 실패'),
     });
   }
 

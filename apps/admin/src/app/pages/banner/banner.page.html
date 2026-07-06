@@ -1,77 +1,8 @@
 <div class="flex flex-col gap-4">
-  <app-page-header title="배너 관리" />
-
-  <!-- 생성/수정 폼 -->
-  <form (submit)="$event.preventDefault()"
-    class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4">
-
-    <input type="text" [ngModel]="title()" (ngModelChange)="title.set($event)"
-      name="title" placeholder="배너 제목" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
-
-    <input type="text" [ngModel]="subtitle()" (ngModelChange)="subtitle.set($event)"
-      name="subtitle" placeholder="부제 (선택)" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
-
-    <input type="text" [ngModel]="linkUrl()" (ngModelChange)="linkUrl.set($event)"
-      name="linkUrl" placeholder="클릭 시 이동할 링크 (선택)" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all" />
-
-    <!-- 행사 선택 -->
-    <div class="flex flex-col gap-1.5">
-      <span class="text-sm font-medium text-slate-700">행사 선택</span>
-      <select [ngModel]="exhibitionId()" (ngModelChange)="exhibitionId.set($event ? +$event : null)"
-        name="exhibitionId" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all">
-        <option [ngValue]="null">행사 없음</option>
-        @for (ex of exhibitions(); track ex.id) {
-          <option [ngValue]="ex.id">{{ ex.title }}</option>
-        }
-      </select>
-    </div>
-
-    <!-- 이미지 업로드 -->
-    <div class="flex flex-col gap-2">
-      <span class="text-sm font-medium text-slate-700">배너 이미지</span>
-      <input #bannerFileInput type="file" accept="image/*" (change)="onFileSelected($event)"
-        class="hidden" />
-      <button type="button" (click)="bannerFileInput.click()"
-        class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 text-sm text-slate-600 w-fit transition-colors">
-        파일 선택
-      </button>
-      @if (imageUrl()) {
-        <img [src]="imageUrl()" alt="미리보기" class="w-full max-h-48 object-cover rounded-lg" />
-      }
-    </div>
-
-    <div class="flex items-center gap-4">
-      <label class="flex items-center gap-2 text-sm select-none cursor-pointer text-slate-700">
-        <input type="checkbox" [ngModel]="published()" (ngModelChange)="published.set($event)"
-          name="published" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-        공개
-      </label>
-      <label class="flex items-center gap-2 text-sm text-slate-700">
-        순서
-        <input type="number" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)"
-          name="sortOrder" min="1" class="w-20 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500" />
-      </label>
-    </div>
-
-    <div class="flex gap-2">
-      <button type="button" (click)="isEditing() ? updateBanner() : createBanner()" [disabled]="uploading()"
-        class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm transition-colors disabled:opacity-50">
-        @if (uploading()) {
-          업로드 중...
-        } @else {
-          {{ isEditing() ? '수정' : '생성' }}
-        }
-      </button>
-      @if (isEditing()) {
-        <button type="button" (click)="resetForm()"
-          class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">
-          취소
-        </button>
-      }
-    </div>
-  </form>
+  <app-page-header title="배너 관리" actionLabel="새로 만들기" (actionClick)="router.navigate(['/banner', 'new'])" />
 
   <!-- 배너 목록 -->
-  <app-data-grid [option]="gridOption"
+  <app-data-grid
+    [option]="gridOption"
     (rowClick)="router.navigate(['/banner', $event.id])" />
 </div>

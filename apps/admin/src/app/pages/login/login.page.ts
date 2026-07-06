@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -9,34 +9,31 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './login.page.html',
 })
 export class LoginPage {
-  private http = inject(HttpClient);
+  private authService = inject(AuthService);
   private router = inject(Router);
 
-  email = signal('');
+  username = signal('');
   password = signal('');
   error = signal('');
   loading = signal(false);
 
-  login() {
+  async login() {
     if (this.loading()) return;
     this.loading.set(true);
     this.error.set('');
 
-    this.http
-      .post<{ accessToken: string; refreshToken: string }>('/api/auth/login', {
-        email: this.email(),
-        password: this.password(),
-      })
-      .subscribe({
-        next: (res) => {
-          localStorage.setItem('accessToken', res.accessToken);
-          localStorage.setItem('refreshToken', res.refreshToken);
-          this.router.navigate(['/dashboard']);
-        },
-        error: () => {
-          this.error.set('이메일 또는 비밀번호가 올바르지 않습니다.');
-          this.loading.set(false);
-        },
-      });
+    try {
+      await this.authService.login(this.username(), this.password());
+      if (!this.authService.isAdmin()) {
+        this.error.set('관리자 권한이 없는 계정입니다.');
+        await this.authService.logout();
+        this.loading.set(false);
+        return;
+      }
+      this.router.navigate(['/dashboard']);
+    } catch {
+      this.error.set('아이디 또는 비밀번호가 올바르지 않습니다.');
+      this.loading.set(false);
+    }
   }
-}
+}

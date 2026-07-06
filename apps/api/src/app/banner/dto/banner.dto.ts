@@ -1,6 +1,6 @@
 import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 export class CreateBannerDto {
   @ApiProperty({ description: '배너 제목' })
@@ -42,3 +42,25 @@ export class CreateBannerDto {
 }
 
 export class UpdateBannerDto extends PartialType(CreateBannerDto) {}
+
+@Exclude()
+export class ShopBannerResponseDto {
+  @Expose() id: number;
+  @Expose() imageUrl: string;
+}
+
+@Exclude()
+export class AdminBannerExhibitionDto {
+  @Expose() id: number;
+  @Expose() title: string;
+}
+
+@Exclude()
+export class AdminBannerListDto {
+  @Expose() id: number;
+  @Expose() title: string;
+  @Expose() imageUrl: string;
+  @Expose() published: boolean;
+  @Expose() sortOrder: number;
+  @Expose() @Type(() => AdminBannerExhibitionDto) exhibition?: AdminBannerExhibitionDto;
+}

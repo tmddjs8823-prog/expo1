@@ -1,4 +1,5 @@
 import { Route } from '@angular/router';
+import { authGuard, loginGuard } from './shared/guards/auth.guard';
 
 export const appRoutes: Route[] = [
   // ── 홈 ──
@@ -36,11 +37,20 @@ export const appRoutes: Route[] = [
       import('./pages/gallery/gallery.page').then(m => m.GalleryPage),
   },
 
-  // ── 문의하기 ──
+  // ── 문의하기 (로그인 필수) ──
   {
     path: 'inquiry',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/inquiry/inquiry.page').then(m => m.InquiryPage),
+  },
+
+  // ── 내 문의내역 (로그인 필수) ──
+  {
+    path: 'my-inquiry',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/my-inquiry/my-inquiry.page').then(m => m.MyInquiryPage),
   },
 
   // ── 공지사항 (목록) ──
@@ -67,8 +77,43 @@ export const appRoutes: Route[] = [
   // ── 로그인 ──
   {
     path: 'auth/login',
+    canActivate: [loginGuard],
     loadComponent: () =>
       import('./pages/auth/login.page').then(m => m.LoginPage),
+  },
+
+  // ── 회원가입 ──
+  {
+    path: 'auth/register',
+    canActivate: [loginGuard],
+    loadComponent: () =>
+      import('./pages/auth/register.page').then(m => m.RegisterPage),
+  },
+
+  // ── 아이디 찾기 ──
+  {
+    path: 'auth/find-id',
+    canActivate: [loginGuard],
+    loadComponent: () =>
+      import('./pages/auth/find-id.page').then(m => m.FindIdPage),
+  },
+
+  // ── 비밀번호 찾기 ──
+  {
+    path: 'auth/find-password',
+    canActivate: [loginGuard],
+    loadComponent: () =>
+      import('./pages/auth/find-password.page').then(m => m.FindPasswordPage),
+  },
+
+  // ── 기존 경로 호환 리다이렉트 ──
+  { path: 'auth/find-account', redirectTo: 'auth/find-id' },
+
+  // ── 카카오 로그인 콜백 ──
+  {
+    path: 'auth/kakao/callback',
+    loadComponent: () =>
+      import('./pages/auth/kakao-callback.page').then(m => m.KakaoCallbackPage),
   },
 
   // ── 사전등록 ──
@@ -88,3 +133,4 @@ export const appRoutes: Route[] = [
   // ── 404 → 홈으로 리다이렉트 ──
   { path: '**', redirectTo: '' },
 ];
+

@@ -46,6 +46,11 @@ export class PreregistrationService {
         });
     }
 
+    // 일괄 삭제
+    async deleteMany(ids: number[]) {
+        return this.prisma.preRegistration.deleteMany({ where: { id: { in: ids } } });
+    }
+
 
 }
     
